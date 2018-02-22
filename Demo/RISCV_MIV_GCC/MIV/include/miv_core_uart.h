@@ -5,6 +5,8 @@
 
 #define UART_ALIGNMENT __attribute__ ((aligned (4)))
 
+#define MIV_COREUART_BASE 0x70001000
+
 typedef struct UART_ALIGNMENT miv_core_uart {
   uint8_t UART_ALIGNMENT transmit_data;
   uint8_t UART_ALIGNMENT receive_data;

@@ -24,13 +24,35 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "utils.h"
+#include "miv_core_uart.h"
+#include <stdarg.h>
+#include <stdio.h>
 
-#ifndef SYSCALL_H
-#define SYSCALL_H
+static miv_core_uart_t * pio = (miv_core_uart_t *)(void*)MIV_COREUART_BASE;
 
-#include <stdint.h>
+void printf_uart(const char* s, ...)
+{
+  char buf[128];
+  va_list vl;
 
-/* Trap handler */
-unsigned long ulSyscallTrap(long cause, long epc, long regs[32]);
+  const char *p = &buf[0];
+  
+  va_start(vl, s);
+  vsnprintf(buf, sizeof buf, s, vl);
+  va_end(vl);
 
-#endif /* SYSCALL_H */
+  while (*p) {
+    miv_core_uart_txchar(pio, *p++);
+  }
+}
+
+
+void panic(const char* msg, ...) {
+  va_list vl;
+  va_start(vl, msg);
+  printf_uart(msg, vl);
+  va_end(vl);
+  while (1) ;
+}
+

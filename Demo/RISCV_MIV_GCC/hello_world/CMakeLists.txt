@@ -24,6 +24,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__gracefulExit ${WARNINGS} -Os -DNDEBUG -g
 
 include_directories("${FREE_RTOS_DIR}/Source/include")
 include_directories("${FREE_RTOS_DIR}/Source/portable/GCC/RISCV")
+include_directories("${FREE_RTOS_DIR}/Demo/RISCV_MIV_GCC/arch")
 include_directories("${FREE_RTOS_DIR}/Demo/RISCV_MIV_GCC/conf")
 include_directories("${FREE_RTOS_DIR}/Demo/RISCV_MIV_GCC/MIV/include")
 
@@ -40,10 +41,10 @@ add_library(free-rtos ${FREE_RTOS_DIR}/Source/tasks.c
 		      ${FREE_RTOS_DIR}/Demo/RISCV_MIV_GCC/arch/syscall.c
 		      ${FREE_RTOS_DIR}/Demo/RISCV_MIV_GCC/arch/boot.S)
 
-add_library(free-rtos-miv ${FREE_RTOS_DIR}/Demo/RISCV_MIV_GCC/MIV/src/miv_core_uart.c
-                          ${FREE_RTOS_DIR}/Demo/RISCV_MIV_GCC/MIV/src/uart_task.c)
+add_library(free-rtos-miv ${FREE_RTOS_DIR}/Demo/RISCV_MIV_GCC/MIV/src/miv_core_uart.c)
                     
-add_executable(hello_world ${FREE_RTOS_DIR}/Demo/RISCV_MIV_GCC/hello_world/main.c)
+add_executable(hello_world ${FREE_RTOS_DIR}/Demo/RISCV_MIV_GCC/hello_world/main.c
+                           ${FREE_RTOS_DIR}/Demo/RISCV_MIV_GCC/arch/utils.c)
 
 
 target_link_libraries(hello_world free-rtos free-rtos-miv)

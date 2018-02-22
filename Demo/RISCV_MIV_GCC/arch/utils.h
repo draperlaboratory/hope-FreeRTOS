@@ -24,13 +24,13 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef UTILS_H
+#define UTILS_H
 
-#ifndef SYSCALL_H
-#define SYSCALL_H
 
-#include <stdint.h>
+void printf_uart(const char* s, ...);
 
-/* Trap handler */
-unsigned long ulSyscallTrap(long cause, long epc, long regs[32]);
+__attribute__((noreturn)) void panic(const char* msg, ...);
 
-#endif /* SYSCALL_H */
+
+#endif

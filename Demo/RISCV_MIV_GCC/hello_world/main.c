@@ -1,31 +1,43 @@
+/*
+ * Copyright © 2017-2018 Dover Microsystems, Inc.
+ * All rights reserved. 
+ *
+ * Use and disclosure subject to the following license. 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 #include <string.h>
-#include <stdarg.h>
 #include <stdlib.h>
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
-
 #include "utils.h"
-#include "uart_task.h"
 
 #define TICK_INTERVAL 10
 #define TIMER_INTERVAL (TICK_INTERVAL * configTICK_CLOCK_HZ / configTICK_RATE_HZ)
 
 #define PREEMPTIVE
 
-void printf_uart(const char* s, ...)
-{
-  char buf[128];
-  va_list vl;
-
-  va_start(vl, s);
-  vsnprintf(buf, sizeof buf, s, vl);
-  va_end(vl);
-
-  uart_print(buf);
-}
 
 extern uint64_t xPortRawTime( void );
 
@@ -69,8 +81,7 @@ static void world_task(void *p) {
 }
 int main( void )
 {
-  printf_uart("main: init uart\r\n");
-  init_uart(UART_TASK_DEFAULT_PRIORITY);
+  /* no need to init uart */
   printf_uart("main: create hello task\r\n");
   xTaskCreate(hello_task, "Hello task", 1000, NULL, 1, NULL);
   printf_uart("main: create world task\r\n");

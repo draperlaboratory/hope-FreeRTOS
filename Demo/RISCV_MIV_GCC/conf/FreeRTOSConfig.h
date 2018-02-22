@@ -158,11 +158,11 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 
 /* Normal assert() semantics without relying on the provision of an assert.h
 header file. */
-extern void panic(const char* file, const char* func, int line, const char* msg, ...);
+extern void panic(const char* msg, ...);
 #define configASSERT(x)           \
     if ((x) == 0)                   \
     {                               \
-        panic(__FILE__, __func__, __LINE__ , "ASSERT FAILED: %s", #x); \
+        panic("ASSERT FAILED: %s", #x); \
     }
 
 /* Definitions that map the FreeRTOS port interrupt handlers to their CMSIS
