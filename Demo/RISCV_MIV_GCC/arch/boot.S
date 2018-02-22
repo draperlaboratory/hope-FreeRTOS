@@ -48,6 +48,7 @@
 	.global main
 	.global vPortInterruptHandler
 	.global ulSyscallTrap
+	.global prvTaskExitError
 	.global debug_mstatus
 	.global debug_mie
 	.global debug_mip
@@ -90,6 +91,9 @@ _mstart:
 	/* set mstatus for mode */
     li t6, 0x1800
     csrw mstatus, t6
+	/* enble timer ints */
+	li		t0, MIE_MTIE
+    csrw 	mie, t0
 	
     li	x1, 0
     li	x2, 0
@@ -157,7 +161,8 @@ write_stack_pattern:
 init_stack:
     /* set stack pointer */
     la	sp, _stack
-    /* start program */
+    /* start program, return to error handler */
+	la	ra, prvTaskExitError
 	j	main
 
 /* When trap is an interrupt, this function is called */
@@ -166,9 +171,9 @@ interrupt:
 	beq		t0,x0,softwareInterrupt
 	LOAD	t0, 0x0(sp)
 	addi	sp, sp, REGBYTES
-	/* Interupt is timer interrupt */
+	/* Interupt is timer interrupt, return via mret */
 	j		vPortInterruptHandler
-	mret
+
 softwareInterrupt:
 	/* Interupt is software interrupt */
 	mret

@@ -87,6 +87,7 @@ void vPortSysTickHandler( void )
 	{
 		vTaskSwitchContext();
 	}
+	prvSetNextTimerInterrupt();
 }
 /*-----------------------------------------------------------*/
 

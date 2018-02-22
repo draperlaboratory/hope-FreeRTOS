@@ -93,7 +93,8 @@ vPortInitTimerInterrupt:
 	sltu	t2, t1,t2
 	add		t3, t2,t3
 	li 		t0, MTIMECMP_BASE
-foobar:	
+	li		t2, -1
+	sw		t2, 0(t0)	/* write -1 to avoid accidental trip */
 	sw		t1, 0(t0)	/* update cmp reg */
 	sw		t3, 4(t0)
 	ret
@@ -106,6 +107,8 @@ vPortSetNextTimerInterrupt:
 	add		t1, t2,a0	/* 64 bit add */
 	sltu	t2, t1,t2
 	add		t3, t2,t3
+	li		t2, -1
+	sw		t2, 0(t0)	/* write -1 to avoid accidental trip */
 	sw		t1, 0(t0)	/* update cmp reg */
 	sw		t3, 4(t0)
 	ret
@@ -154,7 +157,7 @@ vPortInterruptHandler:
 	STORE	sp, 0x0(t0)
 
         /* Save epc as future pc on stack */
-  	csrrw	t0, mepc, t0
+  	csrr	t0, mepc
 	STORE	t0, 31 * REGBYTES(sp)
         /* Call scheduler to possibly switch tasks by changing TCB ptr */
 	jal	vPortSysTickHandler
@@ -162,11 +165,13 @@ vPortInterruptHandler:
 	LOAD	sp, pxCurrentTCB
 	LOAD	sp, 0x0(sp)
 	/* Return to task in machine mode */
-  	li 	t0, MSTATUS_PRV1
-        csrs	mstatus, t0
+  	li 		t0, MSTATUS_PRV1
+    csrs	mstatus, t0
+	/* enable interrupts */
+	jal		vPortEnableInterrupts
         /* restore saved pc to epc for mret back to task */
 	LOAD	t0, 31 * REGBYTES(sp)
-  	csrrw	t0, mepc, t0
+  	csrw	mepc, t0
 	/* Restore registers */
 	LOAD	x1, 0x0(sp)
         /* skip sp */
@@ -272,6 +277,8 @@ xPortStartScheduler:
         /* restore saved pc to epc for mret back to task */
 	LOAD	t0, 31 * REGBYTES(sp)
   	csrrw	t0, mepc, t0
+	/* enable interrupts */
+	jal		vPortEnableInterrupts
 	/* Restore registers */
 	LOAD	x1, 0x0(sp)
         /* skip sp */
@@ -353,7 +360,7 @@ vPortEndScheduler:
 /* yield called by tasks to return control to scheduler */
 vPortYield:
         /* disable interrupts in case called outside critical section */
-        csrci mstatus, MSTATUS_MIE
+    csrci mstatus, MSTATUS_MIE
 	/* make room in stack */
 	addi	sp, sp, -REGBYTES * 32
 

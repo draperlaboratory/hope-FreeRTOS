@@ -10,6 +10,11 @@
 #include "utils.h"
 #include "uart_task.h"
 
+#define TICK_INTERVAL 10
+#define TIMER_INTERVAL (TICK_INTERVAL * configTICK_CLOCK_HZ / configTICK_RATE_HZ)
+
+#define PREEMPTIVE
+
 void printf_uart(const char* s, ...)
 {
   char buf[128];
@@ -30,13 +35,16 @@ static void hello_task(void *p) {
   (void)p;
   last_wake_time = xTaskGetTickCount();
   while (1) {
-  uint64_t raw = xPortRawTime();
-  uint32_t low = (uint32_t)(raw & 0xFFFFFFFF);
-  uint32_t high = ((uint32_t)(raw >> 32)) & 0xFFFFFFFF;
+	uint64_t raw = xPortRawTime();
+	uint32_t low = (uint32_t)(raw & 0xFFFFFFFF);
+	uint32_t high = ((uint32_t)(raw >> 32)) & 0xFFFFFFFF;
   
-  printf_uart("hello %x %x\r\n", high, low);
-  vTaskDelayUntil(&last_wake_time, 1);
-  taskYIELD();
+	printf_uart("hello %x %x\r\n", high, low);
+#ifdef PREEMPTIVE  
+	vTaskDelayUntil(&last_wake_time, TICK_INTERVAL);
+#else
+	taskYIELD();
+#endif
   }
 }
 
@@ -52,8 +60,11 @@ static void world_task(void *p) {
 	uint32_t high = ((uint32_t)(raw >> 32)) & 0xFFFFFFFF;
   
 	printf_uart("world %x %x\r\n", high, low);
-    vTaskDelayUntil(&last_wake_time, 1);
-    taskYIELD();
+#ifdef PREEMPTIVE  
+	vTaskDelayUntil(&last_wake_time, TICK_INTERVAL);
+#else
+	taskYIELD();
+#endif
   }
 }
 int main( void )
@@ -64,6 +75,8 @@ int main( void )
   xTaskCreate(hello_task, "Hello task", 1000, NULL, 1, NULL);
   printf_uart("main: create world task\r\n");
   xTaskCreate(world_task, "World task", 1000, NULL, 1, NULL);
+
+  printf_uart("timer interval: 0x%x\r\n", TIMER_INTERVAL);
 
   printf_uart("start scheduler\r\n");
   vTaskStartScheduler();

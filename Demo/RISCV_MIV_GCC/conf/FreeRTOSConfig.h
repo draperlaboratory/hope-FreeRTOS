@@ -47,9 +47,9 @@
 #define configUSE_IDLE_HOOK				1
 #define configUSE_TICK_HOOK				1
 /* CPU Frequency */
-#define configCPU_CLOCK_HZ			  ( ( unsigned long ) 20000000 )
+#define configCPU_CLOCK_HZ			  ( ( unsigned long ) 66000000 )
 /* Timer Frequency */
-#define configTICK_CLOCK_HZ			  ( ( unsigned long ) 1000000 )
+#define configTICK_CLOCK_HZ			  ( ( unsigned long ) 66000000 )
 //#define configTICK_RATE_HZ				( ( TickType_t ) 1000 )
 #define configTICK_RATE_HZ				( ( TickType_t ) 200 )
 
