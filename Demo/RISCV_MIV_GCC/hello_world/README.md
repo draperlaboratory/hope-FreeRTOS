@@ -11,7 +11,7 @@ this project is set up with cmake to build:
 cd hello_world
 mkdir build
 cd build
-cmake ..
+FREE_RTOS_DIR=<path to base freertos> CC=<path to clang crosscompiler> cmake ..
 make
 ...
 

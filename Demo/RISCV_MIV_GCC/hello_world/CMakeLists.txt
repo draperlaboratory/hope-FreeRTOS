@@ -19,7 +19,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ${FREE_RTOS_DIR}/Demo/R
 set(WARNINGS "-Wall -Wextra -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wsign-compare")
 set(WARNINGS "${WARNINGS} -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wunused")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__gracefulExit ${WARNINGS} -Os -DNDEBUG -g")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__gracefulExit ${WARNINGS} -Os -DNDEBUG -g -v")
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__gracefulExit ${WARNINGS}")
 
 include_directories("${FREE_RTOS_DIR}/Source/include")
