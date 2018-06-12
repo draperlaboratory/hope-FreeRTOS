@@ -32,27 +32,33 @@
 //static miv_core_uart_t * pio = (miv_core_uart_t *)(void*)MIV_COREUART_BASE;
 static ns16550_pio_t *pio = (ns16550_pio_t *)NS16550_AP_BASE;
 
-void printf_uart(const char* s, ...)
+void vprintf_uart(const char* s, va_list vl)
 {
-  char buf[128];
-  va_list vl;
+  char buf[256];
 
   const char *p = &buf[0];
   
-  va_start(vl, s);
   vsnprintf(buf, sizeof buf, s, vl);
-  va_end(vl);
 
   while (*p) {
     ns16550_txchar(pio, *p++);
   }
 }
 
+void printf_uart(const char* s, ...)
+{
+  va_list vl;
+
+  va_start(vl, s);
+  vprintf_uart(s, vl);
+  va_end(vl);
+}
+
 
 void panic(const char* msg, ...) {
   va_list vl;
   va_start(vl, msg);
-  printf_uart(msg, vl);
+  vprintf_uart(msg, vl);
   va_end(vl);
   while (1) ;
 }

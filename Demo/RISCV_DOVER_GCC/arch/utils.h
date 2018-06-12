@@ -24,10 +24,12 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <stdarg.h>
+
 #ifndef UTILS_H
 #define UTILS_H
 
-
+void vprintf_uart(const char* s, va_list vl);
 void printf_uart(const char* s, ...);
 
 __attribute__((noreturn)) void panic(const char* msg, ...);
