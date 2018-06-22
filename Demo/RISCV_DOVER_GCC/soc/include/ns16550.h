@@ -2,16 +2,12 @@
 #define __NS16550_H__
 
 #include <stdint.h>
-#include "isp32_mpu/memory_map.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define NS16550_PEX_BASE  SOC_ADDR_UART0
-#define NS16550_AP_BASE  SOC_ADDR_UART1
-//#define NS16550_CLOCK_RATE  (100000000ULL) // 100MHz
-//#define NS16550_CLOCK_RATE  (3686400ULL)
+#define NS16550_AP_BASE  0x40001000
 #define NS16550_CLOCK_RATE  (12500000ULL)
 
 #define NS16550_DEFAULT_BAUD_RATE 115200
