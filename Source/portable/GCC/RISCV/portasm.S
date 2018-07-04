@@ -456,3 +456,8 @@ vPortDisableInterrupts:
 vPortEnableInterrupts:
     csrsi mstatus, MSTATUS_MIE
     ret
+
+                .global get_utime
+get_utime:
+        csrr a0, time
+        ret
