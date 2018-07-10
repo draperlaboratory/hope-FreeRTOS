@@ -24,11 +24,16 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "portmacro.h"
+
+
+extern unsigned long ulSyscallTrap(long cause, long epc, long regs[32]);
 
 /* Trap handler */
 unsigned long ulSyscallTrap(long cause, long epc, long regs[32])
 {
-  
+  UNUSED(cause);
+  UNUSED(regs);
 	panic("%s:%s:line %d Syscalls not implemented", __FILE__, __func__, __LINE__);
 //	  panic(cause, epc, regs);
 	return epc + 4;

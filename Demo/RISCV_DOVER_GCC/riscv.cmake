@@ -6,8 +6,9 @@ set(CMAKE_SYSTEM_VERSION 1)
 set(UNIX 1 CACHE STRING "" FORCE)
 
 # specify the cross compiler
-set(CMAKE_C_COMPILER $ENV{DOVER}/bin/riscv32-unknown-elf-gcc)
-set(CMAKE_CXX_COMPILER $ENV{DOVER}/bin/riscv32-unknown-elf-g++)
+set(CMAKE_C_COMPILER riscv32-unknown-elf-gcc)
+set(CMAKE_ASM_COMPILER riscv32-unknown-elf-gcc)
+set(CMAKE_CXX_COMPILER riscv32-unknown-elf-g++)
 #CMAKE_FORCE_C_COMPILER(riscv64-unknown-elf-gcc GNU)
 #CMAKE_FORCE_CXX_COMPILER(riscv64-unknown-elf-g++ GNU)
 
