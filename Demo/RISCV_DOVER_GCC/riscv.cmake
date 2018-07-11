@@ -18,7 +18,13 @@ set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 set(BUILD_SHARED_LIBRARIES OFF)
 
 # where is the target environment 
-set(CMAKE_FIND_ROOT_PATH  $ENV{DOVER}/riscv32-unknown-elf)
+if (DEFINED ENV{ISP_PREFIX})
+  set(ISP_PREFIX $ENV{ISP_PREFIX})
+ else()
+  set(ISP_PREFIX "/opt/isp/")
+endif()
+
+set(CMAKE_FIND_ROOT_PATH  ${ISP_PREFIX}riscv32-unknown-elf)
 
 # search for programs in the build host directories
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
