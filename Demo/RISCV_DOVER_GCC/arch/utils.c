@@ -24,26 +24,42 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "miv_core_uart.h"
+#include "utils.h"
+#include "ns16550.h"
+#include <stdarg.h>
+#include <stdio.h>
 
-int miv_core_uart_init(miv_core_uart_t *pio, int default_baudrate, int clock_rate) {
-  return 0;
-}
+//static miv_core_uart_t * pio = (miv_core_uart_t *)(void*)MIV_COREUART_BASE;
+static ns16550_pio_t *pio = (ns16550_pio_t *)NS16550_AP_BASE;
 
-int miv_core_uart_rxready(miv_core_uart_t *pio) {
-  return 0;
-}
+void vprintf_uart(const char* s, va_list vl)
+{
+  char buf[256];
 
-int miv_core_uart_rxchar(miv_core_uart_t *pio) {
-  return 0;
-}
+  const char *p = &buf[0];
+  
+  vsnprintf(buf, sizeof buf, s, vl);
 
-int miv_core_uart_txchar(miv_core_uart_t *pio, int c) {
-  if (c == '\n') {
-    pio->transmit_data = '\r';
-    pio->transmit_data = '\n';
-  } else {
-    pio->transmit_data = c;
+  while (*p) {
+    ns16550_txchar(pio, *p++);
   }
-  return c;
 }
+
+void printf_uart(const char* s, ...)
+{
+  va_list vl;
+
+  va_start(vl, s);
+  vprintf_uart(s, vl);
+  va_end(vl);
+}
+
+
+void panic(const char* msg, ...) {
+  va_list vl;
+  va_start(vl, msg);
+  vprintf_uart(msg, vl);
+  va_end(vl);
+  while (1) ;
+}
+

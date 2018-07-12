@@ -97,7 +97,7 @@ SECTIONS {
 	    *string.o(.text);
 	    *port.o(.text);
 	    *portasm.o(.text);
-	    *miv_core_uart.o(.text);
+	    *ns16550.o(.text);
 	} > imem
 
   /* text: Program code section */

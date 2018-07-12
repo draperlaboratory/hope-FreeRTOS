@@ -33,6 +33,10 @@
 #ifndef PORTMACRO_H
 #define PORTMACRO_H
 
+#ifndef __ASSEMBLER__
+#include <stdint.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -113,6 +117,15 @@ extern unsigned long uiPortGetWallTimestampUs(void);
 #define configUSE_STATS_FORMATTING_FUNCTIONS	  1
 #endif
 
+extern void prvSetupTimerInterrupt( void );
+extern void prvSetNextTimerInterrupt(void);
+extern uint32_t uiPortGetWallTimestampUs(void);
+extern uint64_t xPortRawTime(void);
+extern void vPortSysTickHandler( void );
+extern void prvTaskExitError( void );
+extern void panic(const char *, ...);
+
+#define UNUSED(x) (void)x
 
 /*-----------------------------------------------------------*/
 
