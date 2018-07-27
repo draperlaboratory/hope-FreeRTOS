@@ -5,10 +5,16 @@ set(CMAKE_SYSTEM_VERSION 1)
 # otherwise you get .obj
 set(UNIX 1 CACHE STRING "" FORCE)
 
+# where is the target environment 
+if (DEFINED ENV{ISP_PREFIX})
+  set(ISP_PREFIX $ENV{ISP_PREFIX})
+ else()
+  set(ISP_PREFIX "/opt/isp/")
+endif()
 # specify the cross compiler
-set(CMAKE_C_COMPILER riscv32-unknown-elf-gcc)
-set(CMAKE_ASM_COMPILER riscv32-unknown-elf-gcc)
-set(CMAKE_CXX_COMPILER riscv32-unknown-elf-g++)
+set(CMAKE_C_COMPILER ${ISP_PREFIX}bin/clang)
+set(CMAKE_ASM_COMPILER ${ISP_PREFIX}bin/clang)
+set(CMAKE_CXX_COMPILER ${ISP_PREFIX}bin/clang)
 #CMAKE_FORCE_C_COMPILER(riscv64-unknown-elf-gcc GNU)
 #CMAKE_FORCE_CXX_COMPILER(riscv64-unknown-elf-g++ GNU)
 
@@ -17,12 +23,6 @@ set(CMAKE_EXE_LINKER_FLAGS "-static")
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 set(BUILD_SHARED_LIBRARIES OFF)
 
-# where is the target environment 
-if (DEFINED ENV{ISP_PREFIX})
-  set(ISP_PREFIX $ENV{ISP_PREFIX})
- else()
-  set(ISP_PREFIX "/opt/isp/")
-endif()
 
 set(CMAKE_FIND_ROOT_PATH  ${ISP_PREFIX}riscv32-unknown-elf)
 
@@ -32,6 +32,8 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 # for libraries and headers in the target directories
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+
+include_directories(${ISP_PREFIX}riscv32-unknown-elf/include)
 
 # baseline compiler flags:
 #   make sure we do 32bit

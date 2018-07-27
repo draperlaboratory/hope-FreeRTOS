@@ -111,7 +111,7 @@ extern void vTaskExitCritical( void );
 #define portEXIT_CRITICAL()			vTaskExitCritical();
 
 #if configGENERATE_RUN_TIME_STATS
-extern unsigned long uiPortGetWallTimestampUs(void);
+extern uint32_t uiPortGetWallTimestampUs(void);
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()
 #define portGET_RUN_TIME_COUNTER_VALUE            uiPortGetWallTimestampUs
 #define configUSE_STATS_FORMATTING_FUNCTIONS	  1
