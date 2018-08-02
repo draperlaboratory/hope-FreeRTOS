@@ -84,14 +84,19 @@ boot:
 /* Startup code */
 _mstart:
 /* setup mtvec for trap vector */
-    la t0, trap_entry
-    csrw mtvec, t0
+    lui t0, %hi( trap_entry)
+    addi t0, t0, %lo( trap_entry)
+    #csrw mtvec, t0
+    csrw 0x305, t0
 	/* set mstatus for mode */
     li t6, 0x1800
-    csrw mstatus, t6
+    #csrw mstatus, t6
+    csrw 0x300, t6
 	/* enble timer ints */
 	li		t0, MIE_MTIE
-    csrw 	mie, t0
+#    csrw 	mie, t0
+    csrw 	0x304, t0
+
 	
     li	x1, 0
     li	x2, 0
@@ -126,41 +131,52 @@ _mstart:
     li	x31, 0
 
     /* initialize global pointer */
-    la	gp, _gp
+    lui	gp, %hi( _gp)
+    addi	gp,	gp, %lo( _gp)
 
 init_bss:
     /* init bss section */
-    la	a0, __bss_start
-    la	a1, __bss_end
+    lui	a0, %hi( __bss_start)
+    addi	a0,	a0, %lo( __bss_start)
+    lui	a1, %hi( __bss_end)
+    addi	a1,	a1, %lo( __bss_end)
     li	a2, 0x0
     jal	fill_block
 
 init_sbss:
     /* init bss section */
-    la	a0, __sbss_start
-    la	a1, __sbss_end
+    lui	a0, %hi( __sbss_start)
+    addi	a0,	a0, %lo( __sbss_start)
+    lui	a1, %hi( __sbss_end)
+    addi	a1,	a1, %lo( __sbss_end)
     li	a2, 0x0
     jal	fill_block
 
 init_sbss2:
     /* init bss section */
-    la	a0, __sbss2_start
-    la	a1, __sbss2_end
+    lui	a0, %hi( __sbss2_start)
+    addi	a0,	a0, %lo( __sbss2_start)
+    lui	a1, %hi( __sbss2_end)
+    addi	a1,	a1, %lo( __sbss2_end)
     li	a2, 0x0
     jal	fill_block
 
 write_stack_pattern:
     /* init bss section */
-    la	a0, _stack_end  /* note the stack grows from top to bottom */
-    la	a1, __stack
+    lui	a0, %hi( _stack_end  /* note the stack grows from top to bottom */)
+    addi	a0,	a0, %lo( _stack_end  /* note the stack grows from top to bottom */)
+    lui	a1, %hi( __stack)
+    addi	a1,	a1, %lo( __stack)
     li	a2, 0xABABABAB
     jal	fill_block
 
 init_stack:
     /* set stack pointer */
-    la	sp, _stack
+    lui	sp, %hi( _stack)
+    addi	sp,	sp, %lo( _stack)
     /* start program, return to error handler */
-	la	ra, prvTaskExitError
+	lui	ra, %hi( prvTaskExitError)
+    addi	ra,	ra, %lo( prvTaskExitError)
 	j	main
 
 /* When trap is an interrupt, this function is called */
@@ -182,7 +198,8 @@ trap_entry:
 	/* Check for interrupt */
 	addi	sp, sp, -REGBYTES
 	STORE	t0, 0x0(sp)
-	csrr	t0, mcause
+	#csrr	t0, mcause
+	csrr	t0, 0x342
 	blt		t0,x0,interrupt
 	LOAD	t0, 0x0(sp)
 	addi	sp, sp, REGBYTES
@@ -220,18 +237,23 @@ trap_entry:
 	STORE x29, 29*REGBYTES(sp)
 	STORE x30, 30*REGBYTES(sp)
 	STORE x31, 31*REGBYTES(sp)
-#        la      a0, _port_isr_count
+#        lui      a0, %hi( _port_isr_count)
+#    addi      a0,      a0, %lo( _port_isr_count)
 #        lw      a1, 0(a0)
 #        addi    a1, a1, 1
 #        sw      a1, 0(a0)
 
-	csrr a0, mcause
-	csrr a1, mepc
+	#csrr a0, mcause
+	csrr a0, 0x342
+	#csrr a1, mepc
+	csrr a1, 0x341
 	mv a2, sp
 	jal ulSyscallTrap
-	csrw mepc, a0
+	#csrw mepc, a0
+	csrw 0x341, a0
 
-#        la      a0, _port_isr_count
+#        lui      a0, %hi( _port_isr_count)
+#    addi      a0,      a0, %lo( _port_isr_count)
 #        lw      a1, 0(a0)
 #        addi    a1, a1, 1
 #        sw      a1, 0(a0)
@@ -287,18 +309,22 @@ fb_end:
     ret
 
 debug_mstatus:
-	csrr	a0, mstatus
+	#csrr	a0, mstatus
+	csrr	a0, 0x300
 	ret
 
 debug_mip:
-	csrr	a0, mip
+	#csrr	a0, mip
+	csrr	a0, 0x344
 	ret
 	
 debug_mie:
-	csrr	a0, mie
+	#csrr	a0, mie
+	csrr	a0, 0x304
 	ret
 	
 debug_mtvec:
-	csrr	a0, mtvec
+	#csrr	a0, mtvec
+	csrr	a0, 0x305
 	ret
 	
