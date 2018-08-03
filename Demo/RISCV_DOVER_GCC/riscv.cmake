@@ -5,6 +5,13 @@ set(CMAKE_SYSTEM_VERSION 1)
 # otherwise you get .obj
 set(UNIX 1 CACHE STRING "" FORCE)
 
+# where is the target environment 
+if (DEFINED ENV{ISP_PREFIX})
+  set(ISP_PREFIX $ENV{ISP_PREFIX})
+ else()
+  set(ISP_PREFIX "/opt/isp/")
+endif()
+
 # specify the cross compiler
 if (DEFINED USE_CLANG)
   set(CMAKE_C_COMPILER ${ISP_PREFIX}bin/clang)
@@ -23,13 +30,6 @@ endif()
 set(CMAKE_EXE_LINKER_FLAGS "-static")
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 set(BUILD_SHARED_LIBRARIES OFF)
-
-# where is the target environment 
-if (DEFINED ENV{ISP_PREFIX})
-  set(ISP_PREFIX $ENV{ISP_PREFIX})
- else()
-  set(ISP_PREFIX "/opt/isp/")
-endif()
 
 set(CMAKE_FIND_ROOT_PATH  ${ISP_PREFIX}riscv32-unknown-elf)
 
