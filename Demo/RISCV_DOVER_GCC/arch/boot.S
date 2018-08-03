@@ -84,6 +84,7 @@ boot:
 /* Startup code */
 _mstart:
 /* setup mtvec for trap vector */
+    //la t0, trap_entry
     lui t0, %hi( trap_entry)
     addi t0, t0, %lo( trap_entry)
     #csrw mtvec, t0
