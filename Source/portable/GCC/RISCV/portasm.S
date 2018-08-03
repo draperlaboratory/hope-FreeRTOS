@@ -64,7 +64,8 @@
 	.global debug_status
 	
 debug_status:
-	csrr	a0, mstatus
+	#csrr	a0, mstatus
+	csrr	a0, 0x300
 	ret
 	
 	/* get 64 bit current time */
@@ -147,25 +148,34 @@ vPortInterruptHandler:
 	STORE	x31, 30 * REGBYTES(sp)
 	
 	/* Store current stackpointer in task control block (TCB) */
-	LOAD	t0, pxCurrentTCB
-	STORE	sp, 0x0(t0)
+	//LOAD	t0, pxCurrentTCB
+  lui	t0, %hi(pxCurrentTCB)
+  addi		t0, t0, %lo(pxCurrentTCB)
+  LOAD  t0, 0x0(t0)
+  STORE	sp, 0x0(t0)
 
         /* Save epc as future pc on stack */
-  	csrr	t0, mepc
+  	#csrr	t0, mepc
+  	csrr	t0, 0x341
 	STORE	t0, 31 * REGBYTES(sp)
         /* Call scheduler to possibly switch tasks by changing TCB ptr */
 	jal	vPortSysTickHandler
 	/* Load stack pointer from the current TCB */
-	LOAD	sp, pxCurrentTCB
+	//LOAD	sp, pxCurrentTCB
+	lui     sp, %hi(pxCurrentTCB)
+  addi    sp, sp, %lo(pxCurrentTCB)
+  LOAD  sp, 0x0(sp)
 	LOAD	sp, 0x0(sp)
 	/* Return to task in machine mode */
   	li 		t0, MSTATUS_PRV1
-    csrs	mstatus, t0
+    #csrs	mstatus, t0
+    csrs	0x300, t0
 	/* enable interrupts */
 	jal		vPortEnableInterrupts
         /* restore saved pc to epc for mret back to task */
 	LOAD	t0, 31 * REGBYTES(sp)
-  	csrw	mepc, t0
+  	#csrw	mepc, t0
+  	csrw	0x341, t0
 	/* Restore registers */
 	LOAD	x1, 0x0(sp)
         /* skip sp */
@@ -217,7 +227,9 @@ pxPortInitialiseStack:
         /* save gp in what will be gp */
 	STORE 	gp, 2 * REGBYTES(a0)
         /* set return address to error function (tasks never return) */
-	la	a2, prvTaskExitError
+	//la	a2, prvTaskExitError
+	lui     a2, %hi(prvTaskExitError)
+	addi    a2, a2, %lo(prvTaskExitError)
 	STORE 	a2, 0 * REGBYTES(a0)
 	ret
 	
@@ -227,7 +239,9 @@ xPortStartScheduler:
 	   This is used for when you want to gracefully exit the scheduler.
 	   For example if you want to test multiple instances after each other in one test suite.
      */
-	la		t0, xStartContext
+	//la		t0, xStartContext
+	lui     t0, %hi(xStartContext)
+	addi    t0, t0, %lo(xStartContext)
 	STORE	x1, 0x0(t0)
 	STORE	x2, 1 * REGBYTES(t0)
 	STORE	x3, 2 * REGBYTES(t0)
@@ -263,14 +277,19 @@ xPortStartScheduler:
         /* setup for first interrupt */
 	jal		prvSetupTimerInterrupt
 	/* Load stack pointer from the current TCB */
-	LOAD	sp, pxCurrentTCB
+	//LOAD	sp, pxCurrentTCB
+	lui     sp, %hi(pxCurrentTCB)
+	addi    sp, sp, %lo(pxCurrentTCB)
+  LOAD  sp, 0x0(sp)
 	LOAD	sp, 0x0(sp)
 	/* Ensure we run tasks in machine mode */
   	li 		t0, MSTATUS_PRV1
-  	csrs	mstatus, t0
+  	#csrs	mstatus, t0
+  	csrs	0x300, t0
         /* restore saved pc to epc for mret back to task */
 	LOAD	t0, 31 * REGBYTES(sp)
-  	csrrw	t0, mepc, t0
+  	#csrrw	t0, mepc, t0
+  	csrrw	t0, 0x341, t0
 	/* enable interrupts */
 	jal		vPortEnableInterrupts
 	/* Restore registers */
@@ -316,7 +335,9 @@ vPortEndScheduler:
 
 #ifdef __gracefulExit
 	/* Load current context from xStartContext */
-	la	t0, xStartContext
+	//la	t0, xStartContext
+	lui     t0, %hi(xStartContext)
+	addi    t0, t0, %lo(xStartContext)
 	LOAD	x1, 0x0(t0)
 	LOAD	x2, 1 * REGBYTES(t0)
 	LOAD	x3, 2 * REGBYTES(t0)
@@ -354,7 +375,8 @@ vPortEndScheduler:
 /* yield called by tasks to return control to scheduler */
 vPortYield:
         /* disable interrupts in case called outside critical section */
-    csrci mstatus, MSTATUS_MIE
+    #csrci mstatus, MSTATUS_MIE
+    csrci 0x300, MSTATUS_MIE
 	/* make room in stack */
 	addi	sp, sp, -REGBYTES * 32
 
@@ -392,7 +414,10 @@ vPortYield:
 	STORE	x31, 30 * REGBYTES(sp)
 	
 	/* Store current stackpointer in task control block (TCB) */
-	LOAD	t0, pxCurrentTCB
+	//LOAD	t0, pxCurrentTCB
+	lui     t0, %hi(pxCurrentTCB)
+  addi    t0, t0, %lo(pxCurrentTCB)
+	LOAD    t0, 0x0(t0)
 	STORE	sp, 0x0(t0)
         /* Save return address as future pc on stack */
 	STORE	ra, 31 * REGBYTES(sp)
@@ -400,15 +425,19 @@ vPortYield:
 	jal	vTaskSwitchContext
         //        portRestore_STACK
 	/* Load stack pointer from the current TCB */
-	LOAD	sp, pxCurrentTCB
+	//LOAD	sp, pxCurrentTCB
+	lui	sp, %hi(pxCurrentTCB)
+	LOAD    sp, %lo(pxCurrentTCB)(sp)
 	LOAD	sp, 0x0(sp)
 	/* Ensure we run tasks in machine mode */
   	li 	t0, MSTATUS_PRV1
-  	csrs	mstatus, t0
+  	#csrs	mstatus, t0
+  	csrs	0x300, t0
         
         /* restore saved pc to epc for mret back to task */
 	LOAD	t0, 31 * REGBYTES(sp)
-  	csrrw	t0, mepc, t0
+  	#csrrw	t0, mepc, t0
+  	csrrw	t0, 0x341, t0
 
 	/* Restore registers */
 	LOAD	x1, 0x0(sp)
@@ -450,14 +479,17 @@ vPortYield:
 
 
 vPortDisableInterrupts:
-        csrci mstatus, MSTATUS_MIE
+        #csrci mstatus, MSTATUS_MIE
+        csrci 0x300, MSTATUS_MIE
         ret
 
 vPortEnableInterrupts:
-    csrsi mstatus, MSTATUS_MIE
+    #csrsi mstatus, MSTATUS_MIE
+    csrsi 0x300, MSTATUS_MIE
     ret
 
                 .global get_utime
 get_utime:
-        csrr a0, time
+        #csrr a0, time
+        csrr a0, 0xc01
         ret
