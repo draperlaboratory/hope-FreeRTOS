@@ -87,16 +87,13 @@ _mstart:
     //la t0, trap_entry
     lui t0, %hi( trap_entry)
     addi t0, t0, %lo( trap_entry)
-    #csrw mtvec, t0
-    csrw 0x305, t0
+    csrw mtvec, t0
 	/* set mstatus for mode */
     li t6, 0x1800
-    #csrw mstatus, t6
-    csrw 0x300, t6
+    csrw mstatus, t6
 	/* enble timer ints */
 	li		t0, MIE_MTIE
-#    csrw 	mie, t0
-    csrw 	0x304, t0
+    csrw 	mie, t0
 
 	
     li	x1, 0
@@ -199,8 +196,7 @@ trap_entry:
 	/* Check for interrupt */
 	addi	sp, sp, -REGBYTES
 	STORE	t0, 0x0(sp)
-	#csrr	t0, mcause
-	csrr	t0, 0x342
+	csrr	t0, mcause
 	blt		t0,x0,interrupt
 	LOAD	t0, 0x0(sp)
 	addi	sp, sp, REGBYTES
@@ -244,14 +240,11 @@ trap_entry:
 #        addi    a1, a1, 1
 #        sw      a1, 0(a0)
 
-	#csrr a0, mcause
-	csrr a0, 0x342
-	#csrr a1, mepc
-	csrr a1, 0x341
+	csrr a0, mcause
+	csrr a1, mepc
 	mv a2, sp
 	jal ulSyscallTrap
-	#csrw mepc, a0
-	csrw 0x341, a0
+	csrw mepc, a0
 
 #        lui      a0, %hi( _port_isr_count)
 #    addi      a0,      a0, %lo( _port_isr_count)
@@ -310,22 +303,18 @@ fb_end:
     ret
 
 debug_mstatus:
-	#csrr	a0, mstatus
-	csrr	a0, 0x300
+	csrr	a0, mstatus
 	ret
 
 debug_mip:
-	#csrr	a0, mip
-	csrr	a0, 0x344
+	csrr	a0, mip
 	ret
 	
 debug_mie:
-	#csrr	a0, mie
-	csrr	a0, 0x304
+	csrr	a0, mie
 	ret
 	
 debug_mtvec:
-	#csrr	a0, mtvec
-	csrr	a0, 0x305
+	csrr	a0, mtvec
 	ret
 	
