@@ -41,7 +41,7 @@ Original Author: Shay Gal-on
 #include <stdio.h>
 #endif
 #if HAS_PRINTF
-#define ee_printf printf
+#define ee_printf printf_uart
 #endif
 
 /* Actual benchmark execution in iterate */

@@ -20,6 +20,4 @@ add_executable(coremark ${FREE_RTOS_DIR}/Demo/RISCV_DOVER_GCC/coremark/core_list
 #set(FLAGS_STR "-O2 -fno-common -funroll-loops -finline-functions --param max-inline-insns-auto=20 -falign-functions=4 -falign-jumps=4 -falign-loops=4")
 set(CMAKE_C_FLAGS "${FLAGS_STR} -DFLAGS_STR='-O0' -DITERATIONS=10000 -DPERFORMANCE_RUN=1")
 
-add_compile_definitions(OPENCV_VERSION=${OpenCV_VERSION})
-
 target_link_libraries(coremark free-rtos free-rtos-dover)
