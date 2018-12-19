@@ -1,26 +1,58 @@
 /*
- * FreeRTOS+TCP V2.0.3
- * Copyright (C) 2017 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * FreeRTOS+TCP Labs Build 160919 (C) 2016 Real Time Engineers ltd.
+ * Authors include Hein Tibosch and Richard Barry
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
+ *******************************************************************************
+ ***** NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ***
+ ***                                                                         ***
+ ***                                                                         ***
+ ***   FREERTOS+TCP IS STILL IN THE LAB (mainly because the FTP and HTTP     ***
+ ***   demos have a dependency on FreeRTOS+FAT, which is only in the Labs    ***
+ ***   download):                                                            ***
+ ***                                                                         ***
+ ***   FreeRTOS+TCP is functional and has been used in commercial products   ***
+ ***   for some time.  Be aware however that we are still refining its       ***
+ ***   design, the source code does not yet quite conform to the strict      ***
+ ***   coding and style standards mandated by Real Time Engineers ltd., and  ***
+ ***   the documentation and testing is not necessarily complete.            ***
+ ***                                                                         ***
+ ***   PLEASE REPORT EXPERIENCES USING THE SUPPORT RESOURCES FOUND ON THE    ***
+ ***   URL: http://www.FreeRTOS.org/contact  Active early adopters may, at   ***
+ ***   the sole discretion of Real Time Engineers Ltd., be offered versions  ***
+ ***   under a license other than that described below.                      ***
+ ***                                                                         ***
+ ***                                                                         ***
+ ***** NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ******* NOTE ***
+ *******************************************************************************
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * FreeRTOS+TCP can be used under two different free open source licenses.  The
+ * license that applies is dependent on the processor on which FreeRTOS+TCP is
+ * executed, as follows:
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * If FreeRTOS+TCP is executed on one of the processors listed under the Special
+ * License Arrangements heading of the FreeRTOS+TCP license information web
+ * page, then it can be used under the terms of the FreeRTOS Open Source
+ * License.  If FreeRTOS+TCP is used on any other processor, then it can be used
+ * under the terms of the GNU General Public License V2.  Links to the relevant
+ * licenses follow:
  *
- * http://aws.amazon.com/freertos
+ * The FreeRTOS+TCP License Information Page: http://www.FreeRTOS.org/tcp_license
+ * The FreeRTOS Open Source License: http://www.FreeRTOS.org/license
+ * The GNU General Public License Version 2: http://www.FreeRTOS.org/gpl-2.0.txt
+ *
+ * FreeRTOS+TCP is distributed in the hope that it will be useful.  You cannot
+ * use FreeRTOS+TCP unless you agree that you use the software 'as is'.
+ * FreeRTOS+TCP is provided WITHOUT ANY WARRANTY; without even the implied
+ * warranties of NON-INFRINGEMENT, MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ * PURPOSE. Real Time Engineers Ltd. disclaims all conditions and terms, be they
+ * implied, expressed, or statutory.
+ *
+ * 1 tab == 4 spaces!
+ *
  * http://www.FreeRTOS.org
+ * http://www.FreeRTOS.org/plus
+ * http://www.FreeRTOS.org/labs
+ *
  */
 
 /* Standard includes. */
@@ -37,11 +69,9 @@
 
 /* FreeRTOS Protocol includes. */
 #include "FreeRTOS_HTTP_commands.h"
+#include "FreeRTOS_HTTP_cgi.h"
 #include "FreeRTOS_TCP_server.h"
 #include "FreeRTOS_server_private.h"
-
-/* Remove the whole file if HTTP is not supported. */
-#if( ipconfigUSE_HTTP == 1 )
 
 /* FreeRTOS+FAT includes. */
 #include "ff_stdio.h"
@@ -58,7 +88,7 @@
 	#define ARRAY_SIZE(x) ( BaseType_t ) (sizeof( x ) / sizeof( x )[ 0 ] )
 #endif
 
-/* Some defines to make the code more readbale */
+/* Some defines to make the code more readable */
 #define pcCOMMAND_BUFFER	pxClient->pxParent->pcCommandBuffer
 #define pcNEW_DIR			pxClient->pxParent->pcNewDir
 #define pcFILE_BUFFER		pxClient->pxParent->pcFileBuffer
@@ -72,8 +102,11 @@ static void prvFileClose( HTTPClient_t *pxClient );
 static BaseType_t prvProcessCmd( HTTPClient_t *pxClient, BaseType_t xIndex );
 static const char *pcGetContentsType( const char *apFname );
 static BaseType_t prvOpenURL( HTTPClient_t *pxClient );
+static BaseType_t prvExecCgi( HTTPClient_t *pxClient );
 static BaseType_t prvSendFile( HTTPClient_t *pxClient );
+static BaseType_t prvSendText( HTTPClient_t *pxClient, const char *pcText );
 static BaseType_t prvSendReply( HTTPClient_t *pxClient, BaseType_t xCode );
+static BaseType_t prvSendReplyAndClose( HTTPClient_t *pxClient, BaseType_t xCode );
 
 static const char pcEmptyString[1] = { '\0' };
 
@@ -157,6 +190,23 @@ BaseType_t xRc;
 }
 /*-----------------------------------------------------------*/
 
+static BaseType_t prvSendReplyAndClose( HTTPClient_t *pxClient, BaseType_t xCode )
+{
+BaseType_t xRc;
+
+	xRc = prvSendReply( pxClient, xCode );
+	FreeRTOS_FD_CLR( pxClient->xSocket, pxClient->pxParent->xSocketSet, eSELECT_WRITE );
+	prvFileClose( pxClient );
+	if( WEB_REPLY_OK != xCode )
+	{
+		/* Set return value to -1 to indicate to the TCP server that an error has occurred */
+		xRc = -1;
+	}
+
+	return xRc;
+}
+/*-----------------------------------------------------------*/
+
 static BaseType_t prvSendFile( HTTPClient_t *pxClient )
 {
 size_t uxSpace;
@@ -165,8 +215,6 @@ BaseType_t xRc = 0;
 
 	if( pxClient->bits.bReplySent == pdFALSE_UNSIGNED )
 	{
-		pxClient->bits.bReplySent = pdTRUE_UNSIGNED;
-
 		strcpy( pxClient->pxParent->pcContentsType, pcGetContentsType( pxClient->pcCurrentFilename ) );
 		snprintf( pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
 			"Content-Length: %d\r\n", ( int ) pxClient->uxBytesLeft );
@@ -215,6 +263,71 @@ BaseType_t xRc = 0;
 	{
 		/* Wake up the TCP task as soon as this socket may be written to. */
 		FreeRTOS_FD_SET( pxClient->xSocket, pxClient->pxParent->xSocketSet, eSELECT_WRITE );
+	}
+
+	return xRc;
+}
+/*-----------------------------------------------------------*/
+
+/* This is a modification of prvSendFile that sends data in a 'char *' instead of a file */
+static BaseType_t prvSendText( HTTPClient_t *pxClient, const char *pcText )
+{
+size_t uxSpace;
+size_t uxCount;
+size_t textIndex = 0;
+BaseType_t xRc = 0;
+
+	pxClient->uxBytesLeft = strlen( pcText );
+
+	if( pxClient->bits.bReplySent == pdFALSE_UNSIGNED )
+	{
+		snprintf( pxClient->pxParent->pcExtraContents, sizeof( pxClient->pxParent->pcExtraContents ),
+				  "Content-Length: %d\r\n", (int)pxClient->uxBytesLeft );
+
+		DEBUG_PRINTF( "CGI sending response WEB_REPLY_OK" );
+		/* "Requested file action OK". */
+		xRc = prvSendReply( pxClient, WEB_REPLY_OK );
+		DEBUG_PRINTF( "CGI response WEB_REPLY_OK send rv = %d (neg is bad)", (int)xRc );
+	}
+	else
+	{
+		DEBUG_PRINTF( "CGI not sending response, since already sent" );
+	}
+
+	if( xRc >= 0 )
+	{
+		do
+		{
+			uxSpace = FreeRTOS_tx_space( pxClient->xSocket );
+			uxCount = (pxClient->uxBytesLeft < uxSpace) ? pxClient->uxBytesLeft : uxSpace;
+
+			if( uxCount > 0u )
+			{
+				pxClient->uxBytesLeft -= uxCount;
+
+				xRc = FreeRTOS_send( pxClient->xSocket, &pcText[textIndex], uxCount, 0 );
+				DEBUG_PRINTF( "CGI sent chunk len %d; rv %d (neg is bad)", (int)uxCount, (int)xRc );
+				textIndex += uxCount;
+
+				if( xRc < 0 )
+				{
+					break;
+				}
+			}
+		} while( uxCount > 0u );
+	}
+
+	if( pxClient->uxBytesLeft == 0u )
+	{
+		/* Writing is ready, no need for further 'eSELECT_WRITE' events. */
+		FreeRTOS_FD_CLR( pxClient->xSocket, pxClient->pxParent->xSocketSet, eSELECT_WRITE );
+		DEBUG_PRINTF( "CGI clearing socket FD" );
+	}
+	else
+	{
+		/* Wake up the TCP task as soon as this socket may be written to. */
+		FreeRTOS_FD_SET( pxClient->xSocket, pxClient->pxParent->xSocketSet, eSELECT_WRITE );
+		DEBUG_PRINTF( "CGI setting socket FD" );
 	}
 
 	return xRc;
@@ -277,12 +390,47 @@ char pcSlash[ 2 ];
 	if( pxClient->pxFileHandle == NULL )
 	{
 		/* "404 File not found". */
-		xRc = prvSendReply( pxClient, WEB_NOT_FOUND );
+		xRc = prvSendReplyAndClose( pxClient, WEB_NOT_FOUND );
 	}
 	else
 	{
 		pxClient->uxBytesLeft = ( size_t ) pxClient->pxFileHandle->ulFileSize;
 		xRc = prvSendFile( pxClient );
+	}
+
+	return xRc;
+}
+/*-----------------------------------------------------------*/
+
+static BaseType_t prvExecCgi( HTTPClient_t *pxClient )
+{
+BaseType_t xRc = 0;
+
+	char pcResponse[CGI_RESPONSE_LEN_MAX] = {0};
+	const char *pcUrl = pxClient->pcUrlData;
+	char pcArgs[CGI_ARGS_LEN_MAX] = {0};
+
+	xRc = FreeRTOS_CGIArgsGet( pxClient->pcRestData, pcArgs, CGI_ARGS_LEN_MAX );
+
+	if( 0 == xRc )
+	{
+		DEBUG_PRINTF( "CGI args are: %s", pcArgs );
+
+		/* Exec the CGI */
+		xRc = FreeRTOS_CGIExec( pcUrl, pcResponse, CGI_RESPONSE_LEN_MAX, pcArgs );
+	}
+
+	if( 0 == xRc )
+	{
+		DEBUG_PRINTF( "CGI exec successful" );
+		/* Send the response text */
+		pcResponse[CGI_RESPONSE_LEN_MAX - 1] = '\0';
+		xRc = prvSendText( pxClient, pcResponse );
+	}
+	else
+	{
+		DEBUG_PRINTF( "CGI exec FAILURE, code %d", (int)xRc );
+		xRc = prvSendReplyAndClose( pxClient, xRc );
 	}
 
 	return xRc;
@@ -300,8 +448,15 @@ BaseType_t xResult = 0;
 		xResult = prvOpenURL( pxClient );
 		break;
 
-	case ECMD_HEAD:
 	case ECMD_POST:
+		/* Note: because CGI requests are non-cachable, a reponse _must_ be sent every time. So
+		 * reset the bReplySent flag. */
+		DEBUG_PRINTF( "Received CGI request" );
+		pxClient->bits.bReplySent = pdFALSE_UNSIGNED;
+		xResult = prvExecCgi( pxClient );
+		break;
+
+	case ECMD_HEAD:
 	case ECMD_PUT:
 	case ECMD_DELETE:
 	case ECMD_TRACE:
@@ -423,6 +578,4 @@ static const char *pcGetContentsType (const char *apFname)
 	}
 	return pcResult;
 }
-
-#endif /* ipconfigUSE_HTTP */
 
