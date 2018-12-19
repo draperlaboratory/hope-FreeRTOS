@@ -339,7 +339,7 @@ disconnecting stage will timeout after a period of non-activity. */
 /* Set to 1 or 0 to include/exclude FTP and HTTP functionality from the standard
 server task. */
 #define ipconfigUSE_HTTP					( 1 )
-#define ipconfigUSE_FTP						( 1 )
+#define ipconfigUSE_FTP						( 0 )
 
 /* Buffer and window sizes used by the FTP and HTTP servers respectively.  The
 FTP and HTTP servers both execute in the standard server task. */
