@@ -156,20 +156,12 @@ $(FREERTOS_FAT_BUILD_DIR)/%.o: %.c
 	@echo "Finished Building: $<"
 
 # Generate ELF ___________________________________________________________________________
-$(OUT_ELF): $(OUT_OBJS) $(LINKER_SCRIPT) $(XILINX_SPEC) $(BSP_LIB)/libxil.a
+$(OUT_ELF): $(OUT_OBJS) $(LINKER_SCRIPT)
 	@echo 'Building target: $@'
 	@echo '_______________________________'
-	$(GCC) $(LDFLAGS) -specs=$(XILINX_SPEC) $(LDOPTS) -L$(BSP_DIR)/lib -o $@ $(OUT_OBJS) $(LIB_FLAGS)
+	$(GCC) $(LDFLAGS) $(LDOPTS) -L$(BSP_DIR)/lib -o $@ $(OUT_OBJS) $(LIB_FLAGS)
 	@echo 'Finished building target: $@'
 	@echo ' '
-
-.PHONY:  build_lib
-build_lib:
-	rm $(BSP_LIB)/libxil.a
-	cd $(BSP_DIR) && ./make.sh
-
-$(BSP_LIB)/libxil.a:
-	cd $(BSP_DIR) && ./make.sh
 
 $(BUILD_DIRECTORIES):
 	mkdir -p $@
