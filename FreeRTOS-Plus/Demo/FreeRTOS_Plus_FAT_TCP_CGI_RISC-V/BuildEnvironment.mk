@@ -16,7 +16,6 @@ CRT0    := UNKNOWN
 CFLAGS  = -march=rv32imac -mabi=ilp32 -Wall -O0 -g3 -fmessage-length=0 -MT"$@" -fomit-frame-pointer -fno-strict-aliasing -fno-builtin -D__gracefulExit -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)"
 LDFLAGS :=  -march=rv32imac -mabi=ilp32 -nostartfiles -static -Wl,-build-id=none
 LDOPTS  := -Wl,-T -Wl,$(LINKER_SCRIPT)
-LIB_FLAGS := -Wl,--start-group,-lgcc,-lc,--end-group
 
 
 
