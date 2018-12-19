@@ -1,0 +1,5 @@
+# build objects
+*.o
+*.d
+*.elf
+*.a
