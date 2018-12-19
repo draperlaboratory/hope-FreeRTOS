@@ -1,6 +1,6 @@
 -include BuildEnvironment.mk
 
-BSP_DIR   = ./bsp/hifive1
+BSP_DIR   = ../../../FreeRTOS/Demo/RISCV_HiFive1_GCC/bsp
 BSP_INC   = $(BSP_DIR)/include
 BSP_LIB   = $(BSP_DIR)/libls 
 FREERTOS_DIR = ../../..
