@@ -1,11 +1,13 @@
 include BuildEnvironment.mk
 include FreeRTOS.mk
 include FreeRTOS-Plus.mk
+include FreeRTOS-SiFive.mk
 -include $(wildcard $(OUTDIR)/*.d)
 # Platform spcific settings for this application _____________________________________________
 
 ARCH = RISCV
 ARCH_PORTABLE_INC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/
+ARCH_PORTABLE_CLINC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/CLINT
 ARCH_PORTABLE_SRC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/port.c
 ARCH_PORTABLE_ASM = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/portASM.S
 
@@ -34,7 +36,9 @@ APP_INCLUDES = \
 	-I $(BSP_INC) \
 	-I $(BSP_INC)/devices \
 	-I $(BSP_DIR)/env \
+	$(FREEDOM_SDK_INCLUDES) \
 	-I $(ARCH_PORTABLE_INC) \
+	-I $(ARCH_PORTABLE_CLINC) \
 	-I $(FREERTOS_PLUS_DIR)/Demo/Common/Demo_IP_Protocols/include \
 	-I $(FREERTOS_PLUS_DIR)/Demo/Common/FreeRTOS_Plus_UDP_Demos/TraceMacros/Example1 \
 	-I $(FREERTOS_PLUS_TCP_DIR)/include \
@@ -57,7 +61,9 @@ FREERTOS_INCLUDES += \
 	-I ./include \
 	-I $(BSP_INC) \
 	-I $(BSP_DIR)/libxil/include \
-	-I $(ARCH_PORTABLE_INC)
+	$(FREEDOM_SDK_INCLUDES) \
+	-I $(ARCH_PORTABLE_INC) \
+	-I $(ARCH_PORTABLE_CLINC)
 
 FREERTOS_PLUS_UTIL_INCLUDES += $(FREERTOS_INCLUDES)
 FREERTOS_CLI_INCLUDES += $(FREERTOS_INCLUDES)
