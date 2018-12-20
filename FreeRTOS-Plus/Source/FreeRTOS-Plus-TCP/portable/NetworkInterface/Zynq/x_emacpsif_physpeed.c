@@ -234,7 +234,7 @@ unsigned get_IEEE_phy_speed(XEmacPs *xemacpsp)
 		if (partner_capabilities & IEEE_AN1_ABILITY_MASK_10MBPS)
 			return 10;
 
-		xil_printf("%s: unknown PHY link speed, setting TEMAC speed to be 10 Mbps\n",
+		printf("%s: unknown PHY link speed, setting TEMAC speed to be 10 Mbps\r\n",
 				__FUNCTION__);
 		return 10;
 
@@ -253,7 +253,7 @@ unsigned get_IEEE_phy_speed(XEmacPs *xemacpsp)
 				case (IEEE_CTRL_LINKSPEED_10M):
 					return 10;
 				default:
-					xil_printf("%s: unknown PHY link speed (%d), setting TEMAC speed to be 10 Mbps\n",
+					printf("%s: unknown PHY link speed (%d), setting TEMAC speed to be 10 Mbps\r\n",
 							__FUNCTION__, phylinkspeed);
 					return 10;
 			}
@@ -278,7 +278,7 @@ unsigned get_IEEE_phy_speed(XEmacPs *xemacpsp)
 #else
 	u32 phy_addr = detect_phy(xemacpsp);
 #endif
-	xil_printf("Start PHY autonegotiation \n");
+	printf("Start PHY autonegotiation \r\n");
 
 #if XPAR_GIGE_PCS_PMA_CORE_PRESENT == 1
 #else
@@ -334,7 +334,7 @@ unsigned get_IEEE_phy_speed(XEmacPs *xemacpsp)
 			break;
 	}
 #endif
-	xil_printf("Waiting for PHY to complete autonegotiation.\n");
+	printf("Waiting for PHY to complete autonegotiation.\r\n");
 
 	XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_STATUS_REG_OFFSET, &status);
 	while ( !(status & IEEE_STAT_AUTONEGOTIATE_COMPLETE) ) {
@@ -344,14 +344,14 @@ unsigned get_IEEE_phy_speed(XEmacPs *xemacpsp)
 		XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_COPPER_SPECIFIC_STATUS_REG_2,
 																	&temp);
 		if (temp & IEEE_AUTONEG_ERROR_MASK) {
-			xil_printf("Auto negotiation error \n");
+			printf("Auto negotiation error \r\n");
 		}
 #endif
 		XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_STATUS_REG_OFFSET,
 																&status);
 		}
 
-	xil_printf("autonegotiation complete \n");
+	printf("autonegotiation complete \r\n");
 
 #if XPAR_GIGE_PCS_PMA_CORE_PRESENT == 1
 #else
@@ -359,7 +359,7 @@ unsigned get_IEEE_phy_speed(XEmacPs *xemacpsp)
 #endif
 
 #if XPAR_GIGE_PCS_PMA_CORE_PRESENT == 1
-	xil_printf("Waiting for Link to be up; Polling for SGMII core Reg \n");
+	printf("Waiting for Link to be up; Polling for SGMII core Reg \r\n");
 	XEmacPs_PhyRead(xemacpsp, phy_addr, 5, &temp);
 	while(!(temp & 0x8000)) {
 		XEmacPs_PhyRead(xemacpsp, phy_addr, 5, &temp);
@@ -376,7 +376,7 @@ unsigned get_IEEE_phy_speed(XEmacPs *xemacpsp)
 		XEmacPs_PhyRead(xemacpsp, phy_addr, 0, &temp);
 		return 10;
 	} else {
-		xil_printf("get_IEEE_phy_speed(): Invalid speed bit value, Deafulting to Speed = 10 Mbps\n");
+		printf("get_IEEE_phy_speed(): Invalid speed bit value, Deafulting to Speed = 10 Mbps\r\n");
 		XEmacPs_PhyRead(xemacpsp, phy_addr, 0, &temp);
 		XEmacPs_PhyWrite(xemacpsp, phy_addr, 0, 0x0100);
 		return 10;
@@ -575,7 +575,7 @@ unsigned Phy_Setup (XEmacPs *xemacpsp)
 		XEMACPS_GMII2RGMII_REG_NUM, convspeeddupsetting);
 	}
 
-	xil_printf("link speed: %d\n", link_speed);
+	printf("link speed: %d\r\n", link_speed);
 	return link_speed;
 }
 
