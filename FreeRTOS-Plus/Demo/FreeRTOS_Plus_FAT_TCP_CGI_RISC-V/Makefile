@@ -56,6 +56,7 @@ VPATH += $(APP_SRC_DIR)
 FREERTOS_INCLUDES += \
 	-I ./include \
 	-I $(BSP_INC) \
+	-I $(BSP_DIR)/libxil/include \
 	-I $(ARCH_PORTABLE_INC)
 
 FREERTOS_PLUS_UTIL_INCLUDES += $(FREERTOS_INCLUDES)
@@ -155,11 +156,13 @@ $(FREERTOS_FAT_BUILD_DIR)/%.o: %.c
 	$(GCC) $(CFLAGS) $(FREERTOS_FAT_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
+include $(BSP_DIR)/libxil/libxil.mk
+
 # Generate ELF ___________________________________________________________________________
-$(OUT_ELF): $(OUT_OBJS) $(LINKER_SCRIPT)
+$(OUT_ELF): $(OUT_OBJS) $(LINKER_SCRIPT) $(LINK_DEPS)
 	@echo 'Building target: $@'
 	@echo '_______________________________'
-	$(GCC) $(LDFLAGS) $(LDOPTS) -L$(BSP_DIR)/lib -o $@ $(OUT_OBJS) $(LIB_FLAGS)
+	$(GCC) -o $@ $(OUT_OBJS) $(LDFLAGS) $(LDOPTS) -L$(BSP_DIR)/libxil/
 	@echo 'Finished building target: $@'
 	@echo ' '
 
