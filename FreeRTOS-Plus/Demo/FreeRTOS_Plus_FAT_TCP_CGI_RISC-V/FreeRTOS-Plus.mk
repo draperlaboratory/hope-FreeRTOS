@@ -6,8 +6,7 @@ FREERTOS_PLUS_IP_DIR = $(FREERTOS_PLUS_CMN_DIR)/Demo_IP_Protocols
 
 # Collect FreeRTOS-Plus Util sources
 FREERTOS_PLUS_UTIL_SRC = \
-	$(FREERTOS_PLUS_IP_DIR)/Common/UDPLoggingPrintf.c \
-	$(FREERTOS_PLUS_IP_DIR)/Common/FreeRTOS_TCP_server.c
+	$(FREERTOS_PLUS_IP_DIR)/Common/UDPLoggingPrintf.c
 
 FREERTOS_PLUS_UTIL_INCLUDES := \
 	-I $(FREERTOS_PLUS_TCP_DIR)/include \
