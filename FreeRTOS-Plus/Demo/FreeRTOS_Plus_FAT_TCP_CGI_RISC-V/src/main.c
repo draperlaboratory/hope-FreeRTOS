@@ -321,20 +321,6 @@ extern void vMultiTaskStdioWithCWDTest( const char *const pcMountPath, uint16_t 
 
 	/* Create a few example files on the disk.  These are not deleted again. */
 	vCreateAndVerifyExampleFiles( mainRAM_DISK_NAME );
-
-	/* A few sanity checks only - can only be called after
-	vCreateAndVerifyExampleFiles(). */
-	#if( mainRUN_STDIO_TESTS_IN_MULTIPLE_TASK == 1 )
-	{
-		/* This continuously reads and writes to the disk - best not to use an
-		flash disk. */
-		vMultiTaskStdioWithCWDTest( mainRAM_DISK_NAME, configMINIMAL_STACK_SIZE * 5U );
-	}
-	#else
-	{
-		vStdioWithCWDTest( mainRAM_DISK_NAME );
-	}
-	#endif
 }
 /*-----------------------------------------------------------*/
 
