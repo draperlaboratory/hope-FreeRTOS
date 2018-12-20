@@ -41,7 +41,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xparameters.h"
 #include "xparameters_ps.h"
 #include "xil_exception.h"
-#include "xil_mmu.h"
+#include "xil_stubs.h"
 
 #include "uncached_memory.h"
 
