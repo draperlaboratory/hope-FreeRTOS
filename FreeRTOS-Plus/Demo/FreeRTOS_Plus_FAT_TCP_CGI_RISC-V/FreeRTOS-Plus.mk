@@ -33,6 +33,10 @@ FREERTOS_TCP_SRC = \
 	$(FREERTOS_PLUS_TCP_DIR)/FreeRTOS_Sockets.c \
 	$(FREERTOS_PLUS_TCP_DIR)/FreeRTOS_UDP_IP.c \
 	$(FREERTOS_PLUS_TCP_DIR)/FreeRTOS_IP.c \
+	$(FREERTOS_PLUS_TCP_DIR)/portable/NetworkInterface/Zynq/x_emacpsif_hw.c \
+	$(FREERTOS_PLUS_TCP_DIR)/portable/NetworkInterface/Zynq/NetworkInterface.c \
+	$(FREERTOS_PLUS_TCP_DIR)/portable/NetworkInterface/Zynq/x_emacpsif_physpeed.c \
+	$(FREERTOS_PLUS_TCP_DIR)/portable/NetworkInterface/Zynq/x_emacpsif_dma.c \
 	$(FREERTOS_PLUS_TCP_DIR)/portable/BufferManagement/BufferAllocation_1.c \
 	$(FREERTOS_PLUS_TCP_DIR)/FreeRTOS_ARP.c \
 	$(FREERTOS_PLUS_TCP_DIR)/FreeRTOS_DNS.c
@@ -55,6 +59,7 @@ VPATH += \
 	$(FREERTOS_PLUS_IP_DIR)/Common \
 	$(FREERTOS_PLUS_IP_DIR)/HTTP \
 	$(FREERTOS_PLUS_IP_DIR)/NTP \
+	$(FREERTOS_PLUS_TCP_DIR)/portable/NetworkInterface/Zynq \
 	$(FREERTOS_PLUS_TCP_DIR)/portable/BufferManagement \
 
 
