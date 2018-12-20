@@ -70,6 +70,8 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
+#include "platform.h"
+
 /*-----------------------------------------------------------
  * Application specific definitions.
  *
@@ -106,6 +108,8 @@
  * setting configMAX_API_CALL_INTERRUPT_PRIORITY 255 represents the lowest
  * priority.
  */
+#define configCLINT_BASE_ADDRESS		CLINT_CTRL_ADDR
+
 #define configMAX_API_CALL_INTERRUPT_PRIORITY	18
 
 #define configRTC_CLOCK_HZ						32768
