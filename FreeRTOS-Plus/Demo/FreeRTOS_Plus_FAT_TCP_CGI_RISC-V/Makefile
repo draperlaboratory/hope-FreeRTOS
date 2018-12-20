@@ -5,7 +5,7 @@ include FreeRTOS-SiFive.mk
 -include $(wildcard $(OUTDIR)/*.d)
 # Platform spcific settings for this application _____________________________________________
 
-ARCH = RISCV
+ARCH = RISC-V-RV32
 ARCH_PORTABLE_INC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/
 ARCH_PORTABLE_CLINC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/CLINT
 ARCH_PORTABLE_SRC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/port.c
