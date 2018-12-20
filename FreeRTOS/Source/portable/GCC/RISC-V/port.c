@@ -179,7 +179,7 @@ extern void xPortStartFirstTask( void );
 
 void vPortEndScheduler( void )
 {
-	/* Not implemented. */
+   /* Not implemented. */
 	for( ;; );
 }
 
