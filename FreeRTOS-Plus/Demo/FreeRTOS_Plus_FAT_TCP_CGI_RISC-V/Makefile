@@ -1,11 +1,13 @@
 include BuildEnvironment.mk
 include FreeRTOS.mk
 include FreeRTOS-Plus.mk
+include FreeRTOS-SiFive.mk
 -include $(wildcard $(OUTDIR)/*.d)
 # Platform spcific settings for this application _____________________________________________
 
-ARCH = RISCV
+ARCH = RISC-V
 ARCH_PORTABLE_INC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/
+ARCH_PORTABLE_CLINC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/CLINT
 ARCH_PORTABLE_SRC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/port.c
 ARCH_PORTABLE_ASM = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/portASM.S
 
@@ -34,7 +36,9 @@ APP_INCLUDES = \
 	-I $(BSP_INC) \
 	-I $(BSP_INC)/devices \
 	-I $(BSP_DIR)/env \
+	$(SDK_INCLUDES) \
 	-I $(ARCH_PORTABLE_INC) \
+	-I $(ARCH_PORTABLE_EXT) \
 	-I $(FREERTOS_PLUS_DIR)/Demo/Common/Demo_IP_Protocols/include \
 	-I $(FREERTOS_PLUS_DIR)/Demo/Common/FreeRTOS_Plus_UDP_Demos/TraceMacros/Example1 \
 	-I $(FREERTOS_PLUS_TCP_DIR)/include \
@@ -57,7 +61,9 @@ FREERTOS_INCLUDES += \
 	-I ./include \
 	-I $(BSP_INC) \
 	-I $(BSP_DIR)/libxil/include \
-	-I $(ARCH_PORTABLE_INC)
+	$(SDK_INCLUDES) \
+	-I $(ARCH_PORTABLE_INC) \
+	-I $(ARCH_PORTABLE_CLINC)
 
 FREERTOS_PLUS_UTIL_INCLUDES += $(FREERTOS_INCLUDES)
 FREERTOS_CLI_INCLUDES += $(FREERTOS_INCLUDES)
@@ -72,7 +78,8 @@ OUT_OBJS = \
 	$(FREERTOS_PLUS_UTIL_OBJS) \
 	$(FREERTOS_CLI_OBJS) \
 	$(FREERTOS_TCP_OBJS) \
-	$(FREERTOS_FAT_OBJS)
+	$(FREERTOS_FAT_OBJS) \
+	$(SDK_OBJS)
 
 BUILD_DIRECTORIES = \
 	$(APP_BUILD_DIR) \
@@ -80,9 +87,10 @@ BUILD_DIRECTORIES = \
 	$(FREERTOS_PLUS_UTIL_BUILD_DIR) \
 	$(FREERTOS_CLI_BUILD_DIR) \
 	$(FREERTOS_TCP_BUILD_DIR) \
-	$(FREERTOS_FAT_BUILD_DIR)
+	$(FREERTOS_FAT_BUILD_DIR) \
+	$(SDK_BUILD_DIR)
 
-.PHONY: debug clean app_compile debug-app frtos_compile print-info frtos_p_util frtos_cli frtos_tcp frtos_fat out_elf
+.PHONY: debug clean app_compile debug-app frtos_compile print-info frtos_p_util frtos_cli frtos_tcp frtos_fat freedom_sdk out_elf
 all: directories $(OUT_OBJS) $(OUT_ELF)
 directories: $(BUILD_DIRECTORIES)
 app_compile: directories $(APP_OBJS)
@@ -91,6 +99,7 @@ frtos_p_util: directories $(FREERTOS_PLUS_UTIL_OBJS)
 frtos_cli: directories $(FREERTOS_CLI_OBJS)
 frtos_tcp: directories $(FREERTOS_TCP_OBJS)
 frtos_fat: directories $(FREERTOS_FAT_OBJS)
+freedom_sdk: directories $(SDK_OBJS)
 out_elf: directories $(OUT_ELF)
 
 # Notes
@@ -117,7 +126,7 @@ $(APP_BUILD_DIR)/%.o : %.c
 $(APP_BUILD_DIR)/%.o : %.S
 	@echo "[APP Objects] : $@ ______________________________________________________________"
 	@echo "Building: $<"
-	$(GCC) $(CFLAGS) $(APP_INCLUDES) -o $@ -c $<
+	$(GCC) $(ASMFLAGS) $(APP_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
 $(FREERTOS_BUILD_DIR)/%.o : %.c
@@ -129,7 +138,7 @@ $(FREERTOS_BUILD_DIR)/%.o : %.c
 $(FREERTOS_BUILD_DIR)/%.o : %.S
 	@echo "[FreeRTOS Objects] : $@ __________________________________________________________"
 	@echo "Building: $<"
-	$(GCC) $(CFLAGS) $(FREERTOS_INCLUDES) -o $@ -c $<
+	$(GCC) $(ASMFLAGS) $(FREERTOS_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
 $(FREERTOS_PLUS_UTIL_BUILD_DIR)/%.o: %.c
@@ -156,6 +165,18 @@ $(FREERTOS_FAT_BUILD_DIR)/%.o: %.c
 	$(GCC) $(CFLAGS) $(FREERTOS_FAT_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
+$(SDK_BUILD_DIR)/%.o: %.c
+	@echo "[Freedom SDK] : $@ _____________________________________________________________"
+	@echo "Building: $<"
+	$(GCC) $(CFLAGS) $(SDK_CFLAGS) $(SDK_INCLUDES) -o $@ -c $<
+	@echo "Finished Building: $<"
+
+$(SDK_BUILD_DIR)/%.o : %.S
+	@echo "[Freedom SDK] : $@ _____________________________________________________________"
+	@echo "Building: $<"
+	$(GCC) $(ASMFLAGS) $(SDK_INCLUDES) -o $@ -c $<
+	@echo "Finished Building: $<"
+
 include $(BSP_DIR)/libxil/libxil.mk
 
 # Generate ELF ___________________________________________________________________________
@@ -172,6 +193,9 @@ $(BUILD_DIRECTORIES):
 clean:
 	rm -rv $(BUILD_DIR)
 
+sim-qemu: $(OUT_ELF)
+	qemu-system-riscv32 -kernel $^ -machine sifive_e
+
 debug:
 	@echo "Application Objects: ___________________________"
 	@echo $(APP_OBJS)
@@ -185,6 +209,8 @@ debug:
 	@echo $(OUT_OBJS)
 	@echo "FREERTOS TCP Objects: __________________________"
 	@echo $(FREERTOS_TCP_OBJS)
+	@echo "Freedom SDK Objects: __________________________"
+	@echo $(SDK_OBJS)
 
 print-info:
 	@echo "VPATH: $(VPATH)"
