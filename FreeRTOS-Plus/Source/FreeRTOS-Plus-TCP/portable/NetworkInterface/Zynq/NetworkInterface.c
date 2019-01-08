@@ -112,8 +112,6 @@ struct xtopology_t xXTopology =
 	.emac_type = xemac_type_emacps,
 	.intc_baseaddr = 0x0,
 	.intc_emac_intr = 0x0,
-	.scugic_baseaddr = XPAR_PS7_SCUGIC_0_BASEADDR,
-	.scugic_emac_intr = 0x36,
 };
 
 XEmacPs_Config mac_config =

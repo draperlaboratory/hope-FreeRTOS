@@ -96,6 +96,9 @@
 #include "ff_ramdisk.h"
 //#include "ff_sddisk.h"
 
+/* Freedom SDK includes. */
+#include "plic/plic_driver.h"
+
 /* Demo application includes. */
 #include "hr_gettime.h"
 #include "UDPLoggingPrintf.h"
@@ -248,10 +251,21 @@ static FF_Disk_t *pxRAMDisk;
 
 /*-----------------------------------------------------------*/
 
+plic_instance_t g_plic;
+
 static void prvSetupHardware( void )
 {
-	PLIC_init();
-	UART_init( &g_uart, COREUARTAPB0_BASE_ADDR, BAUD_VALUE_115200, ( DATA_8_BITS | NO_PARITY ) );
+	PLIC_init(&g_plic, PLIC_CTRL_ADDR, PLIC_NUM_INTERRUPTS, PLIC_NUM_PRIORITIES);
+}
+/*-----------------------------------------------------------*/
+
+static void prvSetupEthIRQ( void )
+{
+	/*Enable Eth Interrupt*/
+	PLIC_enable_interrupt(&g_plic, 5);
+
+	/* Make sure timers don't interrupt until the scheduler is running. */
+	portDISABLE_INTERRUPTS();
 }
 /*-----------------------------------------------------------*/
 
@@ -263,6 +277,7 @@ int main( void )
 	prvMiscInitialisation();
 
    prvSetupHardware();
+   prvSetupEthIRQ();
 
 	/* Initialise the network interface.
 
