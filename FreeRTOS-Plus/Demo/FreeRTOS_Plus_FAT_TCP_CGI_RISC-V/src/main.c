@@ -256,6 +256,13 @@ static FF_Disk_t *pxRAMDisk;
 
 /*-----------------------------------------------------------*/
 
+static void prvSetupHardware( void )
+{
+	PLIC_init();
+	UART_init( &g_uart, COREUARTAPB0_BASE_ADDR, BAUD_VALUE_115200, ( DATA_8_BITS | NO_PARITY ) );
+}
+/*-----------------------------------------------------------*/
+
 /* See http://www.FreeRTOS.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/TCPIP_FAT_Examples_Xilinx_Zynq.html */
 int main( void )
 {
@@ -264,6 +271,8 @@ TimerHandle_t xLEDTimer;
 	/* Miscellaneous initialisation including preparing the logging and seeding
 	the random number generator. */
 	prvMiscInitialisation();
+
+   prvSetupHardware();
 
 	/* Initialise the network interface.
 
