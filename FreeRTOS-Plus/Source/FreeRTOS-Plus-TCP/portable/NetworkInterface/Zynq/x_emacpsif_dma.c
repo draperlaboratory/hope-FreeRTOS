@@ -43,13 +43,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "FreeRTOS_IP_Private.h"
 #include "NetworkBufferManagement.h"
 
+#include "plic/plic_driver.h"
+
 #include "uncached_memory.h"
 
-/* Two defines used to set or clear the EMAC interrupt */
-#define INTC_BASE_ADDR		XPAR_SCUGIC_CPU_BASEADDR
-#define INTC_DIST_BASE_ADDR	XPAR_SCUGIC_DIST_BASEADDR
-
-
+static void* iarg_addr = NULL;
 
 #if( ipconfigPACKET_FILLER_SIZE != 2 )
 	#error Please define ipconfigPACKET_FILLER_SIZE as the value '2'
@@ -563,14 +561,8 @@ XStatus init_dma(xemacpsif_s *xemacpsif)
 		XEmacPs_WriteReg( xemacpsif->emacps.Config.BaseAddress, XEMACPS_NWCFG_OFFSET, value );
 	}
 
-	/*
-	 * Connect the device driver handler that will be called when an
-	 * interrupt for the device occurs, the handler defined above performs
-	 * the specific interrupt processing for the device.
-	 */
-	XScuGic_RegisterHandler(INTC_BASE_ADDR, xtopologyp->scugic_emac_intr,
-		(Xil_ExceptionHandler)XEmacPs_IntrHandler,
-		(void *)&xemacpsif->emacps);
+   iarg_addr = &xemacpsif->emacps;
+
 	/*
 	 * Enable the interrupt for emacps.
 	 */
@@ -613,13 +605,26 @@ void resetrx_on_no_rxdata(xemacpsif_s *xemacpsif)
 	xemacpsif->last_rx_frms_cntr = tempcntr;
 }
 
+extern plic_instance_t g_plic;
+
 void EmacDisableIntr(void)
 {
-	XScuGic_DisableIntr(INTC_DIST_BASE_ADDR, xXTopology.scugic_emac_intr);
+   PLIC_disable_interrupt(&g_plic, 5);
 }
 
 void EmacEnableIntr(void)
 {
-	XScuGic_EnableIntr(INTC_DIST_BASE_ADDR, xXTopology.scugic_emac_intr);
+   PLIC_enable_interrupt(&g_plic, 5);
 }
 
+void handle_m_ext_interrupt(void)
+{
+   int n = PLIC_claim_interrupt(&g_plic);
+
+   if (5 == n)
+   {
+      XEmacPs_IntrHandler(iarg_addr);
+   }
+
+   PLIC_complete_interrupt(&g_plic, n);
+}
