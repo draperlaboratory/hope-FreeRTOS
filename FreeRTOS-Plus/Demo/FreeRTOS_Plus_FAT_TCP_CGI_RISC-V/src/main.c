@@ -182,10 +182,6 @@ root directory, and the RAM disk appears as a directory off the root. */
 #define mainSD_CARD_DISK_NAME			"/"
 #define mainRAM_DISK_NAME				"/ram"
 
-/* The LED to toggle and the rate at which the LED will be toggled. */
-#define mainLED_TOGGLE_PERIOD			pdMS_TO_TICKS( 250 )
-#define mainLED							0
-
 /* Define names that will be used for SDN, LLMNR and NBNS searches. */
 #define mainHOST_NAME					"RTOSDemo"
 #define mainDEVICE_NICK_NAME			"zynq"
@@ -219,10 +215,6 @@ static void prvCreateDiskAndExampleFiles( void );
 static void prvServerWorkTask( void *pvParameters );
 
 /*
- * Callback function for the timer that toggles an LED.
- */
-static void prvLEDTimerCallback( TimerHandle_t xTimer );
-
 /*
  * Register commands that can be used with FreeRTOS+CLI through the UDP socket.
  * The commands are defined in CLI-commands.c and File-related-CLI-commands.c
@@ -266,8 +258,6 @@ static void prvSetupHardware( void )
 /* See http://www.FreeRTOS.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/TCPIP_FAT_Examples_Xilinx_Zynq.html */
 int main( void )
 {
-TimerHandle_t xLEDTimer;
-
 	/* Miscellaneous initialisation including preparing the logging and seeding
 	the random number generator. */
 	prvMiscInitialisation();
@@ -290,11 +280,6 @@ TimerHandle_t xLEDTimer;
 	priority, and sets itself to mainTCP_SERVER_TASK_PRIORITY after the file
 	system has initialised. */
 	xTaskCreate( prvServerWorkTask, "SvrWork", mainTCP_SERVER_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xServerWorkTaskHandle );
-
-	/* Create a timer that just toggles an LED to show something is alive. */
-	xLEDTimer = xTimerCreate( "LED", mainLED_TOGGLE_PERIOD, pdTRUE, NULL, prvLEDTimerCallback );
-	configASSERT( xLEDTimer );
-	xTimerStart( xLEDTimer, 0 );
 
 	/* Start the RTOS scheduler. */
 	FreeRTOS_debug_printf( ("vTaskStartScheduler\n") );
@@ -617,13 +602,6 @@ int _gettimeofday_r(struct _reent * x, struct timeval *y , struct timezone * pti
 	( void ) ptimezone;
 
 	return 0;
-}
-/*-----------------------------------------------------------*/
-
-static void prvLEDTimerCallback( TimerHandle_t xTimer )
-{
-	/* Prevent compiler warnings about the unused parameter. */
-	( void ) xTimer;
 }
 /*-----------------------------------------------------------*/
 
