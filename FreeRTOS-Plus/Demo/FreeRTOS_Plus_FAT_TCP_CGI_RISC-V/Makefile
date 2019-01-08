@@ -6,8 +6,10 @@ include FreeRTOS-SiFive.mk
 # Platform spcific settings for this application _____________________________________________
 
 ARCH = RISC-V-RV32
+EXTENSIONS = RV32I_CLINT_no_extensions
 ARCH_PORTABLE_INC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/
 ARCH_PORTABLE_CLINC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/CLINT
+ARCH_PORTABLE_EXT = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/chip_specific_extensions/$(EXTENSIONS)
 ARCH_PORTABLE_SRC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/port.c
 ARCH_PORTABLE_ASM = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/portASM.S
 
@@ -39,6 +41,7 @@ APP_INCLUDES = \
 	$(FREEDOM_SDK_INCLUDES) \
 	-I $(ARCH_PORTABLE_INC) \
 	-I $(ARCH_PORTABLE_CLINC) \
+	-I $(ARCH_PORTABLE_EXT) \
 	-I $(FREERTOS_PLUS_DIR)/Demo/Common/Demo_IP_Protocols/include \
 	-I $(FREERTOS_PLUS_DIR)/Demo/Common/FreeRTOS_Plus_UDP_Demos/TraceMacros/Example1 \
 	-I $(FREERTOS_PLUS_TCP_DIR)/include \
@@ -63,7 +66,8 @@ FREERTOS_INCLUDES += \
 	-I $(BSP_DIR)/libxil/include \
 	$(FREEDOM_SDK_INCLUDES) \
 	-I $(ARCH_PORTABLE_INC) \
-	-I $(ARCH_PORTABLE_CLINC)
+	-I $(ARCH_PORTABLE_CLINC) \
+	-I $(ARCH_PORTABLE_EXT)
 
 FREERTOS_PLUS_UTIL_INCLUDES += $(FREERTOS_INCLUDES)
 FREERTOS_CLI_INCLUDES += $(FREERTOS_INCLUDES)
