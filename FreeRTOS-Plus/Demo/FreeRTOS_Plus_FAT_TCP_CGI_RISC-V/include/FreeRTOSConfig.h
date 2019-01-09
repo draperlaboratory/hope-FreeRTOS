@@ -208,13 +208,6 @@ void vConfigureTickInterrupt( void );
 void vClearTickInterrupt( void );
 #define configCLEAR_TICK_INTERRUPT() vClearTickInterrupt()
 
-/* The following constant describe the hardware, and are correct for the
-Zynq MPU. */
-#define configINTERRUPT_CONTROLLER_BASE_ADDRESS 		( XPAR_PS7_SCUGIC_0_DIST_BASEADDR )
-#define configINTERRUPT_CONTROLLER_CPU_INTERFACE_OFFSET ( -0xf00 )
-#define configUNIQUE_INTERRUPT_PRIORITIES				32
-
-
 /****** TCP demo settings. ****************************************************/
 
 /* Default MAC address configuration.  */
