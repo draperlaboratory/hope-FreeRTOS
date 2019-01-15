@@ -47,6 +47,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Zynq/x_emacpsif.h"
 #include "Zynq/x_emacpsif_hw.h"
 
+#include "platform.h"
+
 /* Provided memory configured as uncached. */
 #include "uncached_memory.h"
 
@@ -107,7 +109,7 @@ static xemacpsif_s xEMACpsif;
 XEmacPs_Config mac_config =
 {
 	.DeviceId = XPAR_PS7_ETHERNET_0_DEVICE_ID,	/**< Unique ID  of device */
-	.BaseAddress = XPAR_PS7_ETHERNET_0_BASEADDR /**< Physical base address of IPIF registers */
+	.BaseAddress = GEM0_CTRL_ADDR /**< Physical base address of IPIF registers */
 };
 
 extern int phy_detected;
