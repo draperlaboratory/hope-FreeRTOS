@@ -122,6 +122,13 @@ char vstr[64];
       write(STDOUT_FILENO, vstr, n);
    }
 
+   ver = (unsigned int*)(MEM_END_ADDR - (256 * sizeof(unsigned int)));
+   for (i=0;i<256;++i,++ver)
+   {
+      n = sprintf(vstr, "Memory%d @ 0x%x:  0x%x\n", i,(unsigned int)ver, *ver);
+      write(STDOUT_FILENO, vstr, n);
+   }
+
 	/* Create the queue. */
 	xQueue = xQueueCreate( mainQUEUE_LENGTH, sizeof( uint32_t ) );
 
