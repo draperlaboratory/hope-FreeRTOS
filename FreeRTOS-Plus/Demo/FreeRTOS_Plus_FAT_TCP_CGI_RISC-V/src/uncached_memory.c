@@ -99,12 +99,13 @@
 //#include "xil_exception.h"
 //#include "xil_mmu.h"
 
+#include "platform.h"
+
 /* Dem includes. */
 #include "uncached_memory.h"
 #include "UDPLoggingPrintf.h"
 
-#define UNCACHED_MEMORY_SIZE	0x100000ul
-#define DDR_MEMORY_END	(XPAR_PS7_DDR_0_S_AXI_HIGHADDR+1)
+#define UNCACHED_MEMORY_SIZE	0x10000ul
 
 static void vInitialiseUncachedMemory( void );
 
@@ -167,7 +168,7 @@ static void vInitialiseUncachedMemory( )
 	/* Align the start address to 1 MB boundary. */
 	pucStartOfMemory = (uint8_t *)( ( ( uint32_t )pucStartOfMemory + UNCACHED_MEMORY_SIZE ) & ( ~( UNCACHED_MEMORY_SIZE - 1 ) ) );
 
-	if( ( ( u32 )pucStartOfMemory ) + UNCACHED_MEMORY_SIZE > DDR_MEMORY_END )
+	if( ( ( u32 )pucStartOfMemory ) + UNCACHED_MEMORY_SIZE > MEM_END_ADDR )
 	{
 		lUDPLoggingPrintf( "vInitialiseUncachedMemory: Can not allocate uncached memory\n" );
 	}
