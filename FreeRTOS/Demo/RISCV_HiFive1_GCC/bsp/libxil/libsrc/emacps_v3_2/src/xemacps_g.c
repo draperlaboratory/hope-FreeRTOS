@@ -40,6 +40,8 @@
 #include "xparameters.h"
 #include "xemacps.h"
 
+#include "platform.h"
+
 /*
 * The configuration table for devices
 */
@@ -48,7 +50,7 @@ XEmacPs_Config XEmacPs_ConfigTable[] =
 {
 	{
 		XPAR_PS7_ETHERNET_0_DEVICE_ID,
-		XPAR_PS7_ETHERNET_0_BASEADDR
+		GEM0_CTRL_ADDR
 	}
 };
 
