@@ -112,6 +112,16 @@ static QueueHandle_t xQueue = NULL;
 
 void main_blinky( void )
 {
+int i, n;
+unsigned int *ver = (unsigned int*)GEM0_CTRL_ADDR;
+char vstr[64];
+
+   for (i=0;i<256;++i,++ver)
+   {
+      n = sprintf(vstr, "Version%d @ 0x%x:  0x%x\n", i,(unsigned int)ver, *ver);
+      write(STDOUT_FILENO, vstr, n);
+   }
+
 	/* Create the queue. */
 	xQueue = xQueueCreate( mainQUEUE_LENGTH, sizeof( uint32_t ) );
 
