@@ -78,7 +78,8 @@ OUT_OBJS = \
 	$(FREERTOS_PLUS_UTIL_OBJS) \
 	$(FREERTOS_CLI_OBJS) \
 	$(FREERTOS_TCP_OBJS) \
-	$(FREERTOS_FAT_OBJS)
+	$(FREERTOS_FAT_OBJS) \
+	$(FREEDOM_SDK_OBJS)
 
 BUILD_DIRECTORIES = \
 	$(APP_BUILD_DIR) \
@@ -86,9 +87,10 @@ BUILD_DIRECTORIES = \
 	$(FREERTOS_PLUS_UTIL_BUILD_DIR) \
 	$(FREERTOS_CLI_BUILD_DIR) \
 	$(FREERTOS_TCP_BUILD_DIR) \
-	$(FREERTOS_FAT_BUILD_DIR)
+	$(FREERTOS_FAT_BUILD_DIR) \
+	$(FREEDOM_SDK_BUILD_DIR)
 
-.PHONY: debug clean app_compile debug-app frtos_compile print-info frtos_p_util frtos_cli frtos_tcp frtos_fat out_elf
+.PHONY: debug clean app_compile debug-app frtos_compile print-info frtos_p_util frtos_cli frtos_tcp frtos_fat freedom_sdk out_elf
 all: directories $(OUT_OBJS) $(OUT_ELF)
 directories: $(BUILD_DIRECTORIES)
 app_compile: directories $(APP_OBJS)
@@ -97,6 +99,7 @@ frtos_p_util: directories $(FREERTOS_PLUS_UTIL_OBJS)
 frtos_cli: directories $(FREERTOS_CLI_OBJS)
 frtos_tcp: directories $(FREERTOS_TCP_OBJS)
 frtos_fat: directories $(FREERTOS_FAT_OBJS)
+freedom_sdk: directories $(FREEDOM_SDK_OBJS)
 out_elf: directories $(OUT_ELF)
 
 # Notes
@@ -162,6 +165,18 @@ $(FREERTOS_FAT_BUILD_DIR)/%.o: %.c
 	$(GCC) $(CFLAGS) $(FREERTOS_FAT_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
+$(FREEDOM_SDK_BUILD_DIR)/%.o: %.c
+	@echo "[Freedom SDK] : $@ _____________________________________________________________"
+	@echo "Building: $<"
+	$(GCC) $(CFLAGS) $(FREEDOM_SDK_INCLUDES) -o $@ -c $<
+	@echo "Finished Building: $<"
+
+$(FREEDOM_SDK_BUILD_DIR)/%.o : %.S
+	@echo "[Freedom SDK] : $@ _____________________________________________________________"
+	@echo "Building: $<"
+	$(GCC) $(CFLAGS) $(FREEDOM_SDK_INCLUDES) -o $@ -c $<
+	@echo "Finished Building: $<"
+
 include $(BSP_DIR)/libxil/libxil.mk
 
 # Generate ELF ___________________________________________________________________________
@@ -191,6 +206,8 @@ debug:
 	@echo $(OUT_OBJS)
 	@echo "FREERTOS TCP Objects: __________________________"
 	@echo $(FREERTOS_TCP_OBJS)
+	@echo "Freedom SDK Objects: __________________________"
+	@echo $(FREEDOM_SDK_OBJS)
 
 print-info:
 	@echo "VPATH: $(VPATH)"
