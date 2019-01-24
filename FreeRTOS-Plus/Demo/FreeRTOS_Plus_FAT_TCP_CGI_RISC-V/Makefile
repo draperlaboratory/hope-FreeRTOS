@@ -168,7 +168,7 @@ $(FREERTOS_FAT_BUILD_DIR)/%.o: %.c
 $(FREEDOM_SDK_BUILD_DIR)/%.o: %.c
 	@echo "[Freedom SDK] : $@ _____________________________________________________________"
 	@echo "Building: $<"
-	$(GCC) $(CFLAGS) $(FREEDOM_SDK_INCLUDES) -o $@ -c $<
+	$(GCC) $(CFLAGS) $(FREEDOM_SDK_CFLAGS) $(FREEDOM_SDK_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
 $(FREEDOM_SDK_BUILD_DIR)/%.o : %.S

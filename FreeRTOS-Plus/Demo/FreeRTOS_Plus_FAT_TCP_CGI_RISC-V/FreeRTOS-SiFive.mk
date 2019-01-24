@@ -34,4 +34,6 @@ VPATH += \
 	$(FREEDOM_E300_DIR) \
 	$(FREEDOM_SDK_PLIC_DIR)
 
+FREEDOM_SDK_CFLAGS := -include sys/cdefs.h
+
 LDFLAGS += -Wl,--wrap=write -Wl,--wrap=isatty
