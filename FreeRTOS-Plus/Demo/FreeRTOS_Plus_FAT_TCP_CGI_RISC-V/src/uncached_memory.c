@@ -160,7 +160,7 @@ uint8_t *pucGetUncachedMemory( uint32_t ulSize )
 
 static void vInitialiseUncachedMemory( )
 {
-   extern u8 _end;
+   extern uint8_t _end;
 
 	/* At the end of program's space... */
 	pucStartOfMemory = (uint8_t *) &_end;
@@ -168,7 +168,7 @@ static void vInitialiseUncachedMemory( )
 	/* Align the start address to 1 MB boundary. */
 	pucStartOfMemory = (uint8_t *)( ( ( uint32_t )pucStartOfMemory + UNCACHED_MEMORY_SIZE ) & ( ~( UNCACHED_MEMORY_SIZE - 1 ) ) );
 
-	if( ( ( u32 )pucStartOfMemory ) + UNCACHED_MEMORY_SIZE > MEM_END_ADDR )
+	if( ( ( uint32_t )pucStartOfMemory ) + UNCACHED_MEMORY_SIZE > MEM_END_ADDR )
 	{
 		lUDPLoggingPrintf( "vInitialiseUncachedMemory: Can not allocate uncached memory\n" );
 	}
