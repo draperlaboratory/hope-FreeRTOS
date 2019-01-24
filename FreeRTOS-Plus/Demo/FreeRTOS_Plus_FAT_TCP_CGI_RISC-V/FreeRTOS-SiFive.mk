@@ -1,6 +1,7 @@
 FREEDOM_SDK_PATH := FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio/freedom-e-sdk
 FREEDOM_SDK_DIR := $(FREERTOS_DIR)/$(FREEDOM_SDK_PATH)
 
+FREEDOM_WRAP_DIR := $(FREEDOM_SDK_DIR)/libwrap
 FREEDOM_ENV_DIR  := $(FREEDOM_SDK_DIR)/env
 FREEDOM_E300_DIR := $(FREEDOM_ENV_DIR)/freedom-e300-hifive1/
 
@@ -15,7 +16,9 @@ FREEDOM_SDK_INCLUDES := \
 
 FREEDOM_SDK_SOURCE := \
 	$(FREEDOM_SDK_PLIC_DIR)/plic_driver.c \
-	$(FREEDOM_E300_DIR)/init.c
+	$(FREEDOM_E300_DIR)/init.c \
+	$(FREEDOM_WRAP_DIR)/sys/write.c \
+	$(FREEDOM_WRAP_DIR)/sys/isatty.c
 
 FREEDOM_SDK_ASM := \
 	$(FREEDOM_ENV_DIR)/start.S \
@@ -27,5 +30,8 @@ FREEDOM_SDK_OBJS += $(patsubst %.S,$(FREEDOM_SDK_BUILD_DIR)/%.o,$(notdir $(FREED
 
 VPATH += \
 	$(FREEDOM_ENV_DIR) \
+	$(FREEDOM_WRAP_DIR)/sys/ \
 	$(FREEDOM_E300_DIR) \
 	$(FREEDOM_SDK_PLIC_DIR)
+
+LDFLAGS += -Wl,--wrap=write -Wl,--wrap=isatty
