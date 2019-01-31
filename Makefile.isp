@@ -2,22 +2,23 @@
 .PHONY: install
 .PHONY: clean
 
-ISP_PREFIX ?= $(HOME)/.local/isp/
+ISP_PREFIX ?= /opt/isp/
 
-RV_DEMO_DIR := FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio
-COMMON_DEMO_DIR := FreeRTOS/Demo/Common
-SOURCE_DIR := FreeRTOS/Source
+INSTALL_EXCLUDES := Makefile.isp
+INSTALL_EXCLUDES += .git
+INSTALL_EXCLUDES += .gitignore
+INSTALL_EXCLUDES += build
+INSTALL_EXCLUDES += *~
+INSTALL_EXCLUDES += /isp-support
+INSTALL_EXCLUDES += *.url
 
-INSTALL_DIR := $(ISP_PREFIX)/FreeRTOS
-DEMO_INSTALL_DIR := $(INSTALL_DIR)/Demo
+RSYNC_EXCLUDE = $(patsubst %,--exclude '%',$(INSTALL_EXCLUDES))
 
 all:
 
 install:
-	mkdir -p $(INSTALL_DIR)
-	mkdir -p $(DEMO_INSTALL_DIR)
-	cp -rf $(RV_DEMO_DIR) $(COMMON_DEMO_DIR) $(DEMO_INSTALL_DIR)
-	cp -rf $(SOURCE_DIR) $(INSTALL_DIR)
+	rm -rf $(ISP_PREFIX)/FreeRTOS
+	rsync -rupE . $(ISP_PREFIX)/FreeRTOS $(RSYNC_EXCLUDE)
 
 clean:
-	$(MAKE) -C FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio clean
+	find -name "*~" -delete
