@@ -129,6 +129,12 @@ static void *volatile dover_ptr_tag;
 static void *volatile dover_ptr_untag;
 static void *volatile dover_ptr_zero = 0;
 
+// prototypes
+size_t btow(size_t);
+void* dover_remove_tag(void *);
+void * dover_tag(volatile uintptr_t *, size_t);
+void dover_untag(volatile uintptr_t *, size_t);
+
 // Convert bytes to words, rounding up
 size_t btow(size_t bytes){
   uintptr_t words = bytes / sizeof(uintptr_t);
@@ -168,9 +174,9 @@ void * __attribute__ ((noinline)) dover_tag(volatile uintptr_t *ptr, size_t byte
   // constrain index to bounds
   dover_ptr_tag_index++;
   dover_ptr_tag_index = dover_ptr_tag_index % MAX_COLORS;
-  dover_ptr_tag[dover_ptr_tag_index] = ptr;
+  dover_ptr_tag[dover_ptr_tag_index] = (void*volatile)ptr;
   p = dover_ptr_tag[dover_ptr_tag_index];
-  res = p;
+  res = (void*volatile)p;
 #else
   dover_ptr_tag = ptr;
   p = dover_ptr_tag;
@@ -181,7 +187,7 @@ void * __attribute__ ((noinline)) dover_tag(volatile uintptr_t *ptr, size_t byte
 
  uintptr_t zero;
 
-  zero = dover_ptr_zero;
+ zero = (uintptr_t)dover_ptr_zero;
   count = 0;
   //printk("do_tag %x\n", dover_remove_tag(p));
   while(count < words) {
@@ -208,7 +214,7 @@ void __attribute__ ((noinline)) dover_untag(volatile uintptr_t *ptr, size_t byte
 
   p = ptr;
   // grab a specially tagged zero
-  zero = dover_ptr_zero;
+  zero = (uintptr_t)dover_ptr_zero;
   count = 0;
   while(count < words) {
     //printk("do_untag(%d) %d\n", count, p);

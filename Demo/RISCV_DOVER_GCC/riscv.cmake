@@ -1,4 +1,4 @@
-set(CMAKE_SYSTEM_NAME Dover)
+set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_VERSION 1)
 
 # this is needed to get cmake to do such things as use .o as the default extension
