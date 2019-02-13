@@ -13,9 +13,17 @@ RANLIB  = $(CROSS_COMPILE_PREFIX)-ranlib
 OUT_ELF = FreeRTOS-web-server.elf
 CRT0    := UNKNOWN
 
-CFLAGS  = -march=rv32imac -mabi=ilp32 -Wall -O0 -g3 -fmessage-length=0 -MT"$@" -fomit-frame-pointer -fno-strict-aliasing -fno-builtin -D__gracefulExit -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)"
-ASMFLAGS := -march=rv32imac -mabi=ilp32 -Wall -O0 -g3 -fmessage-length=0 -MT"$@" -fomit-frame-pointer -fno-strict-aliasing -fno-builtin -D__gracefulExit -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)"
-LDFLAGS :=  -march=rv32imac -mabi=ilp32 -nostartfiles -static -Wl,-build-id=none
+COMMON_FLAGS := -MT"$@" -Wall -O0 -g3 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)"
+COMMON_FLAGS += -msmall-data-limit=8 -ffunction-sections -fdata-sections -fno-builtin-printf
+
+CFLAGS := -std=gnu11
+CFLAGS += $(COMMON_FLAGS)
+
+ASMFLAGS :=
+ASMFLAGS += $(COMMON_FLAGS)
+
+LDFLAGS := -Xlinker --gc-sections -Xlinker --defsym=__stack_size=1K -O0 -g3
+LDFLAGS += -ffunction-sections -fdata-sections --specs=nano.specs -nostartfiles
 LDOPTS  := -Wl,-T -Wl,$(LINKER_SCRIPT)
 
 
