@@ -14,6 +14,7 @@ FREERTOS_SRC = \
 	$(FREERTOS_SOURCE_DIR)/tasks.c \
 	$(FREERTOS_SOURCE_DIR)/timers.c \
 	$(FREERTOS_SOURCE_DIR)/event_groups.c \
+	$(FREERTOS_SOURCE_DIR)/stream_buffer.c \
 	$(FREERTOS_SOURCE_DIR)/portable/MemMang/heap_4.c
 UNUSED_FREERTOS_SRC = \
 	$(FREERTOS_SOURCE_DIR)/string.c
