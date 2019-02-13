@@ -1,41 +1,40 @@
-FREEDOM_SDK_PATH := FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio/freedom-e-sdk
-FREEDOM_SDK_DIR := $(FREERTOS_DIR)/$(FREEDOM_SDK_PATH)
+SDK_PATH := FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio/freedom-e-sdk
+SDK_DIR := $(FREERTOS_DIR)/$(SDK_PATH)
 
-FREEDOM_WRAP_DIR := $(FREEDOM_SDK_DIR)/libwrap
-FREEDOM_ENV_DIR  := $(FREEDOM_SDK_DIR)/env
-FREEDOM_E300_DIR := $(FREEDOM_ENV_DIR)/freedom-e300-hifive1/
+SDK_WRAP_DIR := $(SDK_DIR)/libwrap
+SDK_ENV_DIR  := $(SDK_DIR)/env
+SDK_E300_DIR := $(SDK_ENV_DIR)/freedom-e300-hifive1/
 
-FREEDOM_SDK_DRV_DIR := $(FREEDOM_SDK_DIR)/drivers/
-FREEDOM_SDK_PLIC_DIR := $(FREEDOM_SDK_DRV_DIR)/plic/
+SDK_DRIVER_DIR := $(SDK_DIR)/drivers/
 
-FREEDOM_SDK_INCLUDES := \
-	-I $(FREEDOM_SDK_DIR)/include \
-	-I $(FREEDOM_ENV_DIR) \
-	-I $(FREEDOM_E300_DIR) \
-	-I $(FREEDOM_SDK_DRV_DIR)
+SDK_INCLUDES := \
+	-I $(SDK_DIR)/include \
+	-I $(SDK_ENV_DIR) \
+	-I $(SDK_E300_DIR) \
+	-I $(SDK_DRIVER_DIR)
 
-FREEDOM_SDK_SOURCE := \
-	$(FREEDOM_SDK_PLIC_DIR)/plic_driver.c \
-	$(FREEDOM_E300_DIR)/init.c \
-	$(FREEDOM_WRAP_DIR)/sys/write.c \
-	$(FREEDOM_WRAP_DIR)/sys/isatty.c
+SDK_SOURCE := \
+	$(SDK_DRIVER_DIR)/plic/plic_driver.c \
+	$(SDK_E300_DIR)/init.c \
+	$(SDK_WRAP_DIR)/sys/write.c \
+	$(SDK_WRAP_DIR)/sys/isatty.c
 
-FREEDOM_SDK_ASM := \
-	$(FREEDOM_ENV_DIR)/start.S \
-	$(FREEDOM_ENV_DIR)/entry.S
+SDK_ASM := \
+	$(SDK_ENV_DIR)/start.S \
+	$(SDK_ENV_DIR)/entry.S
 
-FREEDOM_SDK_BUILD_DIR := $(BUILD_DIR)/SDK
-FREEDOM_SDK_OBJS := $(patsubst %.c,$(FREEDOM_SDK_BUILD_DIR)/%.o,$(notdir $(FREEDOM_SDK_SOURCE)))
-FREEDOM_SDK_OBJS += $(patsubst %.S,$(FREEDOM_SDK_BUILD_DIR)/%.o,$(notdir $(FREEDOM_SDK_ASM)))
+SDK_BUILD_DIR := $(BUILD_DIR)/SDK
+SDK_OBJS := $(patsubst %.c,$(SDK_BUILD_DIR)/%.o,$(notdir $(SDK_SOURCE)))
+SDK_OBJS += $(patsubst %.S,$(SDK_BUILD_DIR)/%.o,$(notdir $(SDK_ASM)))
 
 VPATH += \
-	$(FREEDOM_ENV_DIR) \
-	$(FREEDOM_WRAP_DIR)/sys/ \
-	$(FREEDOM_E300_DIR) \
-	$(FREEDOM_SDK_PLIC_DIR)
+	$(SDK_ENV_DIR) \
+	$(SDK_WRAP_DIR)/sys/ \
+	$(SDK_E300_DIR) \
+	$(SDK_DRIVER_DIR)/plic
 
 CFLAGS += -DportasmHANDLE_INTERRUPT=handle_trap -DUSE_PLIC
 
-FREEDOM_SDK_CFLAGS := -include sys/cdefs.h
+SDK_CFLAGS := -include sys/cdefs.h
 
 LDFLAGS += -Wl,--wrap=write -Wl,--wrap=isatty
