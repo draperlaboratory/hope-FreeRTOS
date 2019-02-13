@@ -130,7 +130,7 @@ $(APP_BUILD_DIR)/%.o : %.c
 $(APP_BUILD_DIR)/%.o : %.S
 	@echo "[APP Objects] : $@ ______________________________________________________________"
 	@echo "Building: $<"
-	$(GCC) $(CFLAGS) $(APP_INCLUDES) -o $@ -c $<
+	$(GCC) $(ASMFLAGS) $(APP_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
 $(FREERTOS_BUILD_DIR)/%.o : %.c
@@ -142,7 +142,7 @@ $(FREERTOS_BUILD_DIR)/%.o : %.c
 $(FREERTOS_BUILD_DIR)/%.o : %.S
 	@echo "[FreeRTOS Objects] : $@ __________________________________________________________"
 	@echo "Building: $<"
-	$(GCC) $(CFLAGS) $(FREERTOS_INCLUDES) -o $@ -c $<
+	$(GCC) $(ASMFLAGS) $(FREERTOS_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
 $(FREERTOS_PLUS_UTIL_BUILD_DIR)/%.o: %.c
@@ -178,7 +178,7 @@ $(SDK_BUILD_DIR)/%.o: %.c
 $(SDK_BUILD_DIR)/%.o : %.S
 	@echo "[Freedom SDK] : $@ _____________________________________________________________"
 	@echo "Building: $<"
-	$(GCC) $(CFLAGS) $(SDK_INCLUDES) -o $@ -c $<
+	$(GCC) $(ASMFLAGS) $(SDK_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
 include $(BSP_DIR)/libxil/libxil.mk

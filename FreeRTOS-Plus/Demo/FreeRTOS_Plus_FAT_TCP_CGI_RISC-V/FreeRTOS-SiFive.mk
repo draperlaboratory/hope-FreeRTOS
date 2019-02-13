@@ -56,7 +56,9 @@ VPATH += \
 	$(SDK_DRIVER_DIR)/plic \
 	$(SDK_DRIVER_DIR)/fe300prci
 
-CFLAGS += -DportasmHANDLE_INTERRUPT=handle_trap -DUSE_PLIC
+CFLAGS += -DUSE_PLIC
+
+ASMFLAGS += -DportasmHANDLE_INTERRUPT=handle_trap
 
 SDK_CFLAGS := -include sys/cdefs.h
 
