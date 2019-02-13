@@ -196,6 +196,9 @@ $(BUILD_DIRECTORIES):
 clean:
 	rm -rv $(BUILD_DIR)
 
+sim-qemu: $(OUT_ELF)
+	qemu-system-riscv32 -kernel $^ -machine sifive_e
+
 debug:
 	@echo "Application Objects: ___________________________"
 	@echo $(APP_OBJS)
