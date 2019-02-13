@@ -38,7 +38,7 @@ APP_INCLUDES = \
 	-I $(BSP_INC) \
 	-I $(BSP_INC)/devices \
 	-I $(BSP_DIR)/env \
-	$(FREEDOM_SDK_INCLUDES) \
+	$(SDK_INCLUDES) \
 	-I $(ARCH_PORTABLE_INC) \
 	-I $(ARCH_PORTABLE_CLINC) \
 	-I $(ARCH_PORTABLE_EXT) \
@@ -64,7 +64,7 @@ FREERTOS_INCLUDES += \
 	-I ./include \
 	-I $(BSP_INC) \
 	-I $(BSP_DIR)/libxil/include \
-	$(FREEDOM_SDK_INCLUDES) \
+	$(SDK_INCLUDES) \
 	-I $(ARCH_PORTABLE_INC) \
 	-I $(ARCH_PORTABLE_CLINC) \
 	-I $(ARCH_PORTABLE_EXT)
@@ -83,7 +83,7 @@ OUT_OBJS = \
 	$(FREERTOS_CLI_OBJS) \
 	$(FREERTOS_TCP_OBJS) \
 	$(FREERTOS_FAT_OBJS) \
-	$(FREEDOM_SDK_OBJS)
+	$(SDK_OBJS)
 
 BUILD_DIRECTORIES = \
 	$(APP_BUILD_DIR) \
@@ -92,7 +92,7 @@ BUILD_DIRECTORIES = \
 	$(FREERTOS_CLI_BUILD_DIR) \
 	$(FREERTOS_TCP_BUILD_DIR) \
 	$(FREERTOS_FAT_BUILD_DIR) \
-	$(FREEDOM_SDK_BUILD_DIR)
+	$(SDK_BUILD_DIR)
 
 .PHONY: debug clean app_compile debug-app frtos_compile print-info frtos_p_util frtos_cli frtos_tcp frtos_fat freedom_sdk out_elf
 all: directories $(OUT_OBJS) $(OUT_ELF)
@@ -103,7 +103,7 @@ frtos_p_util: directories $(FREERTOS_PLUS_UTIL_OBJS)
 frtos_cli: directories $(FREERTOS_CLI_OBJS)
 frtos_tcp: directories $(FREERTOS_TCP_OBJS)
 frtos_fat: directories $(FREERTOS_FAT_OBJS)
-freedom_sdk: directories $(FREEDOM_SDK_OBJS)
+freedom_sdk: directories $(SDK_OBJS)
 out_elf: directories $(OUT_ELF)
 
 # Notes
@@ -169,16 +169,16 @@ $(FREERTOS_FAT_BUILD_DIR)/%.o: %.c
 	$(GCC) $(CFLAGS) $(FREERTOS_FAT_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
-$(FREEDOM_SDK_BUILD_DIR)/%.o: %.c
+$(SDK_BUILD_DIR)/%.o: %.c
 	@echo "[Freedom SDK] : $@ _____________________________________________________________"
 	@echo "Building: $<"
-	$(GCC) $(CFLAGS) $(FREEDOM_SDK_CFLAGS) $(FREEDOM_SDK_INCLUDES) -o $@ -c $<
+	$(GCC) $(CFLAGS) $(SDK_CFLAGS) $(SDK_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
-$(FREEDOM_SDK_BUILD_DIR)/%.o : %.S
+$(SDK_BUILD_DIR)/%.o : %.S
 	@echo "[Freedom SDK] : $@ _____________________________________________________________"
 	@echo "Building: $<"
-	$(GCC) $(CFLAGS) $(FREEDOM_SDK_INCLUDES) -o $@ -c $<
+	$(GCC) $(CFLAGS) $(SDK_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
 include $(BSP_DIR)/libxil/libxil.mk
@@ -211,7 +211,7 @@ debug:
 	@echo "FREERTOS TCP Objects: __________________________"
 	@echo $(FREERTOS_TCP_OBJS)
 	@echo "Freedom SDK Objects: __________________________"
-	@echo $(FREEDOM_SDK_OBJS)
+	@echo $(SDK_OBJS)
 
 print-info:
 	@echo "VPATH: $(VPATH)"
