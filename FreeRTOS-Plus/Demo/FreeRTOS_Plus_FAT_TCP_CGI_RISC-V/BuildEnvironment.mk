@@ -1,6 +1,6 @@
 
 BUILD_DIR = ./build
-CROSS_COMPILE_PREFIX = riscv64-unknown-elf
+CROSS_COMPILE_PREFIX = riscv32-unknown-elf
 
 LINKER_SCRIPT = lscript.ld
 #-----------------------------------------------------------
