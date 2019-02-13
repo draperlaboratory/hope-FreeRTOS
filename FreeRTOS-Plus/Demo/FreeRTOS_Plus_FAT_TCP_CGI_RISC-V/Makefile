@@ -40,7 +40,6 @@ APP_INCLUDES = \
 	-I $(BSP_DIR)/env \
 	$(SDK_INCLUDES) \
 	-I $(ARCH_PORTABLE_INC) \
-	-I $(ARCH_PORTABLE_CLINC) \
 	-I $(ARCH_PORTABLE_EXT) \
 	-I $(FREERTOS_PLUS_DIR)/Demo/Common/Demo_IP_Protocols/include \
 	-I $(FREERTOS_PLUS_DIR)/Demo/Common/FreeRTOS_Plus_UDP_Demos/TraceMacros/Example1 \
