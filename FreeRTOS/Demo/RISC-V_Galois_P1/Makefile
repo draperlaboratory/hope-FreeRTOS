@@ -4,7 +4,6 @@ CCPATH =
 ARCH 		= -march=rv32im
 ABI 		= -mabi=ilp32
 
-DEMO_TYPE ?= 1
 
 TARGET=$(CCPATH)riscv${RISCV_XLEN}-unknown-${RISCV_LIB}
 
@@ -14,8 +13,12 @@ OBJDUMP	= $(TARGET)-objdump
 AR		= $(TARGET)-ar
 RANLIB	= $(TARGET)-ranlib
 
-PROG	= main
+# Use main_blinky as demo source and target file name if not specified
+PROG 	?= main_blinky
 CRT0	= bsp/boot.S
+
+# For debugging
+$(info $$PROG is [${PROG}])
 
 FREERTOS_SOURCE_DIR	= ../../Source
 
@@ -64,20 +67,8 @@ PORT_ASM = $(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/portASM.S
 DEMO_SRC = main.c \
 	bsp/bsp.c \
 	bsp/uart_16550.c \
-	bsp/syscalls.c
-
-ifeq ($(DEMO_TYPE),1)
-# compiling blinky demo
-DEMO_SRC += demo/main_blinky.c
-else
-ifeq ($(DEMO_TYPE),2)
-# compiling full demo
-DEMO_SRC += demo/main_full.c
-PORT_ASM += demo/RegTest.S
-else
-$(info unknown demo: $(DEMO_TYPE))
-endif
-endif
+	bsp/syscalls.c \
+	demo/$(PROG).c
 
 INCLUDES = \
 	-I. \
@@ -88,8 +79,19 @@ INCLUDES = \
 
 ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
-CFLAGS = $(WARNINGS) $(INCLUDES) -DmainDEMO_TYPE=$(DEMO_TYPE)
+CFLAGS = $(WARNINGS) $(INCLUDES)
 CFLAGS += -O0 -g3 $(ARCH) $(ABI) -mcmodel=medany
+
+ifeq ($(PROG),main_blinky)
+	CFLAGS += -DmainDEMO_TYPE=1
+else 
+ifeq ($(PROG),main_full)
+	CFLAGS += -DmainDEMO_TYPE=2
+	PORT_ASM += demo/RegTest.S
+else
+	$(info unknown demo: $(PROG))
+endif
+endif
 
 ARFLAGS=crsv
 
