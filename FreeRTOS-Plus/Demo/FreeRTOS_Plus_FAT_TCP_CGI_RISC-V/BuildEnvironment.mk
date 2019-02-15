@@ -13,13 +13,13 @@ RANLIB  = $(CROSS_COMPILE_PREFIX)-ranlib
 OUT_ELF = FreeRTOS-web-server.elf
 CRT0    := UNKNOWN
 
-COMMON_FLAGS := -MT"$@" -Wall -O0 -g3 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)"
+COMMON_FLAGS = -MT"$@" -Wall -O0 -g3 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)"
 COMMON_FLAGS += -msmall-data-limit=8 -ffunction-sections -fdata-sections -fno-builtin-printf
 
-CFLAGS := -std=gnu11
+CFLAGS = -std=gnu11
 CFLAGS += $(COMMON_FLAGS)
 
-ASMFLAGS :=
+ASMFLAGS =
 ASMFLAGS += $(COMMON_FLAGS)
 
 LDFLAGS := -Xlinker --gc-sections -Xlinker --defsym=__stack_size=1K -O0 -g3
