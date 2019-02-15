@@ -77,6 +77,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+#include <unistd.h>
 
 /* FreeRTOS includes. */
 #include <FreeRTOS.h>
@@ -271,6 +272,35 @@ static void prvSetupEthIRQ( void )
 }
 /*-----------------------------------------------------------*/
 
+const char * const pcPassMessage = "Blink\r\n";
+
+#if 0
+void main( void )
+{
+int i, n;
+unsigned int *ver = (unsigned int*)GEM0_CTRL_ADDR;
+char vstr[64];
+
+   for (i=0;i<256;++i,++ver)
+   {
+      n = sprintf(vstr, "Version%d @ 0x%x:  0x%x\n", i,(unsigned int)ver, *ver);
+      printf("Test.\n");
+      write(STDOUT_FILENO, vstr, n);
+   }
+
+   ver = (unsigned int*)(MEM_END_ADDR - (256 * sizeof(unsigned int)));
+   for (i=0;i<256;++i,++ver)
+   {
+      n = sprintf(vstr, "Memory%d @ 0x%x:  0x%x\n", i,(unsigned int)ver, *ver);
+      printf("Test.\n");
+      write(STDOUT_FILENO, vstr, n);
+   }
+
+   for( ;; )
+	{
+   }
+}
+#else
 /* See http://www.FreeRTOS.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/TCPIP_FAT_Examples_Xilinx_Zynq.html */
 int main( void )
 {
@@ -281,13 +311,16 @@ int main( void )
    write( STDOUT_FILENO, pcPassMessage, strlen( pcPassMessage ) );
 
    printf("Init time.\n");
-
 	/* Miscellaneous initialisation including preparing the logging and seeding
 	the random number generator. */
 	prvMiscInitialisation();
 
+   printf("Hardware time.\n");
+
    prvSetupHardware();
    prvSetupEthIRQ();
+
+   printf("IP time.\n");
 
 	/* Initialise the network interface.
 
@@ -299,6 +332,8 @@ int main( void )
 	FreeRTOS_printf( ( "FreeRTOS_IPInit\n" ) );
 	FreeRTOS_IPInit( ucIPAddress, ucNetMask, ucGatewayAddress, ucDNSServerAddress, ucMACAddress );
 
+   printf("Server time.\n");
+
 	/* Create the task that handles the FTP and HTTP servers.  This will
 	initialise the file system then wait for a notification from the network
 	event hook before creating the servers.  The task is created at the idle
@@ -308,6 +343,8 @@ int main( void )
 
 	/* Start the RTOS scheduler. */
 	FreeRTOS_debug_printf( ("vTaskStartScheduler\n") );
+
+   printf("Everything Running.\n");
 	vTaskStartScheduler();
 
 	/* If all is well, the scheduler will now be running, and the following
@@ -319,6 +356,7 @@ int main( void )
 	{
 	}
 }
+#endif
 /*-----------------------------------------------------------*/
 
 static void prvCreateDiskAndExampleFiles( void )
