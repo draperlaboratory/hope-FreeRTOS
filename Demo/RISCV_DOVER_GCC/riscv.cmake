@@ -14,10 +14,10 @@ endif()
 
 # specify the cross compiler
 if (DEFINED USE_CLANG)
-  set(CMAKE_C_COMPILER ${ISP_PREFIX}bin/clang)
-  set(CMAKE_ASM_COMPILER ${ISP_PREFIX}bin/clang)
-  set(CMAKE_CXX_COMPILER ${ISP_PREFIX}bin/clang)
-  include_directories(${ISP_PREFIX}riscv32-unknown-elf/include)
+  set(CMAKE_C_COMPILER ${ISP_PREFIX}/bin/clang)
+  set(CMAKE_ASM_COMPILER ${ISP_PREFIX}/bin/clang)
+  set(CMAKE_CXX_COMPILER ${ISP_PREFIX}/bin/clang)
+  include_directories(${ISP_PREFIX}/riscv32-unknown-elf/include)
 else()
   set(CMAKE_C_COMPILER riscv32-unknown-elf-gcc)
   set(CMAKE_ASM_COMPILER riscv32-unknown-elf-gcc)
@@ -31,7 +31,7 @@ set(CMAKE_EXE_LINKER_FLAGS "-static")
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 set(BUILD_SHARED_LIBRARIES OFF)
 
-set(CMAKE_FIND_ROOT_PATH  ${ISP_PREFIX}riscv32-unknown-elf)
+set(CMAKE_FIND_ROOT_PATH  ${ISP_PREFIX}/riscv32-unknown-elf)
 
 # search for programs in the build host directories
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
