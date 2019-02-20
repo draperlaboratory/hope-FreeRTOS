@@ -66,6 +66,7 @@ PORT_ASM = $(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/portASM.S
 
 DEMO_SRC = main.c \
 	bsp/bsp.c \
+	bsp/plic_driver.c \
 	bsp/uart_16550.c \
 	bsp/syscalls.c \
 	demo/$(PROG).c
