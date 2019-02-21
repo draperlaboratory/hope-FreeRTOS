@@ -142,6 +142,7 @@ int phy_detected = 0;
 #define XEMACPS_GMII2RGMII_REG_NUM			0x10
 
 /* Frequency setting */
+#if 0
 #define SLCR_LOCK_ADDR			(XPS_SYS_CTRL_BASEADDR + 0x4)
 #define SLCR_UNLOCK_ADDR		(XPS_SYS_CTRL_BASEADDR + 0x8)
 #define SLCR_GEM0_CLK_CTRL_ADDR	(XPS_SYS_CTRL_BASEADDR + 0x140)
@@ -446,6 +447,7 @@ unsigned configure_IEEE_phy_speed(XEmacPs *xemacpsp, unsigned speed)
 	return 0;
 }
 
+#if 0
 static void SetUpSLCRDivisors(int mac_baseaddr, int speed)
 {
 	volatile u32 slcrBaseAddress;
@@ -520,6 +522,9 @@ static void SetUpSLCRDivisors(int mac_baseaddr, int speed)
 	*(volatile unsigned int *)(SLCR_LOCK_ADDR) = SLCR_LOCK_KEY_VALUE;
 	return;
 }
+#else
+static void SetUpSLCRDivisors(int mac_baseaddr, int speed) {}
+#endif
 
 
 unsigned link_speed;
