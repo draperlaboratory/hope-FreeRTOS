@@ -483,6 +483,10 @@ XStatus init_dma(xemacpsif_s *xemacpsif)
 	xemacpsif->emacps.RxBdRing.BaseBdAddr = ( uint32_t ) xemacpsif->rxSegments;
 	xemacpsif->emacps.TxBdRing.BaseBdAddr = ( uint32_t ) xemacpsif->txSegments;
 
+   printf("Uncached Mem Allocated.\n");
+   printf("Rx Allocated 0x%x.\n", (uint32_t)xemacpsif->rxSegments);
+   printf("Rx Allocated 0x%x.\n", (uint32_t)xemacpsif->txSegments);
+
 	if( xTXDescriptorSemaphore == NULL )
 	{
 		xTXDescriptorSemaphore = xSemaphoreCreateCounting( ( UBaseType_t ) ipconfigNIC_N_TX_DESC, ( UBaseType_t ) ipconfigNIC_N_TX_DESC );
@@ -493,6 +497,7 @@ XStatus init_dma(xemacpsif_s *xemacpsif)
 	 */
 	for( iIndex = 0; iIndex < ipconfigNIC_N_RX_DESC; iIndex++ )
 	{
+      printf("RX Descriptor %d.\n"), iIndex;
 		pxBuffer = pxDMA_rx_buffers[ iIndex ];
 		if( pxBuffer == NULL )
 		{
@@ -504,10 +509,13 @@ XStatus init_dma(xemacpsif_s *xemacpsif)
 			}
 		}
 
+      printf("RX Segments %d 0x%x.\n", iIndex, (uint32_t)&(xemacpsif->rxSegments[ iIndex ]));
 		xemacpsif->rxSegments[ iIndex ].flags = 0;
 		xemacpsif->rxSegments[ iIndex ].address = ( ( uint32_t )pxBuffer->pucEthernetBuffer ) & XEMACPS_RXBUF_ADD_MASK;
 
 		pxDMA_rx_buffers[ iIndex ] = pxBuffer;
+
+      printf("RX Cache check %d.\n", iIndex);
 		/* Make sure this memory is not in cache for now. */
 		if( ucIsCachedMemory( pxBuffer->pucEthernetBuffer ) != 0 )
 		{
@@ -519,6 +527,8 @@ XStatus init_dma(xemacpsif_s *xemacpsif)
 	xemacpsif->rxSegments[ ipconfigNIC_N_RX_DESC - 1 ].address |= XEMACPS_RXBUF_WRAP_MASK;
 
 	memset( xemacpsif->tx_space, '\0', ipconfigNIC_N_TX_DESC * xemacpsif->uTxUnitSize );
+
+   printf("RX Descriptors Allocated.\n");
 
 	clean_dma_txdescs( xemacpsif );
 
@@ -612,6 +622,8 @@ void EmacEnableIntr(void)
 void handle_m_ext_interrupt(void)
 {
    int n = PLIC_claim_interrupt(&g_plic);
+
+   printf("Interrupt\n");
 
    if (5 == n)
    {

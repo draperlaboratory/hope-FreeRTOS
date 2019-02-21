@@ -443,10 +443,13 @@ unsigned configure_IEEE_phy_speed(XEmacPs *xemacpsp, unsigned speed)
 
 	XEmacPs_PhyWrite(xemacpsp, phy_addr, IEEE_CONTROL_REG_OFFSET,
 											control | IEEE_CTRL_RESET_MASK);
+
+   printf("Wait.\n");
 	{
 		volatile int wait;
 		for (wait=0; wait < 100000; wait++);
 	}
+   printf("Done Waiting.\n");
 	return 0;
 }
 
@@ -542,8 +545,9 @@ unsigned Phy_Setup (XEmacPs *xemacpsp)
 	conv_present = 1;
 #endif
 #endif
-
+   printf("Linkspeed set\n");
 #ifdef  ipconfigNIC_LINKSPEED_AUTODETECT
+   printf("Autodetect\n");
 	link_speed = get_IEEE_phy_speed(xemacpsp);
 	if (link_speed == 1000) {
 		SetUpSLCRDivisors(xemacpsp->Config.BaseAddress,1000);
@@ -556,24 +560,30 @@ unsigned Phy_Setup (XEmacPs *xemacpsp)
 		convspeeddupsetting = XEMACPS_GMII2RGMII_SPEED10_FD;
 	}
 #elif	defined(ipconfigNIC_LINKSPEED1000)
+   printf("1000 set\n");
 	SetUpSLCRDivisors(xemacpsp->Config.BaseAddress,1000);
 	link_speed = 1000;
 	configure_IEEE_phy_speed(xemacpsp, link_speed);
 	convspeeddupsetting = XEMACPS_GMII2RGMII_SPEED1000_FD;
 	sleep(1);
 #elif	defined(ipconfigNIC_LINKSPEED100)
+   printf("100 set\n");
 	SetUpSLCRDivisors(xemacpsp->Config.BaseAddress,100);
 	link_speed = 100;
+   printf("100 Phy set\n");
 	configure_IEEE_phy_speed(xemacpsp, link_speed);
 	convspeeddupsetting = XEMACPS_GMII2RGMII_SPEED100_FD;
 	sleep(1);
+   printf("Sleep\n");
 #elif	defined(ipconfigNIC_LINKSPEED10)
+   printf("10 set\n");
 	SetUpSLCRDivisors(xemacpsp->Config.BaseAddress,10);
 	link_speed = 10;
 	configure_IEEE_phy_speed(xemacpsp, link_speed);
 	convspeeddupsetting = XEMACPS_GMII2RGMII_SPEED10_FD;
 	sleep(1);
 #endif
+   printf("Awake\n");
 	if (conv_present) {
 		XEmacPs_PhyWrite(xemacpsp, convphyaddr,
 		XEMACPS_GMII2RGMII_REG_NUM, convspeeddupsetting);

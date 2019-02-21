@@ -379,6 +379,8 @@ struct freertos_sockaddr xAddress;
 
 		iptraceNETWORK_EVENT_RECEIVED( xReceivedEvent.eEventType );
 
+      printf("Event:  %d.\n", xReceivedEvent.eEventType);
+
 		switch( xReceivedEvent.eEventType )
 		{
 			case eNetworkDownEvent :
@@ -1315,6 +1317,7 @@ static void prvProcessNetworkDownEvent( void )
 		}
 		#endif
 	}
+   printf("Leaving.\n");
 }
 /*-----------------------------------------------------------*/
 
