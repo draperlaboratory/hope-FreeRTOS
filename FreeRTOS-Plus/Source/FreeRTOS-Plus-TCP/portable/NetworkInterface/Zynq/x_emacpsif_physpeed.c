@@ -66,8 +66,8 @@
 #include "NetworkBufferManagement.h"
 
 #include "Zynq/x_emacpsif.h"
-#include "xparameters_ps.h"
-#include "xparameters.h"
+//#include "xparameters_ps.h"
+//#include "xparameters.h"
 
 
 int phy_detected = 0;
