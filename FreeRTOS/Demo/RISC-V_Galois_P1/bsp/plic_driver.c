@@ -1,9 +1,6 @@
-// See LICENSE for license details.
-
-//#include "sifive/devices/plic.h"
+// Modified SIFI driver.
+// TODO: add a proper license
 #include "plic_driver.h"
-//#include "platform.h"
-//#include "encoding.h"
 #include <string.h>
 
 
@@ -31,12 +28,16 @@ void PLIC_init (
   this_plic->base_addr = base_addr;
   this_plic->num_sources = num_sources;
   this_plic->num_priorities = num_priorities;
+
+  // Erase handler table
+  for (uint8_t idx =0; idx < PLIC_NUM_INTERRUPTS; idx++) {
+      this_plic->HandlerTable[idx] = NULL;
+  }
+
   
   // Disable all interrupts (don't assume that these registers are reset).
-  unsigned long hart_id = 0;
   volatile_memzero((uint8_t*) (this_plic->base_addr +
-                               PLIC_ENABLE_OFFSET +
-                               (hart_id << PLIC_ENABLE_SHIFT_PER_TARGET)),
+                               PLIC_ENABLE_OFFSET),
                    (num_sources + 8) / 8);
   
   // Set all priorities to 0 (equal priority -- don't assume that these are reset).
@@ -47,8 +48,7 @@ void PLIC_init (
   // Set the threshold to 0.
   volatile plic_threshold* threshold = (plic_threshold*)
     (this_plic->base_addr +
-     PLIC_THRESHOLD_OFFSET +
-     (hart_id << PLIC_THRESHOLD_SHIFT_PER_TARGET));
+     PLIC_THRESHOLD_OFFSET);
 
   *threshold = 0;
   
@@ -57,10 +57,8 @@ void PLIC_init (
 void PLIC_set_threshold (plic_instance_t * this_plic,
 			 plic_threshold threshold){
 
-  unsigned long hart_id = 0;  
   volatile plic_threshold* threshold_ptr = (plic_threshold*) (this_plic->base_addr +
-                                                              PLIC_THRESHOLD_OFFSET +
-                                                              (hart_id << PLIC_THRESHOLD_SHIFT_PER_TARGET));
+                                                              PLIC_THRESHOLD_OFFSET);
 
   *threshold_ptr = threshold;
 
@@ -69,10 +67,8 @@ void PLIC_set_threshold (plic_instance_t * this_plic,
 
 void PLIC_enable_interrupt (plic_instance_t * this_plic, plic_source source){
 
-  unsigned long hart_id = 0;
   volatile uint8_t * current_ptr = (volatile uint8_t *)(this_plic->base_addr +
                                                         PLIC_ENABLE_OFFSET +
-                                                        (hart_id << PLIC_ENABLE_SHIFT_PER_TARGET) +
                                                         (source >> 3));
   uint8_t current = *current_ptr;
   current = current | ( 1 << (source & 0x7));
@@ -82,10 +78,8 @@ void PLIC_enable_interrupt (plic_instance_t * this_plic, plic_source source){
 
 void PLIC_disable_interrupt (plic_instance_t * this_plic, plic_source source){
   
-  unsigned long hart_id = 0;
   volatile uint8_t * current_ptr = (volatile uint8_t *) (this_plic->base_addr +
                                                          PLIC_ENABLE_OFFSET +
-                                                         (hart_id << PLIC_ENABLE_SHIFT_PER_TARGET) +
                                                          (source >> 3));
   uint8_t current = *current_ptr;
   current = current & ~(( 1 << (source & 0x7)));
@@ -105,25 +99,42 @@ void PLIC_set_priority (plic_instance_t * this_plic, plic_source source, plic_pr
 }
 
 plic_source PLIC_claim_interrupt(plic_instance_t * this_plic){
-  
-  unsigned long hart_id = 0;
 
   volatile plic_source * claim_addr = (volatile plic_source * )
     (this_plic->base_addr +
-     PLIC_CLAIM_OFFSET +
-     (hart_id << PLIC_CLAIM_SHIFT_PER_TARGET));
+     PLIC_CLAIM_OFFSET);
 
   return  *claim_addr;
   
 }
 
 void PLIC_complete_interrupt(plic_instance_t * this_plic, plic_source source){
-  
-  unsigned long hart_id = 0;
+
   volatile plic_source * claim_addr = (volatile plic_source *) (this_plic->base_addr +
-                                                                PLIC_CLAIM_OFFSET +
-                                                                (hart_id << PLIC_CLAIM_SHIFT_PER_TARGET));
+                                                                PLIC_CLAIM_OFFSET);
   *claim_addr = source;
   
 }
 
+plic_source PLIC_register_interrupt_handler(plic_instance_t * this_plic, plic_source source_id,
+                                                            plic_interrupt_handler_t handler) {
+  if ((source_id >=1 ) && (source_id < PLIC_NUM_INTERRUPTS)) {
+    // check if we have a handle registered
+    if (this_plic->HandlerTable[source_id] == NULL) {
+      // register new handler
+      this_plic->HandlerTable[source_id] = handler;
+      // enable interrupt
+      PLIC_enable_interrupt(this_plic,source_id);
+      return source_id;
+    }
+  }
+    // invalid source_id or the source already has a handler
+    return 0;
+}
+
+void PLIC_unregister_interrupt_handler(plic_instance_t * this_plic, plic_source source_id) {
+    if ((source_id >=1 ) && (source_id < PLIC_NUM_INTERRUPTS)) {
+        PLIC_disable_interrupt(this_plic,source_id);
+        this_plic->HandlerTable[source_id] = NULL;
+    }
+}
