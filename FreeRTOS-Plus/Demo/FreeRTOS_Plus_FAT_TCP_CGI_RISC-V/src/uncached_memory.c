@@ -104,7 +104,7 @@
 #include "uncached_memory.h"
 #include "UDPLoggingPrintf.h"
 
-#define UNCACHED_MEMORY_SIZE	0x10000ul
+#define UNCACHED_MEMORY_SIZE	0x40000ul
 
 static void vInitialiseUncachedMemory( void );
 
