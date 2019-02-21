@@ -158,8 +158,9 @@ int phy_detected = 0;
 #define SLCR_UNLOCK_KEY_VALUE			0xDF0D
 #define SLCR_ADDR_GEM_RST_CTRL			(XPS_SYS_CTRL_BASEADDR + 0x214)
 #define EMACPS_SLCR_DIV_MASK			0xFC0FC0FF
+#endif
 
-#define EMAC0_BASE_ADDRESS				0xE000B000
+#define EMAC0_BASE_ADDRESS				GEM0_CTRL_ADDR
 #define EMAC1_BASE_ADDRESS				0xE000C000
 
 static int detect_phy(XEmacPs *xemacpsp)
