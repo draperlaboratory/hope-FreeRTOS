@@ -309,6 +309,7 @@ int main( void )
    write( STDOUT_FILENO, pcPassMessage, strlen( pcPassMessage ) );
 
    printf("Init time.\n");
+
 	/* Miscellaneous initialisation including preparing the logging and seeding
 	the random number generator. */
 	prvMiscInitialisation();
