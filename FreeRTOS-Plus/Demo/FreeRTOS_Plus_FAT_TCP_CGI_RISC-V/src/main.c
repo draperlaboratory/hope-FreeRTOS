@@ -274,6 +274,14 @@ static void prvSetupEthIRQ( void )
 /* See http://www.FreeRTOS.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/TCPIP_FAT_Examples_Xilinx_Zynq.html */
 int main( void )
 {
+   printf("Test.\n");
+   write( STDOUT_FILENO, pcPassMessage, strlen( pcPassMessage ) );
+   write( STDOUT_FILENO, pcPassMessage, strlen( pcPassMessage ) );
+   write( STDOUT_FILENO, pcPassMessage, strlen( pcPassMessage ) );
+   write( STDOUT_FILENO, pcPassMessage, strlen( pcPassMessage ) );
+
+   printf("Init time.\n");
+
 	/* Miscellaneous initialisation including preparing the logging and seeding
 	the random number generator. */
 	prvMiscInitialisation();
@@ -668,4 +676,3 @@ void vOutputChar( const char cChar, const TickType_t xTicksToWait  )
 }
 
 /*-----------------------------------------------------------*/
-

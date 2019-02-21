@@ -144,6 +144,7 @@ uint8_t *pucGetUncachedMemory( uint32_t ulSize )
 	if( ( pucStartOfMemory == NULL ) || ( ulSize > ulMemorySize ) )
 	{
 		pucReturn = NULL;
+      printf("No Uncached.  Want 0x%x.  Have 0x%x.\n", ulSize, ulMemorySize);
 	}
 	else
 	{
@@ -163,6 +164,8 @@ static void vInitialiseUncachedMemory( )
 
 	/* At the end of program's space... */
 	pucStartOfMemory = (uint8_t *) &_end;
+
+   printf("Uncached Start:  0x%x.\n", pucStartOfMemory);
 
 	/* Align the start address to 1 MB boundary. */
 	pucStartOfMemory = (uint8_t *)( ( ( uint32_t )pucStartOfMemory + UNCACHED_MEMORY_SIZE ) & ( ~( UNCACHED_MEMORY_SIZE - 1 ) ) );
