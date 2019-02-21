@@ -566,6 +566,7 @@ unsigned Phy_Setup (XEmacPs *xemacpsp)
 	link_speed = 100;
 	configure_IEEE_phy_speed(xemacpsp, link_speed);
 	convspeeddupsetting = XEMACPS_GMII2RGMII_SPEED100_FD;
+	printf("Sleep\n");
 	sleep(1);
 #elif	defined(ipconfigNIC_LINKSPEED10)
 	SetUpSLCRDivisors(xemacpsp->Config.BaseAddress,10);
@@ -582,4 +583,3 @@ unsigned Phy_Setup (XEmacPs *xemacpsp)
 	printf("link speed: %d\r\n", link_speed);
 	return link_speed;
 }
-
