@@ -45,6 +45,8 @@
 #define MEM_CTRL_ADDR _AC(0x80000000,UL)
 #define MEM_END_ADDR  _AC(0xA0000000,UL)
 
+#define XPAR_PS7_ETHERNET_0_DEVICE_ID 0
+
 // IOF masks
 #define IOF0_SPI1_MASK          _AC(0x000007FC,UL)
 #define SPI11_NUM_SS     (4)
