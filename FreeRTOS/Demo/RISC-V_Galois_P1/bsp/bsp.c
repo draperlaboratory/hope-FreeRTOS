@@ -16,9 +16,9 @@ void prvSetupHardware( void )
 
     // Set priorities
     PLIC_set_priority(&Plic, PLIC_SOURCE_UART0, PLIC_PRIORITY_UART0);
-    PLIC_set_priority(&Plic, PLIC_SOURCE_UART1, PLIC_PRIORITY_UART1);
-    PLIC_set_priority(&Plic, PLIC_SOURCE_IIC, PLIC_PRIORITY_IIC);
-    PLIC_set_priority(&Plic, PLIC_SOURCE_SPI, PLIC_PRIORITY_SPI);
+    PLIC_set_priority(&Plic, PLIC_SOURCE_ETH, PLIC_PRIORITY_ETH);
+    PLIC_set_priority(&Plic, PLIC_SOURCE_DMA_MM2S, PLIC_PRIORITY_DMA_MM2S);
+    PLIC_set_priority(&Plic, PLIC_SOURCE_DMA_S2MM, PLIC_PRIORITY_DMA_S2MM);
 
     // initialize peripherals
 	UART_init();
