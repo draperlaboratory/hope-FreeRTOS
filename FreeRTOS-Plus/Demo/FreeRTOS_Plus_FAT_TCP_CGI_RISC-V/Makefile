@@ -22,6 +22,7 @@ VPATH += $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)
 APP_SRC_DIR = ./src
 APP_SRC = \
 	$(APP_SRC_DIR)/cgi.c \
+	$(APP_SRC_DIR)/sleep.c \
 	$(APP_SRC_DIR)/cgi_leakage.c \
 	$(APP_SRC_DIR)/cgi_overflow.c \
 	$(APP_SRC_DIR)/cgi_permissions.c \
