@@ -60,7 +60,6 @@
 #include "xil_types.h"
 #include "xil_assert.h"
 #include "xil_stubs.h"
-#include "xreg_cortexa9.h"
 
 /************************** Constant Definitions *****************************/
 
