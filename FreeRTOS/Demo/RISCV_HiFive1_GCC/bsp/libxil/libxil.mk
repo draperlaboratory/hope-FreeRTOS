@@ -12,12 +12,7 @@ LIBXIL_SRCS := \
 	libsrc/emacps_v3_2/src/xemacps_intr.c \
 	libsrc/standalone_v5_5/src/xil_assert.c \
 	libsrc/standalone_v5_5/src/xil_stubs.c \
-	libsrc/scugic_v3_3/src/xscugic.c \
-	libsrc/scugic_v3_3/src/xscugic_hw.c \
-	libsrc/scugic_v3_3/src/xscugic_g.c \
-	libsrc/standalone_v5_5/src/xtime_l.c \
-	libsrc/standalone_v5_5/src/xil_io.c \
-	libsrc/standalone_v5_5/src/sleep.c
+	libsrc/standalone_v5_5/src/xil_io.c
 
 INCLUDES = -I$(LIBXIL_DIR)/include
 FREERTOS_INCLUDES += $(LIBXIL_DIR)/include
