@@ -35,7 +35,17 @@
  * This data type defines an interrupt handler for a device.
  * The argument points to the instance of the component
  */
-typedef void (*plic_interrupt_handler_t) (void);
+typedef void (*plic_interrupt_handler_t) (void *InstancePtr);
+
+/* The following data type defines each entry in an interrupt vector table.
+ * The callback reference is the base address of the interrupting device
+ * for the driver interface given in this file and an instance pointer for the
+ * driver interface given in xintc.h file.
+ */
+typedef struct {
+	plic_interrupt_handler_t Handler;
+	void *CallBackRef;
+} plic_VectorTableEntry;
 
 typedef struct __plic_instance_t
 {
@@ -43,7 +53,7 @@ typedef struct __plic_instance_t
 
   uint32_t num_sources;
   uint32_t num_priorities;
-  plic_interrupt_handler_t HandlerTable[PLIC_NUM_INTERRUPTS];
+  plic_VectorTableEntry HandlerTable[PLIC_NUM_INTERRUPTS];
   
 } plic_instance_t;
 
@@ -77,7 +87,7 @@ plic_source PLIC_claim_interrupt(plic_instance_t * this_plic);
 void PLIC_complete_interrupt(plic_instance_t * this_plic,
 			     plic_source source);
 
-plic_source PLIC_register_interrupt_handler(plic_instance_t * this_plic, plic_source source_id, plic_interrupt_handler_t handler);
+plic_source PLIC_register_interrupt_handler(plic_instance_t * this_plic, plic_source source_id, plic_interrupt_handler_t handler, void *CallBackRef);
 
 void PLIC_unregister_interrupt_handler(plic_instance_t * this_plic, plic_source source_id);
 

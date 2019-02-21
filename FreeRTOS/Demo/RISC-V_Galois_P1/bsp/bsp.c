@@ -35,7 +35,7 @@ void external_interrupt_handler( uint32_t cause ) {
     plic_source source_id = PLIC_claim_interrupt(&Plic);
 
     if ((source_id >=1 ) && (source_id < PLIC_NUM_INTERRUPTS)) {
-        Plic.HandlerTable[source_id]();
+        Plic.HandlerTable[source_id].Handler(Plic.HandlerTable[source_id].CallBackRef);
     }
 
     // clear interrupt

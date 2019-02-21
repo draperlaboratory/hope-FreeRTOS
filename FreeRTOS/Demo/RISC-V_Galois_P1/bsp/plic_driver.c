@@ -31,10 +31,9 @@ void PLIC_init (
 
   // Erase handler table
   for (uint8_t idx =0; idx < PLIC_NUM_INTERRUPTS; idx++) {
-      this_plic->HandlerTable[idx] = NULL;
+      this_plic->HandlerTable[idx].Handler = NULL;
   }
 
-  
   // Disable all interrupts (don't assume that these registers are reset).
   volatile_memzero((uint8_t*) (this_plic->base_addr +
                                PLIC_ENABLE_OFFSET),
@@ -117,12 +116,14 @@ void PLIC_complete_interrupt(plic_instance_t * this_plic, plic_source source){
 }
 
 plic_source PLIC_register_interrupt_handler(plic_instance_t * this_plic, plic_source source_id,
-                                                            plic_interrupt_handler_t handler) {
+                                                            plic_interrupt_handler_t handler,
+                                                            void *CallBackRef) {
   if ((source_id >=1 ) && (source_id < PLIC_NUM_INTERRUPTS)) {
     // check if we have a handle registered
-    if (this_plic->HandlerTable[source_id] == NULL) {
-      // register new handler
-      this_plic->HandlerTable[source_id] = handler;
+    if (this_plic->HandlerTable[source_id].Handler == NULL) {
+      // register new handler a callback reference
+      this_plic->HandlerTable[source_id].Handler = handler;
+      this_plic->HandlerTable[source_id].CallBackRef = CallBackRef;
       // enable interrupt
       PLIC_enable_interrupt(this_plic,source_id);
       return source_id;
@@ -135,6 +136,6 @@ plic_source PLIC_register_interrupt_handler(plic_instance_t * this_plic, plic_so
 void PLIC_unregister_interrupt_handler(plic_instance_t * this_plic, plic_source source_id) {
     if ((source_id >=1 ) && (source_id < PLIC_NUM_INTERRUPTS)) {
         PLIC_disable_interrupt(this_plic,source_id);
-        this_plic->HandlerTable[source_id] = NULL;
+        this_plic->HandlerTable[source_id].Handler = NULL;
     }
 }
