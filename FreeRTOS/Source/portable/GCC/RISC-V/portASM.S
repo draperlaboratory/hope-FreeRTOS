@@ -95,11 +95,10 @@ at the top of this file. */
 .extern ulTimerIncrementsForOneTick
 .extern xISRStackTop
 
-
 ram_start: .word 0x80000000
 
 sp_scrogged:
-       j sp_scrogged
+	j sp_scrogged
 /*-----------------------------------------------------------*/
 
 .align 8
