@@ -42,3 +42,12 @@ void external_interrupt_handler( uint32_t cause ) {
     PLIC_complete_interrupt(&Plic,source_id);
 }
 
+// TODO: a better fix
+#include "FreeRTOS.h"
+#include "task.h"
+void sleep(uint32_t secs) {
+    vTaskDelay(pdMS_TO_TICKS(secs * 1000));
+}
+void msleep(uint32_t msecs) {
+    vTaskDelay(pdMS_TO_TICKS(msecs));
+}

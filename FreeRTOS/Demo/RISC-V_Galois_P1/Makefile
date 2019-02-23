@@ -36,44 +36,61 @@ FREERTOS_SRC = \
 	$(FREERTOS_SOURCE_DIR)/tasks.c \
 	$(FREERTOS_SOURCE_DIR)/timers.c \
 	$(FREERTOS_SOURCE_DIR)/event_groups.c \
-	$(FREERTOS_SOURCE_DIR)/stream_buffer.c \
 	$(FREERTOS_SOURCE_DIR)/portable/MemMang/heap_2.c
 
 APP_SOURCE_DIR	= ../Common/Minimal
 
-APP_SRC =  \
-	$(APP_SOURCE_DIR)/AbortDelay.c \
-	$(APP_SOURCE_DIR)/BlockQ.c \
-	$(APP_SOURCE_DIR)/blocktim.c \
-	$(APP_SOURCE_DIR)/countsem.c \
-	$(APP_SOURCE_DIR)/death.c \
-	$(APP_SOURCE_DIR)/dynamic.c \
-	$(APP_SOURCE_DIR)/integer.c \
-	$(APP_SOURCE_DIR)/MessageBufferDemo.c \
-	$(APP_SOURCE_DIR)/PollQ.c \
-	$(APP_SOURCE_DIR)/GenQTest.c \
-	$(APP_SOURCE_DIR)/QPeek.c \
-	$(APP_SOURCE_DIR)/recmutex.c \
-	$(APP_SOURCE_DIR)/TimerDemo.c \
-	$(APP_SOURCE_DIR)/EventGroupsDemo.c \
-	$(APP_SOURCE_DIR)/TaskNotify.c \
-	$(APP_SOURCE_DIR)/StreamBufferDemo.c \
-	$(APP_SOURCE_DIR)/StreamBufferInterrupt.c \
-	$(APP_SOURCE_DIR)/semtest.c
-
 PORT_SRC = $(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/port.c
 PORT_ASM = $(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/portASM.S
-
-DEMO_SRC = main.c \
-	bsp/bsp.c \
-	bsp/plic_driver.c \
-	bsp/uart_16550.c \
-	bsp/syscalls.c \
-	demo/$(PROG).c
 
 INCLUDES = \
 	-I. \
 	-I./bsp \
+	-I$(FREERTOS_SOURCE_DIR)/include \
+	-I../Common/include \
+	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V
+
+ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
+
+CFLAGS = $(WARNINGS) $(INCLUDES) -DmainDEMO_TYPE=$(DEMO_TYPE)
+CFLAGS += -O0 -g3 $(ARCH) $(ABI) -mcmodel=medany
+
+DEMO_SRC = main.c \
+	demo/$(PROG).c
+
+APP_SRC = \
+	bsp/bsp.c \
+	bsp/plic_driver.c \
+	bsp/syscalls.c \
+	bsp/uart_16550.c \
+	bsp/xilinx/uartns550/xuartns550.c \
+	bsp/xilinx/uartns550/xuartns550_g.c \
+	bsp/xilinx/uartns550/xuartns550_sinit.c \
+	bsp/xilinx/uartns550/xuartns550_selftest.c \
+	bsp/xilinx/uartns550/xuartns550_stats.c \
+	bsp/xilinx/uartns550/xuartns550_options.c \
+	bsp/xilinx/axidma/xaxidma_bd.c \
+	bsp/xilinx/axidma/xaxidma_bdring.c \
+	bsp/xilinx/axidma/xaxidma.c \
+	bsp/xilinx/axidma/xaxidma_selftest.c \
+	bsp/xilinx/axidma/xaxidma_g.c \
+	bsp/xilinx/axidma/xaxidma_sinit.c \
+	bsp/xilinx/axiethernet/xaxiethernet.c \
+	bsp/xilinx/axiethernet/xaxiethernet_control.c \
+	bsp/xilinx/axiethernet/xaxiethernet_g.c \
+	bsp/xilinx/axiethernet/xaxiethernet_sinit.c \
+	bsp/xilinx/common/xbasic_types.c \
+	bsp/xilinx/common/xil_io.c \
+	bsp/xilinx/common/xil_assert.c
+
+INCLUDES = \
+	-I. \
+	-I./bsp \
+	-I./bsp/xilinx \
+	-I./bsp/xilinx/common \
+	-I./bsp/xilinx/axidma \
+	-I./bsp/xilinx/axiethernet \
+	-I./bsp/xilinx/uartns550 \
 	-I$(FREERTOS_SOURCE_DIR)/include \
 	-I../Common/include \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V
@@ -89,8 +106,32 @@ else
 ifeq ($(PROG),main_full)
 	CFLAGS += -DmainDEMO_TYPE=2
 	PORT_ASM += demo/RegTest.S
+	FREERTOS_SRC += $(FREERTOS_SOURCE_DIR)/stream_buffer.c
+	APP_SRC +=  \
+		$(APP_SOURCE_DIR)/AbortDelay.c \
+		$(APP_SOURCE_DIR)/BlockQ.c \
+		$(APP_SOURCE_DIR)/blocktim.c \
+		$(APP_SOURCE_DIR)/countsem.c \
+		$(APP_SOURCE_DIR)/death.c \
+		$(APP_SOURCE_DIR)/dynamic.c \
+		$(APP_SOURCE_DIR)/integer.c \
+		$(APP_SOURCE_DIR)/MessageBufferDemo.c \
+		$(APP_SOURCE_DIR)/PollQ.c \
+		$(APP_SOURCE_DIR)/GenQTest.c \
+		$(APP_SOURCE_DIR)/QPeek.c \
+		$(APP_SOURCE_DIR)/recmutex.c \
+		$(APP_SOURCE_DIR)/TimerDemo.c \
+		$(APP_SOURCE_DIR)/EventGroupsDemo.c \
+		$(APP_SOURCE_DIR)/TaskNotify.c \
+		$(APP_SOURCE_DIR)/StreamBufferDemo.c \
+		$(APP_SOURCE_DIR)/StreamBufferInterrupt.c \
+		$(APP_SOURCE_DIR)/semtest.c
+else
+ifeq ($(PROG),main_drivers)
+	CFLAGS += -DmainDEMO_TYPE=3
 else
 	$(info unknown demo: $(PROG))
+endif
 endif
 endif
 
