@@ -93,10 +93,11 @@ enum __attribute__ ((__packed__)) msr_t
   MSR_DCD = 0x80,
 };
 
-int UART_rxready(void);
-int UART_rxchar(void);
-int UART_txchar(int c);
-void UART_flush(void);
-int UART_init(void);
+int uart0_rxready(void);
+int uart0_rxchar(void);
+int uart0_txchar(int c);
+int uart0_txbuffer(char *ptr, int len);
+void uart0_flush(void);
+int uart0_init(void);
 
 #endif

@@ -114,9 +114,19 @@ stack. */
 
 /*-----------------------------------------------------------*/
 
+/*****************************************************************************/
+/**
+* Testing doxygen comments
+*
+* @return Returns void unless the XWaitInAssert variable is true, in which case
+*         no return is made and an infinite loop is entered.
+*
+* @note   None.
+*
+******************************************************************************/
 void vSendString( const char * const pcString );
 
-/*
+/**
  * Called by main() to run the full demo (as opposed to the blinky demo) when
  * mainCREATE_SIMPLE_BLINKY_DEMO_ONLY is set to 0.
  */

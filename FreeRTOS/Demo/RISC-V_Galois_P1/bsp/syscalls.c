@@ -22,12 +22,8 @@ void* _sbrk (int nbytes)
 }
 
 int _write(int file, char *ptr, int len) {
-  int todo;
   (void)file;
-  for (todo = 0; todo < len; todo++) {
-    UART_txchar (*ptr++);
-  }
-  return len;
+  return uart0_txbuffer(ptr, len);
 }
 
 int _close(int fd)

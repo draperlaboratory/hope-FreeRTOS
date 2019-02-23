@@ -1,3 +1,36 @@
+/*****************************************************************************/
+/**
+*
+* @file bsp.h
+* @addtogroup bsp
+* @{
+*
+* Test
+* ## This is markdown example
+*
+* **More** markdown
+*
+* @note
+*
+* This file contains items which are architecture dependent.
+*
+* <pre>
+* MODIFICATION HISTORY:
+*
+* Ver   Who    Date   Changes
+* ----- ---- -------- -------------------------------------------------------
+* 1.00a rmm  12/14/01 First release
+*       rmm  05/09/03 Added "xassert always" macros to rid ourselves of diab
+*                     compiler warnings
+* 1.00a rpm  11/07/03 Added XNullHandler function as a stub interrupt handler
+* 1.00a rpm  07/21/04 Added XExceptionHandler typedef for processor exceptions
+* 1.00a xd   11/03/04 Improved support for doxygen.
+* 1.00a wre  01/25/07 Added Linux style data types u32, u16, u8, TRUE, FALSE
+* 1.00a rpm  04/02/07 Added ifndef KERNEL around u32, u16, u8 data types
+* </pre>
+*
+******************************************************************************/
+
 #ifndef RISCV_BLUESPEC_BSP_H
 #define RISCV_BLUESPEC_BSP_H
 
@@ -75,7 +108,9 @@
 
 extern plic_instance_t Plic;
 
-/* Prepare haredware to run the demo. */
+/**
+ *  Prepare haredware to run the demo.
+ */
 void prvSetupHardware( void );
 
 void external_interrupt_handler( uint32_t cause );

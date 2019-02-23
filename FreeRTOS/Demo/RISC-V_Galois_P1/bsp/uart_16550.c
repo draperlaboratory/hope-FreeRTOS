@@ -51,7 +51,7 @@ struct __attribute__ ((aligned (4))) uart_pio
 
 static struct uart_pio * pio = (void*)UART_BASE;
 
-int UART_init(void)
+int uart0_init(void)
 {
   uint32_t divisor;
   divisor = UART_CLOCK_RATE / (16 * DEFAULT_BAUDRATE);
@@ -80,13 +80,13 @@ int UART_init(void)
 }
 
 
-int UART_rxready(void)
+int uart0_rxready(void)
 {
   return ((pio->lsr & LSR_DR) != 0);
 }
 
 
-int UART_rxchar(void)
+int uart0_rxchar(void)
 {
   while ((pio->lsr & LSR_DR) == 0)
     ;  /* Wait */
@@ -94,8 +94,15 @@ int UART_rxchar(void)
   return pio->rbr;
 }
 
+int uart0_txbuffer(char *ptr, int len) {
+  int cnt;
+  for (cnt = 0; cnt < len; cnt++) {
+    uart0_txchar (*ptr++);
+  }
+  return cnt;
+}
 
-int UART_txchar(int c)
+int uart0_txchar(int c)
 {
   while ((pio->lsr & LSR_THRE) == 0)
     ;  /* Wait */
@@ -106,7 +113,7 @@ int UART_txchar(int c)
 }
 
 /* Wait for transmitter shift register/FIFO to empty */
-void UART_flush(void)
+void uart0_flush(void)
 {
   while ((pio->lsr & LSR_TEMT) == 0)
     ;  /* Wait */

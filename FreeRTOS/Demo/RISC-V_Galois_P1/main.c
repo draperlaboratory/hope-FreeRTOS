@@ -25,6 +25,11 @@
  * 1 tab == 4 spaces!
  */
 
+/**
+ * This is docs for main
+ */
+
+
 /* FreeRTOS kernel includes. */
 #include <FreeRTOS.h>
 #include <task.h>
