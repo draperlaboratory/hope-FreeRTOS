@@ -762,8 +762,12 @@ extern "C" {
 	#define portTASK_USES_FLOATING_POINT()
 #endif
 
-#ifndef portTASK_CALLS_SECURE_FUNCTIONS
-	#define portTASK_CALLS_SECURE_FUNCTIONS()
+#ifndef portALLOCATE_SECURE_CONTEXT
+	#define portALLOCATE_SECURE_CONTEXT( ulSecureStackSize )
+#endif
+
+#ifndef portHAS_STACK_OVERFLOW_CHECKING
+	#define portHAS_STACK_OVERFLOW_CHECKING 0
 #endif
 
 #ifndef configUSE_TIME_SLICING
@@ -954,6 +958,30 @@ point support. */
 	#define configUSE_TASK_FPU_SUPPORT 1
 #endif
 
+/* Set configENABLE_MPU to 1 to enable MPU support and 0 to disable it. This is
+currently used in ARMv8M ports. */
+#ifndef configENABLE_MPU
+	#define configENABLE_MPU 0
+#endif
+
+/* Set configENABLE_FPU to 1 to enable FPU support and 0 to disable it. This is
+currently used in ARMv8M ports. */
+#ifndef configENABLE_FPU
+	#define configENABLE_FPU 1
+#endif
+
+/* Set configENABLE_TRUSTZONE to 1 enable TrustZone support and 0 to disable it.
+This is currently used in ARMv8M ports. */
+#ifndef configENABLE_TRUSTZONE
+	#define configENABLE_TRUSTZONE 1
+#endif
+
+/* Set configRUN_FREERTOS_SECURE_ONLY to 1 to run the FreeRTOS ARMv8M port on
+the Secure Side only. */
+#ifndef configRUN_FREERTOS_SECURE_ONLY
+	#define configRUN_FREERTOS_SECURE_ONLY 0
+#endif
+
 /* Sometimes the FreeRTOSConfig.h settings only allow a task to be created using
  * dynamically allocated RAM, in which case when any task is deleted it is known
  * that both the task's stack and TCB need to be freed.  Sometimes the
@@ -1011,25 +1039,40 @@ point support. */
  */
 struct xSTATIC_LIST_ITEM
 {
-	TickType_t xDummy1;
-	void *pvDummy2[ 4 ];
+	#if( configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES == 1 )
+		TickType_t xDummy1;
+	#endif
+	TickType_t xDummy2;
+	void *pvDummy3[ 4 ];
+	#if( configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES == 1 )
+		TickType_t xDummy4;
+	#endif
 };
 typedef struct xSTATIC_LIST_ITEM StaticListItem_t;
 
 /* See the comments above the struct xSTATIC_LIST_ITEM definition. */
 struct xSTATIC_MINI_LIST_ITEM
 {
-	TickType_t xDummy1;
-	void *pvDummy2[ 2 ];
+	#if( configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES == 1 )
+		TickType_t xDummy1;
+	#endif
+	TickType_t xDummy2;
+	void *pvDummy3[ 2 ];
 };
 typedef struct xSTATIC_MINI_LIST_ITEM StaticMiniListItem_t;
 
 /* See the comments above the struct xSTATIC_LIST_ITEM definition. */
 typedef struct xSTATIC_LIST
 {
-	UBaseType_t uxDummy1;
-	void *pvDummy2;
-	StaticMiniListItem_t xDummy3;
+	#if( configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES == 1 )
+		TickType_t xDummy1;
+	#endif
+	UBaseType_t uxDummy2;
+	void *pvDummy3;
+	StaticMiniListItem_t xDummy4;
+	#if( configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES == 1 )
+		TickType_t xDummy5;
+	#endif
 } StaticList_t;
 
 /*
