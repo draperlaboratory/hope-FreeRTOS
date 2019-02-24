@@ -1,2 +1,2 @@
 *.o
-doc/generated
+doc/*

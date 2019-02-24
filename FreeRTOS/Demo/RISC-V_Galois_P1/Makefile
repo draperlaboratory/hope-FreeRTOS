@@ -178,3 +178,6 @@ clean :
 	@rm -f $(PROG).elf 
 	@rm -f $(PROG).map
 	@rm -f $(PROG).asm
+
+docs :
+	@doxygen
