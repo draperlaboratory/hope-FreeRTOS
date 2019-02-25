@@ -21,7 +21,7 @@ void prvSetupHardware( void )
     PLIC_set_priority(&Plic, PLIC_SOURCE_DMA_S2MM, PLIC_PRIORITY_DMA_S2MM);
 
     // initialize peripherals
-	UART_init();
+	uart0_init();
 }
 // Define an external interrupt handler
 // cause = 0x8000000b == Machine external interrupt

@@ -61,9 +61,6 @@
 #include "bsp.h"
 #include "xaxidma.h"
 
-/************************** Constant Definitions *****************************/
-#define XPAR_AXIDMA_0_INCLUDE_SG	0
-
 XAxiDma_Config XAxiDma_ConfigTable[] =
 {
 	{
