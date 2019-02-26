@@ -47,6 +47,9 @@
 #elif mainDEMO_TYPE == 2
 	#pragma message "Demo type 2: Full"
 	extern void main_full( void );
+#elif mainDEMO_TYPE == 3
+	#pragma message "Demo type 3: Drivers"
+	extern void main_drivers( void );
 #else
 	#error "Unsupported demo type"
 #endif /* #if mainCREATE_SIMPLE_BLINKY_DEMO_ONLY == 1 */
@@ -81,6 +84,10 @@ int main( void )
 	#elif mainDEMO_TYPE == 2
 	{
 		main_full();
+	}
+	#elif mainDEMO_TYPE == 3
+	{
+		main_drivers();
 	}
 	#endif
 }
@@ -147,7 +154,7 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 
 void vApplicationTickHook( void ) {
 	/* The tests in the full demo expect some interaction with interrupts. */
-	#if( mainDEMO_TYPE != 1 )
+	#if( mainDEMO_TYPE == 2 )
 	{
 		extern void vFullDemoTickHook( void );
 		vFullDemoTickHook();

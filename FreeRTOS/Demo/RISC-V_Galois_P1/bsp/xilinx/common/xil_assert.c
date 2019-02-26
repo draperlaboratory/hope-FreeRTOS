@@ -47,12 +47,15 @@
 
 #include "xil_types.h"
 #include "xil_assert.h"
+#include <stdio.h>
 
 /************************** Constant Definitions *****************************/
 
 /**************************** Type Definitions *******************************/
 
 /***************** Macros (Inline Functions) Definitions *********************/
+
+static void CustomCallback(const char8 *File, s32 Line);
 
 /************************** Variable Definitions *****************************/
 
@@ -71,9 +74,16 @@ u32 Xil_AssertStatus;
 s32 Xil_AssertWait = 1;
 
 /* The callback function to be invoked when an assert is taken */
-static Xil_AssertCallback Xil_AssertCallbackRoutine = NULL;
+//static Xil_AssertCallback Xil_AssertCallbackRoutine = NULL;
+static Xil_AssertCallback Xil_AssertCallbackRoutine = CustomCallback;
 
 /************************** Function Prototypes ******************************/
+
+
+
+static void CustomCallback(const char8 *File, s32 Line) {
+	printf("Xil assert failed! %s: %li\r\n", File, Line);
+}
 
 /*****************************************************************************/
 /**
@@ -97,6 +107,8 @@ void Xil_Assert(const char8 *File, s32 Line)
 	if (Xil_AssertCallbackRoutine != 0) {
 		(*Xil_AssertCallbackRoutine)(File, Line);
 	}
+
+	__asm volatile( "ebreak" ); for( ;; );
 
 	/* if specified, wait indefinitely such that the assert will show up
 	 * in testing

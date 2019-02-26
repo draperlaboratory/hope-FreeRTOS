@@ -58,6 +58,7 @@
 #define XPAR_UARTNS550_0_CLOCK_HZ (83000000ULL) // 83MHz
 
 // DMA defines
+#define XPAR_AXI_DMA 1
 #define XPAR_XAXIDMA_NUM_INSTANCES 1
 
 // TODO: make sure they are sane
@@ -77,7 +78,7 @@
 #define XPAR_AXIDMA_0_INCLUDE_S2MM_DRE 1
 #define XPAR_AXIDMA_0_M_AXI_S2MM_DATA_WIDTH 32
 // Scatter-gather engine
-#define XPAR_AXIDMA_0_INCLUDE_SG 0 // TODO: disable for now (but it is included)
+#define XPAR_AXIDMA_0_INCLUDE_SG 1
 #define XPAR_AXIDMA_0_NUM_MM2S_CHANNELS 1
 #define XPAR_AXIDMA_0_NUM_S2MM_CHANNELS 1 
 #define XPAR_AXI_DMA_0_MM2S_BURST_SIZE 16
@@ -86,10 +87,11 @@
 #define XPAR_AXI_DMA_0_ADDR_WIDTH 64
 #define XPAR_AXIDMA_0_SG_LENGTH_WIDTH 16
 
+
 // Ethernet defines
+#define XPAR_AXIETHERNET_0_PHYADDR 0x01
 #define XPAR_XAXIETHERNET_NUM_INSTANCES 1
 
-// TODO: fill with sensible values
 #define XPAR_AXIETHERNET_0_DEVICE_ID 0
 #define XPAR_AXIETHERNET_0_BASEADDR 0x62100000ULL
 // 0 for SoftTemac at 10/100 Mbps, 1 for SoftTemac at 10/100/1000 Mbps and 2 for Vitex6 Hard Temac 
@@ -100,9 +102,7 @@
 #define XPAR_AXIETHERNET_0_RXCSUM 0
 // PhyType indicates which type of PHY interface is used (MII, GMII, RGMII, etc.)
 #define XPAR_AXIETHERNET_0_PHY_TYPE XAE_PHY_TYPE_SGMII
-// TX VLAN tagging indication. 0 for dalse
 #define XPAR_AXIETHERNET_0_TXVLAN_TRAN 0
-// RX VLAN tagging indication. 0 for dalse
 #define XPAR_AXIETHERNET_0_RXVLAN_TRAN 0
 #define XPAR_AXIETHERNET_0_TXVLAN_TAG 0
 #define XPAR_AXIETHERNET_0_RXVLAN_TAG 0
@@ -119,13 +119,13 @@
 // Enable 1588 option. 
 #define XPAR_AXIETHERNET_0_ENABLE_1588 0
 // Tells whether MAC is 1G or 2p5G.
-#define XPAR_AXIETHERNET_0_SPEED XAE_SPEED_100_MBPS // TODO: going low first
+#define XPAR_AXIETHERNET_0_SPEED XAE_SPEED_100_MBPS // TODO: going low first 
 // Number of table entries for the multicast address filtering
-#define XPAR_AXIETHERNET_0_NUM_TABLE_ENTRIES 1
+#define XPAR_AXIETHERNET_0_NUM_TABLE_ENTRIES 4
 // Axi Ethernet interrupt ID.
 #define XPAR_AXIETHERNET_0_INTR PLIC_SOURCE_ETH // TODO: doesn't appear to be used
 // AxiDevType is the type of device attached to the Axi Ethernet's AXI4-Stream interface.
-#define XPAR_AXIETHERNET_0_CONNECTED_TYPE 0 // TODO: define XPAR_AXI_DMA
+#define XPAR_AXIETHERNET_0_CONNECTED_TYPE XPAR_AXI_DMA
 // AxiDevBaseAddress is the base address of the device attached to the Axi Ethernet's AXI4-Stream interface.
 #define XPAR_AXIETHERNET_0_CONNECTED_BASEADDR 0x62200000ULL // DMA base address
 // Unused

@@ -80,7 +80,7 @@ _HEAP_SIZE = DEFINED(_HEAP_SIZE) ? _HEAP_SIZE : 0x4000;
  ****************************************************************************/
 MEMORY {
 	imem : ORIGIN = 0x80000000, LENGTH = 0x00080000
-	dmem : ORIGIN = 0x80080000, LENGTH = 0x00080000
+	dmem : ORIGIN = 0x80080000, LENGTH = 0x00800000 /* 8 MB RAM */
 }
 
 /* Specify the default entry point to the program */

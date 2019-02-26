@@ -129,6 +129,8 @@ ifeq ($(PROG),main_full)
 else
 ifeq ($(PROG),main_drivers)
 	CFLAGS += -DmainDEMO_TYPE=3
+	DEMO_SRC += demo/xaxiethernet_example_util.c
+	INCLUDES += -I./demo
 else
 	$(info unknown demo: $(PROG))
 endif

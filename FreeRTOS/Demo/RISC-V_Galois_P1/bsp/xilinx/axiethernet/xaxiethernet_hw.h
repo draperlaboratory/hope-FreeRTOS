@@ -57,8 +57,6 @@
 
 /***************************** Include Files *********************************/
 
-#include "xdebug.h"
-
 #include "xil_io.h"
 #include "xil_types.h"
 
@@ -766,7 +764,7 @@ extern "C" {
 /**************************** Type Definitions *******************************/
 
 /***************** Macros (Inline Functions) Definitions *********************/
-xdbg_stmnt(extern int indent_on);
+extern int indent_on;
 
 #define XAxiEthernet_indent(RegOffset) \
  ((indent_on && ((RegOffset) >= XAE_RAF_OFFSET) && ((RegOffset) <= 	\

@@ -56,6 +56,7 @@
 /***************************** Include Files *********************************/
 
 #include "xaxiethernet.h"
+#include <stdio.h> // for printf
 
 /************************** Constant Definitions *****************************/
 
@@ -126,14 +127,13 @@ int XAxiEthernet_MulticastAdd(XAxiEthernet *InstancePtr, void *AddressPtr,
 	Xil_AssertNonvoid(Entry < InstancePtr->Config.NumTableEntries);
 
 	u8 *Aptr = (u8 *) AddressPtr;
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_MulticastAdd\n");
+	printf("XAxiEthernet_MulticastAddr\r\n");
 
 	/* The device must be stopped before clearing the multicast hash
 	 * table.
 	 */
 	if (InstancePtr->IsStarted == XIL_COMPONENT_IS_STARTED) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_MulticastAdd: returning DEVICE_IS_STARTED\n");
+		printf("XAxiEthernet_MulticastAdd: returning DEVICE_IS_STARTED\r\n");
 		return (XST_DEVICE_IS_STARTED);
 	}
 
@@ -156,7 +156,7 @@ int XAxiEthernet_MulticastAdd(XAxiEthernet *InstancePtr, void *AddressPtr,
 						XAE_FMI_OFFSET, FmiReg);
 
 	/* Add in MAT address */
-	xdbg_printf(XDBG_DEBUG_GENERAL, "Setting MAT entry: %d\n", Entry);
+	printf("Setting MAT entry: %d\r\n", Entry);
 	XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 						XAE_AF0_OFFSET, Af0Reg);
 
@@ -207,7 +207,7 @@ void XAxiEthernet_MulticastGet(XAxiEthernet *InstancePtr, void *AddressPtr,
 	Xil_AssertVoid(Entry < InstancePtr->Config.NumTableEntries);
 
 	u8 *Aptr = (u8 *) AddressPtr;
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_MulticastGet\n");
+	printf("XAxiEthernet_MulticastGet\r\n");
 
 
 	FmiReg = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
@@ -231,7 +231,7 @@ void XAxiEthernet_MulticastGet(XAxiEthernet *InstancePtr, void *AddressPtr,
 	Aptr[4] = (u8) Af1Reg;
 	Aptr[5] = (u8) (Af1Reg >> 8);
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_MulticastGet: done\n");
+	printf("XAxiEthernet_MulticastGet: done\r\n");
 }
 
 /*****************************************************************************/
@@ -271,15 +271,15 @@ int XAxiEthernet_MulticastClear(XAxiEthernet *InstancePtr, int Entry)
 	Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 	Xil_AssertNonvoid(Entry < InstancePtr->Config.NumTableEntries);
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_MulticastClear\n");
+	printf("XAxiEthernet_MulticastClear\r\n");
 
 	/*
 	 * The device must be stopped before clearing the multicast hash
 	 * table.
 	 */
 	if (InstancePtr->IsStarted == XIL_COMPONENT_IS_STARTED) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_MulticastClear:returning DEVICE_IS_STARTED\n");
+		printf(
+		"XAxiEthernet_MulticastClear:returning DEVICE_IS_STARTED\r\n");
 		return (XST_DEVICE_IS_STARTED);
 	}
 
@@ -298,8 +298,8 @@ int XAxiEthernet_MulticastClear(XAxiEthernet *InstancePtr, int Entry)
 	XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 						XAE_AF1_OFFSET, 0);
 
-	xdbg_printf(XDBG_DEBUG_GENERAL,
-			"XAxiEthernet_MulticastClear: returning SUCCESS\n");
+	printf(
+			"XAxiEthernet_MulticastClear: returning SUCCESS\r\n");
 	return (XST_SUCCESS);
 }
 
@@ -333,12 +333,12 @@ int XAxiEthernet_SetMacPauseAddress(XAxiEthernet *InstancePtr,
 	Xil_AssertNonvoid(AddressPtr != NULL);
 
 	u8 *Aptr = (u8 *) AddressPtr;
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_SetMacPauseAddress\n");
+	printf("XAxiEthernet_SetMacPauseAddress\r\n");
 
 	/* Be sure device has been stopped */
 	if (InstancePtr->IsStarted == XIL_COMPONENT_IS_STARTED) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_SetMacPauseAddress:returning DEVICE_IS_STARTED\n");
+		printf(
+		"XAxiEthernet_SetMacPauseAddress:returning DEVICE_IS_STARTED\r\n");
 		return (XST_DEVICE_IS_STARTED);
 	}
 
@@ -361,8 +361,8 @@ int XAxiEthernet_SetMacPauseAddress(XAxiEthernet *InstancePtr,
 	XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 						XAE_RCW1_OFFSET, MacAddr);
 
-	xdbg_printf(XDBG_DEBUG_GENERAL,
-		   "XAxiEthernet_SetMacPauseAddress: returning SUCCESS\n");
+	printf(
+		   "XAxiEthernet_SetMacPauseAddress: returning SUCCESS\r\n");
 
 	return (XST_SUCCESS);
 }
@@ -395,7 +395,7 @@ void XAxiEthernet_GetMacPauseAddress(XAxiEthernet *InstancePtr,
 
 
 	u8 *Aptr = (u8 *) AddressPtr;
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_SetMacPauseAddress\n");
+	printf("XAxiEthernet_SetMacPauseAddress\r\n");
 
 	/* Read MAC bits [31:0] in ERXC0 */
 	MacAddr = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
@@ -411,8 +411,8 @@ void XAxiEthernet_GetMacPauseAddress(XAxiEthernet *InstancePtr,
 	Aptr[4] = (u8) MacAddr;
 	Aptr[5] = (u8) (MacAddr >> 8);
 
-	xdbg_printf(XDBG_DEBUG_GENERAL,
-				"XAxiEthernet_SetMacPauseAddress: done\n");
+	printf(
+				"XAxiEthernet_SetMacPauseAddress: done\r\n");
 }
 
 /*****************************************************************************/
@@ -438,12 +438,12 @@ int XAxiEthernet_SendPausePacket(XAxiEthernet *InstancePtr, u16 PauseValue)
 	Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_SetMacPauseAddress\n");
+	printf("XAxiEthernet_SetMacPauseAddress\r\n");
 
 	/* Make sure device is ready for this operation */
 	if (InstancePtr->IsStarted != XIL_COMPONENT_IS_STARTED) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_SendPausePacket:returning DEVICE_IS_STOPPED\n");
+		printf(
+		"XAxiEthernet_SendPausePacket:returning DEVICE_IS_STOPPED\r\n");
 		return (XST_DEVICE_IS_STOPPED);
 	}
 
@@ -451,8 +451,8 @@ int XAxiEthernet_SendPausePacket(XAxiEthernet *InstancePtr, u16 PauseValue)
 	XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress, XAE_TPF_OFFSET,
 				 (u32) PauseValue & XAE_TPF_TPFV_MASK);
 
-	xdbg_printf(XDBG_DEBUG_GENERAL,
-		   "XAxiEthernet_SendPausePacket: returning SUCCESS\n");
+	printf(
+		   "XAxiEthernet_SendPausePacket: returning SUCCESS\r\n");
 	return (XST_SUCCESS);
 }
 
@@ -484,13 +484,13 @@ int XAxiEthernet_GetSgmiiStatus(XAxiEthernet *InstancePtr, u16 *SpeedPtr)
 	Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 	Xil_AssertNonvoid(SpeedPtr != NULL);
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_GetSgmiiStatus\n");
+	printf("XAxiEthernet_GetSgmiiStatus\r\n");
 
 	/* Make sure PHY is SGMII */
 	PhyType = XAxiEthernet_GetPhysicalInterface(InstancePtr);
 	if (PhyType != XAE_PHY_TYPE_SGMII) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_GetSgmiiStatus: returning NO_FEATURE\n");
+		printf(
+		"XAxiEthernet_GetSgmiiStatus: returning NO_FEATURE\r\n");
 		return (XST_NO_FEATURE);
 	}
 
@@ -516,8 +516,8 @@ int XAxiEthernet_GetSgmiiStatus(XAxiEthernet *InstancePtr, u16 *SpeedPtr)
 		*SpeedPtr = 0;
 	}
 
-	xdbg_printf(XDBG_DEBUG_GENERAL,
-		   "XAxiEthernet_GetSgmiiStatus: returning SUCCESS\n");
+	printf(
+		   "XAxiEthernet_GetSgmiiStatus: returning SUCCESS\r\n");
 	return (XST_SUCCESS);
 }
 
@@ -561,14 +561,14 @@ int XAxiEthernet_GetRgmiiStatus(XAxiEthernet *InstancePtr, u16 *SpeedPtr,
 	Xil_AssertNonvoid(IsLinkUpPtr != NULL);
 
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_GetRgmiiStatus\n");
+	printf("XAxiEthernet_GetRgmiiStatus\r\n");
 
 	/* Make sure PHY is RGMII */
 	PhyType = XAxiEthernet_GetPhysicalInterface(InstancePtr);
 	if ((PhyType != XAE_PHY_TYPE_RGMII_1_3) &&
 		(PhyType != XAE_PHY_TYPE_RGMII_2_0)) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-			"XAxiEthernet_GetRgmiiStatus: returning NO_FEATURE\n");
+		printf(
+			"XAxiEthernet_GetRgmiiStatus: returning NO_FEATURE\r\n");
 		return (XST_NO_FEATURE);
 	}
 
@@ -607,8 +607,8 @@ int XAxiEthernet_GetRgmiiStatus(XAxiEthernet *InstancePtr, u16 *SpeedPtr,
 		*IsLinkUpPtr = FALSE;
 	}
 
-	xdbg_printf(XDBG_DEBUG_GENERAL,
-		   "XAxiEthernet_GetRgmiiStatus: returning SUCCESS\n");
+	printf(
+		   "XAxiEthernet_GetRgmiiStatus: returning SUCCESS\r\n");
 	return (XST_SUCCESS);
 }
 
@@ -647,19 +647,19 @@ int XAxiEthernet_SetTpid(XAxiEthernet *InstancePtr, u16 Tpid, u8 Entry)
 
 	/* The device must be stopped before modify VLAN TPID */
 	if (InstancePtr->IsStarted == XIL_COMPONENT_IS_STARTED) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_SetTpid: returning DEVICE_IS_STARTED\n");
+		printf(
+		"XAxiEthernet_SetTpid: returning DEVICE_IS_STARTED\r\n");
 		return (XST_DEVICE_IS_STARTED);
 	}
 
 	/* Check hw capability */
 	if (!XAxiEthernet_IsExtFuncCap(InstancePtr)) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_SetTpid: returning DEVICE_NO_FEATURE\n");
+		printf(
+		"XAxiEthernet_SetTpid: returning DEVICE_NO_FEATURE\r\n");
 		return (XST_NO_FEATURE);
 	}
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_SetTpid\n");
+	printf("XAxiEthernet_SetTpid\r\n");
 
 	/* Verify TPID */
 	switch (Tpid) {
@@ -694,8 +694,8 @@ int XAxiEthernet_SetTpid(XAxiEthernet *InstancePtr, u16 Tpid, u8 Entry)
 			RegTpidOffset, (RegTpid & XAE_TPID_1_MASK) |
 			Tpid);
 	}
-	xdbg_printf(XDBG_DEBUG_GENERAL,
-			"XAxiEthernet_SetTpid: returning SUCCESS\n");
+	printf(
+			"XAxiEthernet_SetTpid: returning SUCCESS\r\n");
 	return (XST_SUCCESS);
 }
 
@@ -730,19 +730,19 @@ int XAxiEthernet_ClearTpid(XAxiEthernet *InstancePtr, u8 Entry)
 
 	/* The device must be stopped before modify VLAN TPID */
 	if (InstancePtr->IsStarted == XIL_COMPONENT_IS_STARTED) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_ClearTpid: returning DEVICE_IS_STARTED\n");
+		printf(
+		"XAxiEthernet_ClearTpid: returning DEVICE_IS_STARTED\r\n");
 		return (XST_DEVICE_IS_STARTED);
 	}
 
 	/* Check hw capability */
 	if (!XAxiEthernet_IsExtFuncCap(InstancePtr)) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_ClearTpid: returning DEVICE_NO_FEATURE\n");
+		printf(
+		"XAxiEthernet_ClearTpid: returning DEVICE_NO_FEATURE\r\n");
 		return (XST_NO_FEATURE);
 	}
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_ClearExtTpid\n");
+	printf("XAxiEthernet_ClearExtTpid\r\n");
 
 	/* Determine which register to operate on */
 	if (Entry < 2) {
@@ -764,8 +764,8 @@ int XAxiEthernet_ClearTpid(XAxiEthernet *InstancePtr, u8 Entry)
 		XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 			RegTpidOffset, (RegTpid & XAE_TPID_0_MASK));
 	}
-	xdbg_printf(XDBG_DEBUG_GENERAL,
-			"XAxiEthernet_ClearTpid: returning SUCCESS\n");
+	printf(
+			"XAxiEthernet_ClearTpid: returning SUCCESS\r\n");
 
 	return (XST_SUCCESS);
 }
@@ -794,7 +794,7 @@ void XAxiEthernet_GetTpid(XAxiEthernet *InstancePtr, u16 *TpidPtr, u8 Entry)
 	Xil_AssertVoid(TpidPtr != NULL);
 	Xil_AssertVoid(Entry < XAE_TPID_MAX_ENTRIES);
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_GetTpid\n");
+	printf("XAxiEthernet_GetTpid\r\n");
 
 	if (Entry < 2) {
 		RegTpid = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
@@ -809,7 +809,7 @@ void XAxiEthernet_GetTpid(XAxiEthernet *InstancePtr, u16 *TpidPtr, u8 Entry)
 	} else {
 		*TpidPtr = (RegTpid & XAE_TPID_0_MASK);
 	}
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_GetTpid: done\n");
+	printf("XAxiEthernet_GetTpid: done\r\n");
 }
 
 
@@ -860,15 +860,15 @@ int XAxiEthernet_SetVTagMode(XAxiEthernet *InstancePtr, u32 Mode, int Dir)
 
 	/* The device must be stopped before modify TX VLAN Tag mode */
 	if (InstancePtr->IsStarted == XIL_COMPONENT_IS_STARTED) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_SetVTagMode:returning DEVICE_IS_STARTED\n");
+		printf(
+		"XAxiEthernet_SetVTagMode:returning DEVICE_IS_STARTED\r\n");
 		return (XST_DEVICE_IS_STARTED);
 	}
 
 	/* Check hw capability */
 	if (!XAxiEthernet_IsExtFuncCap(InstancePtr)) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_SetVTagMode: returning DEVICE_NO_FEATURE\n");
+		printf(
+		"XAxiEthernet_SetVTagMode: returning DEVICE_NO_FEATURE\r\n");
 		return (XST_NO_FEATURE);
 	}
 
@@ -883,7 +883,7 @@ int XAxiEthernet_SetVTagMode(XAxiEthernet *InstancePtr, u32 Mode, int Dir)
 			return (XST_INVALID_PARAM);
 	}
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_SetVTagMode\n");
+	printf("XAxiEthernet_SetVTagMode\r\n");
 
 	/* Program HW */
 	RegRaf = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
@@ -899,8 +899,8 @@ int XAxiEthernet_SetVTagMode(XAxiEthernet *InstancePtr, u32 Mode, int Dir)
 			(Mode << XAE_RAF_RXVTAGMODE_SHIFT)));
 	}
 
-	xdbg_printf(XDBG_DEBUG_GENERAL,
-			"XAxiEthernet_SetVTagMode: returning SUCCESS\n");
+	printf(
+			"XAxiEthernet_SetVTagMode: returning SUCCESS\r\n");
 
 	return (XST_SUCCESS);
 }
@@ -933,7 +933,7 @@ void XAxiEthernet_GetVTagMode(XAxiEthernet *InstancePtr, u8 *ModePtr, int Dir)
 	Xil_AssertVoid(ModePtr != NULL);
 	Xil_AssertVoid((Dir == XAE_TX) || (Dir == XAE_RX));
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_GetVTagMode\n");
+	printf("XAxiEthernet_GetVTagMode\r\n");
 
 	/* Access HW configuration */
 	RegRaf = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
@@ -947,7 +947,7 @@ void XAxiEthernet_GetVTagMode(XAxiEthernet *InstancePtr, u8 *ModePtr, int Dir)
 				XAE_RAF_RXVTAGMODE_SHIFT;
 	}
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_GetVTagMode: done\n");
+	printf("XAxiEthernet_GetVTagMode: done\r\n");
 
 }
 
@@ -997,15 +997,15 @@ int XAxiEthernet_SetVStripMode(XAxiEthernet *InstancePtr, u32 Mode, int Dir)
 
 	/* The device must be stopped before modify TX VLAN Tag mode */
 	if (InstancePtr->IsStarted == XIL_COMPONENT_IS_STARTED) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_SetVStripMode: returning DEVICE_IS_STARTED\n");
+		printf(
+		"XAxiEthernet_SetVStripMode: returning DEVICE_IS_STARTED\r\n");
 		return (XST_DEVICE_IS_STARTED);
 	}
 
 	/* Check HW capability */
 	if (!XAxiEthernet_IsExtFuncCap(InstancePtr)) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_SetVStripMode:returning DEVICE_NO_FEATURE\n");
+		printf(
+		"XAxiEthernet_SetVStripMode:returning DEVICE_NO_FEATURE\r\n");
 		return (XST_NO_FEATURE);
 	}
 
@@ -1019,7 +1019,7 @@ int XAxiEthernet_SetVStripMode(XAxiEthernet *InstancePtr, u32 Mode, int Dir)
 			return (XST_INVALID_PARAM);
 	}
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_SetStripMode\n");
+	printf("XAxiEthernet_SetStripMode\r\n");
 
 	/* Program HW */
 	RegRaf = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
@@ -1035,8 +1035,8 @@ int XAxiEthernet_SetVStripMode(XAxiEthernet *InstancePtr, u32 Mode, int Dir)
 			(Mode << XAE_RAF_RXVSTRPMODE_SHIFT)));
 	}
 
-	xdbg_printf(XDBG_DEBUG_GENERAL,
-			"XAxiEthernet_SetVStripMode:returning SUCCESS\n");
+	printf(
+			"XAxiEthernet_SetVStripMode:returning SUCCESS\r\n");
 
 	return (XST_SUCCESS);
 }
@@ -1072,7 +1072,7 @@ void XAxiEthernet_GetVStripMode(XAxiEthernet *InstancePtr, u8 *ModePtr,
 	Xil_AssertVoid(ModePtr != NULL);
 	Xil_AssertVoid((Dir == XAE_TX) || (Dir == XAE_RX));
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_GetVStripMode\n");
+	printf("XAxiEthernet_GetVStripMode\r\n");
 
 	/* Access HW configuration */
 	RegRaf = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
@@ -1086,7 +1086,7 @@ void XAxiEthernet_GetVStripMode(XAxiEthernet *InstancePtr, u8 *ModePtr,
 					XAE_RAF_RXVSTRPMODE_SHIFT;
 	}
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_GetVStripMode: done\n");
+	printf("XAxiEthernet_GetVStripMode: done\r\n");
 }
 
 
@@ -1137,15 +1137,15 @@ int XAxiEthernet_SetVTagValue(XAxiEthernet *InstancePtr, u32 VTagValue,
 
 	/* The device must be stopped before modifying TX VLAN Tag value */
 	if (InstancePtr->IsStarted == XIL_COMPONENT_IS_STARTED) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_SetVTagValue:returning DEVICE_IS_STARTED\n");
+		printf(
+		"XAxiEthernet_SetVTagValue:returning DEVICE_IS_STARTED\r\n");
 		return (XST_DEVICE_IS_STARTED);
 	}
 
 	/* Check HW capability */
 	if (!XAxiEthernet_IsExtFuncCap(InstancePtr)) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_SetVTagValue:returning DEVICE_NO_FEATURE\n");
+		printf(
+		"XAxiEthernet_SetVTagValue:returning DEVICE_NO_FEATURE\r\n");
 		return (XST_NO_FEATURE);
 	}
 
@@ -1160,7 +1160,7 @@ int XAxiEthernet_SetVTagValue(XAxiEthernet *InstancePtr, u32 VTagValue,
 			return (XST_INVALID_PARAM);
 	}
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_SetVTagValue\n");
+	printf("XAxiEthernet_SetVTagValue\r\n");
 
 	/* Program HW */
 	/* Transmit direction */
@@ -1172,8 +1172,8 @@ int XAxiEthernet_SetVTagValue(XAxiEthernet *InstancePtr, u32 VTagValue,
 					XAE_RTAG_OFFSET, VTagValue);
 	}
 
-	xdbg_printf(XDBG_DEBUG_GENERAL,
-			"XAxiEthernet_SetVTagValue:returning SUCCESS\n");
+	printf(
+			"XAxiEthernet_SetVTagValue:returning SUCCESS\r\n");
 
 	return (XST_SUCCESS);
 }
@@ -1213,7 +1213,7 @@ void XAxiEthernet_GetVTagValue(XAxiEthernet *InstancePtr, u32 *VTagValuePtr,
 	Xil_AssertVoid(VTagValuePtr != NULL);
 	Xil_AssertVoid((Dir == XAE_TX) || (Dir == XAE_RX));
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_GetVTagValue\n");
+	printf("XAxiEthernet_GetVTagValue\r\n");
 
 	/* Transmit direction */
 	if (XAE_TX == Dir) {
@@ -1227,7 +1227,7 @@ void XAxiEthernet_GetVTagValue(XAxiEthernet *InstancePtr, u32 *VTagValuePtr,
 							XAE_RTAG_OFFSET);
 	}
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_GetVTagValue: done\n");
+	printf("XAxiEthernet_GetVTagValue: done\r\n");
 }
 
 
@@ -1283,19 +1283,19 @@ int XAxiEthernet_SetVidTable(XAxiEthernet *InstancePtr, u32 Entry, u32 Vid,
 
 	/* The device must be stopped before modify TX VLAN Tag value */
 	if (InstancePtr->IsStarted == XIL_COMPONENT_IS_STARTED) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_SetVidTable:returning DEVICE_IS_STARTED\n");
+		printf(
+		"XAxiEthernet_SetVidTable:returning DEVICE_IS_STARTED\r\n");
 		return (XST_DEVICE_IS_STARTED);
 	}
 
 	/* Check HW capability */
 	if (!XAxiEthernet_IsExtFuncCap(InstancePtr)) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_SetVidTable:returning DEVICE_NO_FEATURE\n");
+		printf(
+		"XAxiEthernet_SetVidTable:returning DEVICE_NO_FEATURE\r\n");
 		return (XST_NO_FEATURE);
 	}
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_SetVidTable\n");
+	printf("XAxiEthernet_SetVidTable\r\n");
 
 	/* Program HW */
 	Reg = (Vid << XAE_VLAN_TABL_VID_START_OFFSET) |
@@ -1311,8 +1311,8 @@ int XAxiEthernet_SetVidTable(XAxiEthernet *InstancePtr, u32 Entry, u32 Vid,
 			(Entry << XAE_VLAN_TABL_VID_START_OFFSET), Reg);
 	}
 
-	xdbg_printf(XDBG_DEBUG_GENERAL,
-			"XAxiEthernet_SetVidTable: returning SUCCESS\n");
+	printf(
+			"XAxiEthernet_SetVidTable: returning SUCCESS\r\n");
 	return (XST_SUCCESS);
 }
 
@@ -1365,7 +1365,7 @@ void XAxiEthernet_GetVidTable(XAxiEthernet *InstancePtr, u32 Entry,
 	Xil_AssertVoid(TagPtr != NULL);
 	Xil_AssertVoid((Dir == XAE_TX) || (Dir == XAE_RX));
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_GetVidTable\n");
+	printf("XAxiEthernet_GetVidTable\r\n");
 
 	/* Transmit direction */
 	if (XAE_TX == Dir) {
@@ -1383,7 +1383,7 @@ void XAxiEthernet_GetVidTable(XAxiEthernet *InstancePtr, u32 Entry,
 					XAE_VLAN_TABL_STRP_ENTRY_MASK;
 	*TagPtr   = Reg & XAE_VLAN_TABL_TAG_ENTRY_MASK;
 
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_GetVidTable: done\n");
+	printf("XAxiEthernet_GetVidTable: done\r\n");
 }
 
 
@@ -1440,14 +1440,14 @@ int XAxiEthernet_AddExtMulticastGroup(XAxiEthernet *InstancePtr,
 	Xil_AssertNonvoid(AddressPtr != NULL);
 
 	u8 *Aptr = (u8 *) AddressPtr;
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_AddExtMulticastGroup\n");
+	printf("XAxiEthernet_AddExtMulticastGroup\r\n");
 
 	/*
 	 * The device must be stopped before setting the multicast table.
 	 */
 	if (InstancePtr->IsStarted == XIL_COMPONENT_IS_STARTED) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_AddExtMulticastGroup:returning DEVICE_IS_STARTED\n");
+		printf(
+		"XAxiEthernet_AddExtMulticastGroup:returning DEVICE_IS_STARTED\r\n");
 
 		return (XST_DEVICE_IS_STARTED);
 	}
@@ -1455,8 +1455,8 @@ int XAxiEthernet_AddExtMulticastGroup(XAxiEthernet *InstancePtr,
 	/* Check HW capability */
 	if (!XAxiEthernet_IsExtFuncCap(InstancePtr) ||
 		!XAxiEthernet_IsExtMcastEnable(InstancePtr)) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_AddExtMulticastGroup:returning DEVICE_NO_FEATURE\n");
+		printf(
+		"XAxiEthernet_AddExtMulticastGroup:returning DEVICE_NO_FEATURE\r\n");
 		return (XST_NO_FEATURE);
 	}
 
@@ -1484,8 +1484,8 @@ int XAxiEthernet_AddExtMulticastGroup(XAxiEthernet *InstancePtr,
 	XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 			XAE_MCAST_TABLE_OFFSET + Loc, 0x01);
 
-	xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_AddExtMulticastGroup: returning SUCCESS\n");
+	printf(
+		"XAxiEthernet_AddExtMulticastGroup: returning SUCCESS\r\n");
 
 	return (XST_SUCCESS);
 }
@@ -1543,23 +1543,23 @@ int XAxiEthernet_ClearExtMulticastGroup(XAxiEthernet *InstancePtr,
 	Xil_AssertNonvoid(AddressPtr != NULL);
 
 	u8 *Aptr = (u8 *) AddressPtr;
-	xdbg_printf(XDBG_DEBUG_GENERAL,
-				"XAxiEthernet_ClearExtMulticastGroup\n");
+	printf(
+				"XAxiEthernet_ClearExtMulticastGroup\r\n");
 
 	/*
 	 * The device must be stopped before clearing the multicast table.
 	 */
 	if (InstancePtr->IsStarted == XIL_COMPONENT_IS_STARTED) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_ClearExtMulticastGroup:returning DEVICE_IS_STARTED\n");
+		printf(
+		"XAxiEthernet_ClearExtMulticastGroup:returning DEVICE_IS_STARTED\r\n");
 		return (XST_DEVICE_IS_STARTED);
 	}
 
 	/* Check HW capability */
 	if (!XAxiEthernet_IsExtFuncCap(InstancePtr) ||
 		!XAxiEthernet_IsExtMcastEnable(InstancePtr)) {
-		xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_ClearExtMulticastGroup:returning DEVICE_NO_FEATURE\n");
+		printf(
+		"XAxiEthernet_ClearExtMulticastGroup:returning DEVICE_NO_FEATURE\r\n");
 		return (XST_NO_FEATURE);
 	}
 
@@ -1582,8 +1582,8 @@ int XAxiEthernet_ClearExtMulticastGroup(XAxiEthernet *InstancePtr,
 	XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 		XAE_MCAST_TABLE_OFFSET + Loc, 0x00);
 
-	xdbg_printf(XDBG_DEBUG_GENERAL,
-		"XAxiEthernet_ClearExtMulticastGroup: returning SUCCESS\n");
+	printf(
+		"XAxiEthernet_ClearExtMulticastGroup: returning SUCCESS\r\n");
 
 	return (XST_SUCCESS);
 }
@@ -1622,7 +1622,7 @@ int XAxiEthernet_GetExtMulticastGroup(XAxiEthernet *InstancePtr,
 	Xil_AssertNonvoid(AddressPtr != NULL);
 
 	u8 *Aptr = (u8 *) AddressPtr;
-	xdbg_printf(XDBG_DEBUG_GENERAL, "XAxiEthernet_GetExtMulticastGroup\n");
+	printf("XAxiEthernet_GetExtMulticastGroup\r\n");
 
 	/*
 	 * Verify if address is a good/valid multicast address, between
@@ -1650,8 +1650,8 @@ int XAxiEthernet_GetExtMulticastGroup(XAxiEthernet *InstancePtr,
 	} else {
 		return (FALSE);
 	}
-	xdbg_printf(XDBG_DEBUG_GENERAL,
-				"XAxiEthernet_GetExtMulticastGroup:done\n");
+	printf(
+				"XAxiEthernet_GetExtMulticastGroup:done\r\n");
 }
 
 
@@ -1704,8 +1704,8 @@ void XAxiEthernet_DumpExtMulticastGroup(XAxiEthernet *InstancePtr)
 		Bit = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
 			XAE_MCAST_TABLE_OFFSET + Loc);
 		if (Bit) {
-			xdbg_printf(XDBG_DEBUG_GENERAL,
-			"%x:%x:%x:%x:%x:%x\n", MacAddr[5], MacAddr[4],
+			printf(
+			"%x:%x:%x:%x:%x:%x\r\n", MacAddr[5], MacAddr[4],
 			MacAddr[3], MacAddr[2], MacAddr[1], MacAddr[0]);
 		}
 	}
