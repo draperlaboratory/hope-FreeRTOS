@@ -25,81 +25,8 @@
  */
 
 #include "utils.h"
-#include "platform.h"
 #include <stdarg.h>
 #include <stdio.h>
-
-#if 0
-void vprintf_uart(const char* s, va_list vl)
-{
-  char buf[256];
-
-  const char *p = &buf[0];
-  
-  vsnprintf(buf, sizeof buf, s, vl);
-
-  while (*p) {
-    putchar(*p++);
-  }
-}
-
-void printf_uart(const char* s, ...)
-{
-  va_list vl;
-
-  va_start(vl, s);
-  vprintf_uart(s, vl);
-  va_end(vl);
-}
-
-
-void panic(const char* msg, ...) {
-  va_list vl;
-  va_start(vl, msg);
-  vprintf_uart(msg, vl);
-  va_end(vl);
-  while (1) ;
-}
-
-void printk(const char*, ...);
-void printk(const char* s, ...)
-{
-  va_list vl;
-
-  va_start(vl, s);
-  printf_uart(s, vl);
-  va_end(vl);
-}
-
-int t_printf(const char *s, ...)
-{
-  va_list vl;
-
-  va_start(vl, s);
-  vprintf_uart(s, vl);
-  va_end(vl);
-
-  return 0;
-}
-
-/*
-int t_printf(const char *s, ...)
-{
-  char buf[256];
-  va_list vl;
-
-  const char *p = &buf[0];
-
-  va_start(vl, s);
-  vsnprintf(buf, sizeof buf, s, vl);
-  va_end(vl);
-
-  puts(p);
-
-  return 0;
-}
-*/
-#endif
 
 uint32_t get_usec_time()
 {

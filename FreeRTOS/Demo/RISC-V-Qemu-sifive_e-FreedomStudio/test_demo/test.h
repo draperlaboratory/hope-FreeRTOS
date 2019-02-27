@@ -10,7 +10,7 @@ extern volatile int t_status;
 
 int test_main(void);
 
-int t_printf(const char *s, ...);
+#define t_printf printf
 
 int t_vmfill(void **, size_t *, int);
 int t_memfill(void);
