@@ -34,6 +34,8 @@
 // include malloc wrappers
 #include "mem.h"
 
+#define t_printf printf
+
 /*
  * Hello world sanity test to check we can execute code i.e. main and 
  *     call printf

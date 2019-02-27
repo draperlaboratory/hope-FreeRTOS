@@ -25,13 +25,11 @@
  */
 
 #include "utils.h"
-#include "ns16550.h"
+#include "platform.h"
 #include <stdarg.h>
 #include <stdio.h>
 
-//static miv_core_uart_t * pio = (miv_core_uart_t *)(void*)MIV_COREUART_BASE;
-static ns16550_pio_t *pio = (ns16550_pio_t *)NS16550_AP_BASE;
-
+#if 0
 void vprintf_uart(const char* s, va_list vl)
 {
   char buf[256];
@@ -41,7 +39,7 @@ void vprintf_uart(const char* s, va_list vl)
   vsnprintf(buf, sizeof buf, s, vl);
 
   while (*p) {
-    ns16550_txchar(pio, *p++);
+    putchar(*p++);
   }
 }
 
@@ -63,3 +61,59 @@ void panic(const char* msg, ...) {
   while (1) ;
 }
 
+void printk(const char*, ...);
+void printk(const char* s, ...)
+{
+  va_list vl;
+
+  va_start(vl, s);
+  printf_uart(s, vl);
+  va_end(vl);
+}
+
+int t_printf(const char *s, ...)
+{
+  va_list vl;
+
+  va_start(vl, s);
+  vprintf_uart(s, vl);
+  va_end(vl);
+
+  return 0;
+}
+
+/*
+int t_printf(const char *s, ...)
+{
+  char buf[256];
+  va_list vl;
+
+  const char *p = &buf[0];
+
+  va_start(vl, s);
+  vsnprintf(buf, sizeof buf, s, vl);
+  va_end(vl);
+
+  puts(p);
+
+  return 0;
+}
+*/
+#endif
+
+uint32_t get_usec_time()
+{
+  return (uint32_t)get_timer_value();
+}
+
+uint32_t get_inst_ret()
+{
+  uint64_t instret;
+  asm volatile ("csrr %0, 0xc02 " : "=r"(instret));
+  return instret;
+}
+
+uint32_t uiPortGetWallTimestampUs()
+{
+  return (uint32_t)get_timer_value();
+}

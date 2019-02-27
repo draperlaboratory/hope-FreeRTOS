@@ -9,6 +9,7 @@
 #include "sifive_test.h"
 
 #define log printf
+#define t_printf printf
 
 /*
  * Test status functions

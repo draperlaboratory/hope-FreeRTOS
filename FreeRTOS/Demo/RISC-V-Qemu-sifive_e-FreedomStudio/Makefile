@@ -31,6 +31,7 @@ SDK_SRC := \
 	$(SDK_DIR)/libwrap/sys/link.c \
 	$(SDK_DIR)/libwrap/sys/lseek.c \
 	$(SDK_DIR)/libwrap/sys/openat.c \
+	$(SDK_DIR)/libwrap/sys/putchar.c \
 	$(SDK_DIR)/libwrap/sys/puts.c \
 	$(SDK_DIR)/libwrap/sys/read.c \
 	$(SDK_DIR)/libwrap/sys/sbrk.c \
@@ -73,13 +74,18 @@ APP_SRC = \
 	$(APP_SRC_DIR)/isp/utils.c \
 	$(APP_SRC_DIR)/main.c \
 	$(APP_SRC_DIR)/blinky_demo/main_blinky.c \
-	$(APP_SRC_DIR)/full_demo/main_full.c
+	$(APP_SRC_DIR)/full_demo/main_full.c \
+	$(APP_SRC_DIR)/test_demo/hello_works_1.c \
+	$(APP_SRC_DIR)/test_demo/test_status.c \
+	$(APP_SRC_DIR)/test_demo/utils.c
 
 APP_ASM = \
 	$(APP_SRC_DIR)/full_demo/RegTest.S
 
 APP_INCLUDES = \
 	-I ./ \
+	-I ./templates \
+	-I ./test_demo \
 	-I $(SDK_DIR)/include \
 	-I $(SDK_DIR)/env/freedom-e300-hifive1 \
 	-I $(SDK_DIR)/env \
@@ -93,7 +99,7 @@ APP_OBJS += $(patsubst %.S,$(APP_BUILD_DIR)/%.o,$(notdir $(APP_ASM)))
 VPATH += \
 	$(APP_SRC_DIR)/blinky_demo \
 	$(APP_SRC_DIR)/full_demo \
-	$(APP_SRC_DIR)/isp \
+	$(APP_SRC_DIR)/test_demo \
 	$(APP_SRC_DIR)
 
 DEMO_COMMON_SRC =  \
