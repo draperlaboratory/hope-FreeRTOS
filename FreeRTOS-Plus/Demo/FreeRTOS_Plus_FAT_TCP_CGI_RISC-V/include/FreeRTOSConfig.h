@@ -112,12 +112,10 @@
 
 #define configMAX_API_CALL_INTERRUPT_PRIORITY	18
 
-#define configRTC_CLOCK_HZ						32768
-#define configCPU_CLOCK_HZ						265000000UL
+#define configCPU_CLOCK_HZ				( 10000000 ) /*QEMU*/
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION	0
 #define configUSE_TICKLESS_IDLE					0
-#define configTICK_CLOCK_HZ			( ( unsigned long ) 1000000 )
-#define configTICK_RATE_HZ						( ( TickType_t ) 250 )
+#define configTICK_RATE_HZ						( ( TickType_t ) 1000 )
 #define configPERIPHERAL_CLOCK_HZ  				( 33333000UL )
 #define configUSE_PREEMPTION					1
 #define configUSE_IDLE_HOOK						0
