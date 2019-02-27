@@ -44,3 +44,12 @@ uint32_t uiPortGetWallTimestampUs()
 {
   return (uint32_t)get_timer_value();
 }
+
+void wrap()
+{
+	sbrk();
+	close();
+	lseek();
+	read();
+	fstat();
+}
