@@ -27,7 +27,6 @@ SDK_SRC := \
 	$(SDK_DIR)/libwrap/sys/link.c \
 	$(SDK_DIR)/libwrap/sys/lseek.c \
 	$(SDK_DIR)/libwrap/sys/openat.c \
-	$(SDK_DIR)/libwrap/sys/putchar.c \
 	$(SDK_DIR)/libwrap/sys/puts.c \
 	$(SDK_DIR)/libwrap/sys/read.c \
 	$(SDK_DIR)/libwrap/sys/sbrk.c \
