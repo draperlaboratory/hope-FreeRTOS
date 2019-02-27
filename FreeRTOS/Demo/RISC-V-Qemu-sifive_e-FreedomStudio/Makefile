@@ -45,11 +45,6 @@ SDK_SRC := \
 	$(SDK_DIR)/drivers/plic/plic_driver.c \
 	$(SDK_DIR)/drivers/fe300prci/fe300prci_driver.c
 
-# START_ASM := \
-# 	$(SDK_DIR)/env/start.S
-# START_OBJS += $(patsubst %.S,$(FREERTOS_BUILD_DIR)/%.o,$(notdir $(START_ASM)))
-
-
 SDK_ASM := \
 	$(SDK_DIR)/env/entry.S \
 	$(SDK_DIR)/env/start.S
@@ -75,12 +70,10 @@ CFLAGS += -DportasmHANDLE_INTERRUPT=$(INTERRUPT_HANDLER)
 # Set up application source, include, and object files for compilation: ______________________
 APP_SRC_DIR = .
 APP_SRC = \
-	$(APP_SRC_DIR)/isp/utils.c \
+	$(APP_SRC_DIR)/test_demo/utils.c \
 	$(APP_SRC_DIR)/main.c \
 	$(APP_SRC_DIR)/blinky_demo/main_blinky.c \
-	$(APP_SRC_DIR)/full_demo/main_full.c \
-	$(APP_SRC_DIR)/test_demo/test_status.c \
-	$(APP_SRC_DIR)/test_demo/utils.c
+	$(APP_SRC_DIR)/full_demo/main_full.c
 
 APP_ASM = \
 	$(APP_SRC_DIR)/full_demo/RegTest.S
@@ -118,6 +111,7 @@ DEMO_COMMON_OBJS := $(patsubst %.c,$(APP_BUILD_DIR)/%.o,$(notdir $(DEMO_COMMON_S
 VPATH += $(FREERTOS_DIR)/Demo/Common/Minimal
 
 TEST_SRC = \
+	$(APP_SRC_DIR)/test_demo/test_status.c \
 	$(APP_SRC_DIR)/test_demo/hello_works_1.c
 TEST_OBJS := $(patsubst %.c,$(APP_BUILD_DIR)/%.o,$(notdir $(TEST_SRC)))
 
@@ -144,20 +138,19 @@ OUT_OBJS = \
 	$(FREERTOS_OBJS)
 
 # List of object files to compile for the system:
-# LIB_OBJS = \
-# 	$(APP_OBJS) \
-# 	$(DEMO_COMMON_OBJS) \
-# 	$(FREERTOS_OBJS)
+LIB_OBJS = \
+	$(APP_OBJS) \
+	$(DEMO_COMMON_OBJS) \
+	$(FREERTOS_OBJS)
 
 BUILD_DIRECTORIES = \
 	$(APP_BUILD_DIR) \
-	$(TEST_BUILD_DIR) \
 	$(FREERTOS_BUILD_DIR)
 
 LDFLAGS += -Wl,-Map,"$(BUILD_DIR)/$(PROJ_NAME).map"
 
 .PHONY: debug clean app_compile debug-app frtos_compile print-info out_elf sim-qemu gdb
-all: directories $(OUT_OBJS) $(OUT_ELF) #$(OUT_LIB)
+all: directories $(OUT_OBJS) $(OUT_ELF) $(OUT_LIB)
 directories: $(BUILD_DIRECTORIES)
 app_compile: directories $(APP_OBJS)
 frtos_compile: directories $(FREERTOS_OBJS)
@@ -211,23 +204,22 @@ $(TEST_BUILD_DIR)/%.o : %.c
 	@echo "Finished Building: $<"
 
 # Generate ELF ___________________________________________________________________________
-$(OUT_ELF): $(OUT_OBJS) $(TEST_OBJS)
+$(OUT_ELF): $(OUT_LIB) $(TEST_OBJS)
 	@echo '___________________________________________________________________________________'
 	@echo 'Building target: $@'
 	@echo '_______________________________'
-	$(GCC) $(LDFLAGS) $(LDOPTS) -o $@ $(TEST_OBJS) $(OUT_OBJS) $(LIB_FLAGS)
+	$(GCC) $(LDFLAGS) $(LDOPTS) -o $@ $(TEST_OBJS) $(OUT_LIB) $(LIB_FLAGS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Generate lib___________________________________________________________________________
-# $(OUT_LIB): $(LIB_OBJS)
-# 	@echo '___________________________________________________________________________________'
-# 	@echo 'Building target: $@'
-# 	@echo '_______________________________'
-# 	$(AR) qc $@ $<
-# 	$(RANLIB) $@
-# 	@echo 'Finished building target: $@'
-# 	@echo ' '
+$(OUT_LIB): $(LIB_OBJS)
+	@echo '___________________________________________________________________________________'
+	@echo 'Building target: $@'
+	@echo '_______________________________'
+	$(AR) rcs $@ $^
+	@echo 'Finished building target: $@'
+	@echo ' '
 
 .PHONY:  build_lib
 
