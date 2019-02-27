@@ -66,7 +66,7 @@ CFLAGS += -DportasmHANDLE_INTERRUPT=$(INTERRUPT_HANDLER)
 # Set up application source, include, and object files for compilation: ______________________
 APP_SRC_DIR = .
 APP_SRC = \
-	$(APP_SRC_DIR)/test_demo/utils.c \
+	$(APP_SRC_DIR)/isp/utils.c \
 	$(APP_SRC_DIR)/main.c \
 	$(APP_SRC_DIR)/blinky_demo/main_blinky.c \
 	$(APP_SRC_DIR)/full_demo/main_full.c
@@ -77,6 +77,7 @@ APP_ASM = \
 APP_INCLUDES = \
 	-I ./ \
 	-I ./templates \
+	-I ./isp \
 	-I ./test_demo \
 	-I $(SDK_DIR)/include \
 	-I $(SDK_DIR)/env/freedom-e300-hifive1 \
@@ -91,6 +92,7 @@ APP_OBJS += $(patsubst %.S,$(APP_BUILD_DIR)/%.o,$(notdir $(APP_ASM)))
 VPATH += \
 	$(APP_SRC_DIR)/blinky_demo \
 	$(APP_SRC_DIR)/full_demo \
+	$(APP_SRC_DIR)/isp \
 	$(APP_SRC_DIR)/test_demo \
 	$(APP_SRC_DIR)
 
