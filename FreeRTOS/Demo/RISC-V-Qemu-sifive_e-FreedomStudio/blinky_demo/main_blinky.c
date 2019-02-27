@@ -73,6 +73,9 @@
 #include "task.h"
 #include "queue.h"
 
+#include "utils.h"
+#include "isp_utils.h"
+
 /* Priorities used by the tasks. */
 #define mainQUEUE_RECEIVE_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
 #define	mainQUEUE_SEND_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )
@@ -88,6 +91,9 @@ writes to the queue.  Therefore the queue will never have more than one item in
 it at any time, and even with a queue length of 1, the sending task will never
 find the queue full. */
 #define mainQUEUE_LENGTH					( 1 )
+
+/* Enable ISP hooks */
+#define ISP_SUPPORT						( 1 )
 
 /*-----------------------------------------------------------*/
 
@@ -110,8 +116,20 @@ static QueueHandle_t xQueue = NULL;
 
 /*-----------------------------------------------------------*/
 
+#if (ISP_SUPPORT == 1)
 void main_blinky( void )
 {
+	xTaskCreate(isp_main_task, "Main task", 1000, NULL, 1, NULL);
+
+	vTaskStartScheduler();
+
+	// never reached
+	return;
+}
+#else
+void main_blinky( void )
+{
+
 	/* Create the queue. */
 	xQueue = xQueueCreate( mainQUEUE_LENGTH, sizeof( uint32_t ) );
 
@@ -139,6 +157,24 @@ void main_blinky( void )
 	FreeRTOS web site for more details on the FreeRTOS heap
 	http://www.freertos.org/a00111.html. */
 	for( ;; );
+}
+#endif
+/*-----------------------------------------------------------*/
+
+
+void isp_main_task(void *argument)
+{
+  unsigned long result;
+
+  result = (unsigned long)isp_main();
+  vTaskDelay(1);
+
+  printf("\nMain task has completed with code: 0x%08x\n", result);
+
+  for( ;; );
+
+  // this may need changes to portable layer
+  vTaskEndScheduler();
 }
 /*-----------------------------------------------------------*/
 
