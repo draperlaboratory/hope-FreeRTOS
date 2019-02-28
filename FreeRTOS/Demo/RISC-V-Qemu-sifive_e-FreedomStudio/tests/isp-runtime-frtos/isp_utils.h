@@ -3,6 +3,5 @@
 
 int t_printf(const char *s, ...);
 int isp_main(void);
-void isp_main_task(void*);
 
 #endif // ISP_UTILS_H

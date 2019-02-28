@@ -73,8 +73,6 @@
 #include "task.h"
 #include "queue.h"
 
-#include "isp_utils.h"
-
 /* Priorities used by the tasks. */
 #define mainQUEUE_RECEIVE_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
 #define	mainQUEUE_SEND_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )
@@ -107,6 +105,10 @@ void main_blinky( void );
  */
 static void prvQueueReceiveTask( void *pvParameters );
 static void prvQueueSendTask( void *pvParameters );
+
+/* ISP test entry points */
+int isp_main(void);
+void isp_main_task(void*);
 
 /*-----------------------------------------------------------*/
 
