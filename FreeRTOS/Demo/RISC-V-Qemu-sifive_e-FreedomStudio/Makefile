@@ -81,7 +81,7 @@ APP_ASM = \
 APP_INCLUDES = \
 	-I ./ \
 	-I ./templates \
-	-I ./test_demo \
+	-I ./tests \
 	-I $(SDK_DIR)/include \
 	-I $(SDK_DIR)/env/freedom-e300-hifive1 \
 	-I $(SDK_DIR)/env \
@@ -96,7 +96,7 @@ VPATH += \
 	$(APP_SRC_DIR)/blinky_demo \
 	$(APP_SRC_DIR)/full_demo \
 	$(APP_SRC_DIR)/isp \
-	$(APP_SRC_DIR)/test_demo \
+	$(APP_SRC_DIR)/tests \
 	$(APP_SRC_DIR)
 
 DEMO_COMMON_SRC =  \
@@ -112,8 +112,8 @@ DEMO_COMMON_OBJS := $(patsubst %.c,$(APP_BUILD_DIR)/%.o,$(notdir $(DEMO_COMMON_S
 VPATH += $(FREERTOS_DIR)/Demo/Common/Minimal
 
 TEST_SRC = \
-	$(APP_SRC_DIR)/test_demo/test_status.c \
-	$(APP_SRC_DIR)/test_demo/hello_works_1.c
+	$(APP_SRC_DIR)/tests/test_status.c \
+	$(APP_SRC_DIR)/tests/hello_works_1.c
 TEST_OBJS := $(patsubst %.c,$(APP_BUILD_DIR)/%.o,$(notdir $(TEST_SRC)))
 
 OUT_ELF = $(BUILD_DIR)/FreeRTOS-$(PROJ_NAME).elf
@@ -122,7 +122,7 @@ OUT_LIB = $(BUILD_DIR)/libfreertos.a
 # Need to tell FreeRTOS where to find the FreeRTOSConfig.h __________________________________
 FREERTOS_INCLUDES += \
 	-I ./ \
-	-I ./test_demo \
+	-I ./tests \
 	-I ./templates \
 	-I $(ARCH_PORTABLE_INC) \
 	-I $(SDK_DIR)/include \
