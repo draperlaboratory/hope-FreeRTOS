@@ -80,8 +80,6 @@ APP_ASM = \
 
 APP_INCLUDES = \
 	-I ./ \
-	-I ./templates \
-	-I ./tests \
 	-I $(SDK_DIR)/include \
 	-I $(SDK_DIR)/env/freedom-e300-hifive1 \
 	-I $(SDK_DIR)/env \
@@ -117,8 +115,8 @@ TEST_SRC = \
 
 TEST_INCLUDES = \
 	-I ./ \
-	-I ./templates \
-	-I ./tests
+	-I ./tests \
+	-I ./tests/isp-runtime-frtos
 
 TEST_BUILD_DIR = $(BUILD_DIR)/tests
 TEST_OBJS := $(patsubst %.c,$(TEST_BUILD_DIR)/%.o,$(notdir $(TEST_SRC)))
@@ -131,8 +129,6 @@ OUT_LIB = $(BUILD_DIR)/libfreertos.a
 # Need to tell FreeRTOS where to find the FreeRTOSConfig.h __________________________________
 FREERTOS_INCLUDES += \
 	-I ./ \
-	-I ./tests \
-	-I ./templates \
 	-I $(ARCH_PORTABLE_INC) \
 	-I $(SDK_DIR)/include \
 	-I $(SDK_DIR)/env/freedom-e300-hifive1 \
