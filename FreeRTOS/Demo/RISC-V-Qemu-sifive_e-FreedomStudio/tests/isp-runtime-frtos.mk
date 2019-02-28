@@ -1,12 +1,13 @@
-include ../BuildEnvironment.mk
+FREERTOS_RVDEMO_DIR := ../../../FreeRTOS/FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio
+
+include $(FREERTOS_RVDEMO_DIR)/BuildEnvironment.mk
 
 ISP_PREFIX ?= /opt/isp
 
 ISP_RUNTIME := $(basename $(shell echo $(abspath $(MAKEFILE_LIST)) | grep -o " /.*/isp-runtime-frtos\.mk"))
 ISP_RUNTIME=./isp-runtime-frtos
 
-FREERTOS_SRC_DIR := ../FreeRTOS/FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio/
-FREERTOS_BUILD_DIR := ../build
+FREERTOS_BUILD_DIR := $(FREERTOS_RVDEMO_DIR)/build
 
 ISP_INCLUDES += -I$(ISP_PREFIX)/riscv32-unknown-elf/include
 ISP_INCLUDES += -I$(ISP_RUNTIME)
@@ -27,4 +28,4 @@ CC=$(RISCV_GCC)
 all:
 
 $(ISP_LIBS):
-	cd $(FREERTOS_SRC_DIR) && make
+	cd $(FREERTOS_RVDEMO_DIR) && make
