@@ -5,7 +5,7 @@ ISP_PREFIX ?= /opt/isp
 ISP_RUNTIME := $(basename $(shell echo $(abspath $(MAKEFILE_LIST)) | grep -o " /.*/isp-runtime-frtos\.mk"))
 ISP_RUNTIME=./isp-runtime-frtos
 
-FREERTOS_SRC_DIR := ..
+FREERTOS_SRC_DIR := ../FreeRTOS/FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio/
 FREERTOS_BUILD_DIR := ../build
 
 ISP_INCLUDES += -I$(ISP_PREFIX)/riscv32-unknown-elf/include
