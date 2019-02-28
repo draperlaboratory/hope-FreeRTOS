@@ -18,7 +18,7 @@ RANLIB  = $(CROSS_COMPILE_PREFIX)-ranlib
 GDB     = $(CROSS_COMPILE_PREFIX)-gdb
 
 # if using the multi-arch (riscv64-unknown-elf-gcc):
-ARCH_FLAGS = -march=rv32imac -mabi=ilp32 -mcmodel=medany
+ARCH_FLAGS = -march=rv32ima -mabi=ilp32 -mcmodel=medany
 # Basic CFLAGS:
 CFLAGS  = -Wall -Wextra -O0 -g3 -msmall-data-limit=8 -std=gnu11
 CFLAGS += -ffunction-sections -fdata-sections -fno-builtin-printf
