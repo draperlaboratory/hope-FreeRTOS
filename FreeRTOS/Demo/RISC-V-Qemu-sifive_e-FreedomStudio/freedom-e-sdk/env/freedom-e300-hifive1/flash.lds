@@ -5,7 +5,7 @@ ENTRY( _start )
 MEMORY
 {
   flash (rxai!w) : ORIGIN = 0x20400000, LENGTH = 512M
-  ram (wxa!ri) : ORIGIN = 0x80000000, LENGTH = 16K
+  ram (wxa!ri) : ORIGIN = 0x80000000, LENGTH = 8M
 }
 
 PHDRS
@@ -17,7 +17,7 @@ PHDRS
 
 SECTIONS
 {
-  __stack_size = DEFINED(__stack_size) ? __stack_size : 2K;
+  __stack_size = DEFINED(__stack_size) ? __stack_size : 4K;
 
   .init           :
   {

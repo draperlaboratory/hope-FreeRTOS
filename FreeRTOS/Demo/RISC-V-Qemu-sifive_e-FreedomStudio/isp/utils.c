@@ -44,6 +44,12 @@ uint32_t uiPortGetWallTimestampUs()
   return (uint32_t)get_timer_value();
 }
 
+unsigned long sys_GetWallTimestampUs(void)
+{
+    /* TBD on real FPGA hw */
+  return uiPortGetWallTimestampUs();
+}
+
 int t_printf(const char *s, ...)
 {
   char buf[256];
@@ -68,4 +74,5 @@ void wrap_hack()
   lseek();
   read();
   fstat();
+  malloc(0);
 }
