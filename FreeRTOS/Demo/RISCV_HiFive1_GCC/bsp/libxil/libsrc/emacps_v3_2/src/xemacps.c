@@ -156,7 +156,9 @@ void XEmacPs_Start(XEmacPs *InstancePtr)
 	Xil_AssertVoid(InstancePtr != NULL);
 	Xil_AssertVoid(InstancePtr->IsReady == (u32)XIL_COMPONENT_IS_READY);
 
-   printf("Start DMA\n");
+   printf("Start DMA, Instance:  %d, Rx Base:  0x%x, Tx Base:  0x%x\n",
+          InstancePtr->Version, InstancePtr->RxBdRing.BaseBdAddr,
+          InstancePtr->TxBdRing.BaseBdAddr);
 
 	/* Start DMA */
 	/* When starting the DMA channels, both transmit and receive sides
@@ -168,6 +170,8 @@ void XEmacPs_Start(XEmacPs *InstancePtr)
 	XEmacPs_WriteReg(InstancePtr->Config.BaseAddress,
 			   XEMACPS_RXQBASE_OFFSET,
 			   InstancePtr->RxBdRing.BaseBdAddr);
+
+   printf("Base set.\n");
 
 	XEmacPs_WriteReg(InstancePtr->Config.BaseAddress,
 			   XEMACPS_TXQBASE_OFFSET,
@@ -185,12 +189,13 @@ void XEmacPs_Start(XEmacPs *InstancePtr)
 		Reg = XEmacPs_ReadReg(InstancePtr->Config.BaseAddress,
 					XEMACPS_NWCTRL_OFFSET);
 		if ((!(Reg & XEMACPS_NWCTRL_TXEN_MASK))==TRUE) {
-         printf("Check Mask TX\n");
+         printf("Check Mask TX 0x%x,\n", InstancePtr->Config.BaseAddress + XEMACPS_NWCTRL_OFFSET);
 			XEmacPs_WriteReg(InstancePtr->Config.BaseAddress,
 					   XEMACPS_NWCTRL_OFFSET,
 				   Reg | (u32)XEMACPS_NWCTRL_TXEN_MASK);
 		}
 	}
+
    printf("Start RX\n");
 
 	/* Enable receiver if not already enabled */
