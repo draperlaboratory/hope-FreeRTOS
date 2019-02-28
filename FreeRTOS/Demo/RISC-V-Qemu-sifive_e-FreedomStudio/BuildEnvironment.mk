@@ -18,14 +18,13 @@ RANLIB  = $(CROSS_COMPILE_PREFIX)-ranlib
 GDB     = $(CROSS_COMPILE_PREFIX)-gdb
 
 # if using the multi-arch (riscv64-unknown-elf-gcc):
-ARCH_FLAGS = -march=rv32ima -mabi=ilp32 -mcmodel=medium
-# Basic ISP_CFLAGS:
-ISP_CFLAGS  = -Wall -Wextra -O0 -g3 -std=gnu11
-ISP_CFLAGS += -ffunction-sections -fdata-sections -fno-builtin-printf
-ISP_CFLAGS += -DDONT_USE_PLIC -DDONT_USE_M_TIME -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
-ISP_CFLAGS += -include sys/cdefs.h
-ISP_CFLAGS += $(ARCH_FLAGS)
-ISP_CFLAGS += -I ${ISP_PREFIX}/riscv32-unknown-elf/include
+ARCH_FLAGS = -march=rv32ima -mabi=ilp32 -mcmodel=medany
+# Basic CFLAGS:
+CFLAGS  = -Wall -Wextra -O0 -g3 -msmall-data-limit=8 -std=gnu11
+CFLAGS += -ffunction-sections -fdata-sections -fno-builtin-printf
+CFLAGS += -DDONT_USE_PLIC -DDONT_USE_M_TIME
+CFLAGS += -include sys/cdefs.h
+CFLAGS += $(ARCH_FLAGS)
 # These flags are for outputing *.d dependency files for make
 
 ISP_ASMFLAGS =  -O0 -g3
