@@ -92,7 +92,6 @@ VPATH += \
 	$(APP_SRC_DIR)/blinky_demo \
 	$(APP_SRC_DIR)/full_demo \
 	$(APP_SRC_DIR)/isp \
-	$(APP_SRC_DIR)/tests \
 	$(APP_SRC_DIR)
 
 DEMO_COMMON_SRC =  \
@@ -107,10 +106,20 @@ DEMO_COMMON_SRC =  \
 DEMO_COMMON_OBJS := $(patsubst %.c,$(APP_BUILD_DIR)/%.o,$(notdir $(DEMO_COMMON_SRC)))
 VPATH += $(FREERTOS_DIR)/Demo/Common/Minimal
 
+TEST_SRC_DIR = ./tests
 TEST_SRC = \
 	$(APP_SRC_DIR)/tests/test_status.c \
 	$(APP_SRC_DIR)/tests/hello_works_1.c
-TEST_OBJS := $(patsubst %.c,$(APP_BUILD_DIR)/%.o,$(notdir $(TEST_SRC)))
+
+TEST_INCLUDES = \
+	-I ./ \
+	-I ./templates \
+	-I ./tests
+
+TEST_BUILD_DIR = $(BUILD_DIR)/tests
+TEST_OBJS := $(patsubst %.c,$(TEST_BUILD_DIR)/%.o,$(notdir $(TEST_SRC)))
+VPATH += \
+	$(APP_SRC_DIR)/tests
 
 OUT_ELF = $(BUILD_DIR)/FreeRTOS-$(PROJ_NAME).elf
 OUT_LIB = $(BUILD_DIR)/libfreertos.a
@@ -142,6 +151,7 @@ LIB_OBJS = \
 
 BUILD_DIRECTORIES = \
 	$(APP_BUILD_DIR) \
+	$(TEST_BUILD_DIR) \
 	$(FREERTOS_BUILD_DIR)
 
 LDFLAGS += -Wl,-Map,"$(BUILD_DIR)/$(PROJ_NAME).map"
@@ -190,6 +200,12 @@ $(FREERTOS_BUILD_DIR)/%.o : %.S
 	@echo "[FreeRTOS Objects] : $@ __________________________________________________________"
 	@echo "Building: $<"
 	$(GCC) $(ASMFLAGS) $(FREERTOS_INCLUDES) -o $@ -c $<
+	@echo "Finished Building: $<"
+
+$(TEST_BUILD_DIR)/%.o : %.c
+	@echo "[Test Objects] : $@ ______________________________________________________________"
+	@echo "Building: $<"
+	$(GCC) $(CFLAGS) $(TEST_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
 # Generate ELF ___________________________________________________________________________
