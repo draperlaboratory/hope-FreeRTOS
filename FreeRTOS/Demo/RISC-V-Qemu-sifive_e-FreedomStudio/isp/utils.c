@@ -24,7 +24,6 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "utils.h"
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -45,11 +44,28 @@ uint32_t uiPortGetWallTimestampUs()
   return (uint32_t)get_timer_value();
 }
 
-void wrap()
+int t_printf(const char *s, ...)
 {
-	sbrk();
-	close();
-	lseek();
-	read();
-	fstat();
+  char buf[256];
+  va_list vl;
+
+  const char *p = &buf[0];
+
+  va_start(vl, s);
+  vsnprintf(buf, sizeof buf, s, vl);
+  va_end(vl);
+
+  puts(p);
+
+  return 0;
+}
+
+/* XXX: Hack to pull in __wrap__ syms to fix a linker error */
+void wrap_hack()
+{
+  sbrk();
+  close();
+  lseek();
+  read();
+  fstat();
 }
