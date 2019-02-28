@@ -73,7 +73,6 @@
 #include "task.h"
 #include "queue.h"
 
-#include "utils.h"
 #include "isp_utils.h"
 
 /* Priorities used by the tasks. */

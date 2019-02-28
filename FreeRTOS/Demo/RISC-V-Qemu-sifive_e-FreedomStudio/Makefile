@@ -81,7 +81,6 @@ APP_ASM = \
 APP_INCLUDES = \
 	-I ./ \
 	-I ./templates \
-	-I ./isp \
 	-I ./test_demo \
 	-I $(SDK_DIR)/include \
 	-I $(SDK_DIR)/env/freedom-e300-hifive1 \
