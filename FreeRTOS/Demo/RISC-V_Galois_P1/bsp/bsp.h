@@ -89,13 +89,13 @@
 
 
 // Ethernet defines
-#define XPAR_AXIETHERNET_0_PHYADDR 0x01
+#define XPAR_AXIETHERNET_0_PHYADDR 0x03
 #define XPAR_XAXIETHERNET_NUM_INSTANCES 1
 
 #define XPAR_AXIETHERNET_0_DEVICE_ID 0
 #define XPAR_AXIETHERNET_0_BASEADDR 0x62100000ULL
 // 0 for SoftTemac at 10/100 Mbps, 1 for SoftTemac at 10/100/1000 Mbps and 2 for Vitex6 Hard Temac 
-#define XPAR_AXIETHERNET_0_TEMAC_TYPE 2 // TODO: going low first
+#define XPAR_AXIETHERNET_0_TEMAC_TYPE 2 // TODO: not sure if this is right
 // TxCsum indicates that the device has checksum offload on the Tx channel or not.
 #define XPAR_AXIETHERNET_0_TXCSUM 0
 // RxCsum indicates that the device has checksum offload on the Rx channel or not.
@@ -119,7 +119,7 @@
 // Enable 1588 option. 
 #define XPAR_AXIETHERNET_0_ENABLE_1588 0
 // Tells whether MAC is 1G or 2p5G.
-#define XPAR_AXIETHERNET_0_SPEED XAE_SPEED_1000_MBPS//XAE_SPEED_100_MBPS // TODO: going low first 
+#define XPAR_AXIETHERNET_0_SPEED XAE_SPEED_1000_MBPS// TODO: not sure if this is right
 // Number of table entries for the multicast address filtering
 #define XPAR_AXIETHERNET_0_NUM_TABLE_ENTRIES 4
 // Axi Ethernet interrupt ID.
@@ -131,9 +131,9 @@
 // Unused
 #define XPAR_AXIETHERNET_0_FIFO_INTR 0xFF
 // Axi DMA RX interrupt ID
-#define XPAR_AXIETHERNET_0_DMA_RX_INTR PLIC_SOURCE_DMA_S2MM // TODO: check the interrupt number
+#define XPAR_AXIETHERNET_0_DMA_RX_INTR PLIC_SOURCE_DMA_S2MM
 // Axi DMA TX interrupt ID
-#define XPAR_AXIETHERNET_0_DMA_TX_INTR PLIC_SOURCE_DMA_MM2S // TODO: check the interrupt number
+#define XPAR_AXIETHERNET_0_DMA_TX_INTR PLIC_SOURCE_DMA_MM2S
 
 extern plic_instance_t Plic;
 

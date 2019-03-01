@@ -1650,8 +1650,7 @@ int XAxiEthernet_GetExtMulticastGroup(XAxiEthernet *InstancePtr,
 	} else {
 		return (FALSE);
 	}
-	printf(
-				"XAxiEthernet_GetExtMulticastGroup:done\r\n");
+	printf("XAxiEthernet_GetExtMulticastGroup:done\r\n");
 }
 
 

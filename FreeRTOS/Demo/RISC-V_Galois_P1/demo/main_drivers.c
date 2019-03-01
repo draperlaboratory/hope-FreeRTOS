@@ -513,10 +513,14 @@ int AxiEthernetMcastExample(INTC *IntcInstancePtr,
 
 	/* Run the new multicast feature. Make sure HW has the capability */
 	if (XAxiEthernet_IsExtMcast(AxiEthernetInstancePtr)) {
+		printf("Running example\r\n");
 		Status = AxiEthernetSgDmaIntrExtMulticastExample(AxiEthernetInstancePtr,DmaInstancePtr);
 		if (Status != XST_SUCCESS) {
 			return XST_FAILURE;
 		}
+	} else {
+		printf("Not a multicast example, returnning\r\n");
+		return XST_FAILURE;
 	}
 
 	printf("After running example\r\n");

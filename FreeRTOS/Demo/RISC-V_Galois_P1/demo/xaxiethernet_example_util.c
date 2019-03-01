@@ -661,7 +661,7 @@ int AxiEthernetUtilEnterLoopback(XAxiEthernet *AxiEthernetInstancePtr,
 	/* Get the Phy Interface */
 	PhyType = XAxiEthernet_GetPhysicalInterface(AxiEthernetInstancePtr);
 
-	AxiEthernetPrintPhy(AxiEthernetInstancePtr);
+	//AxiEthernetPrintPhy(AxiEthernetInstancePtr);
 
 	/* Detect the PHY address */
 	if (PhyType != XAE_PHY_TYPE_1000BASE_X) {
@@ -670,8 +670,6 @@ int AxiEthernetUtilEnterLoopback(XAxiEthernet *AxiEthernetInstancePtr,
 		PhyAddr = XPAR_AXIETHERNET_0_PHYADDR;
 	}
 
-	// TODO: this is a hack
-	PhyAddr = XPAR_AXIETHERNET_0_PHYADDR;
 	printf("PhyAddr = 0x%x\r\n",PhyAddr);
 	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
 				PHY_R3_PHY_IDENT_REG, &PhyModel);
