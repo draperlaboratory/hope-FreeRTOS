@@ -128,8 +128,7 @@ int XAxiEthernet_CfgInitialize(XAxiEthernet *InstancePtr,
 
 	XAxiEthernet_Reset(InstancePtr);
 
-	printf(
-			"AxiTEthernet_CfgInitialize: returning SUCCESS\r\n");
+	printf("AxiTEthernet_CfgInitialize: returning SUCCESS\r\n");
 	return XST_SUCCESS;
 }
 
@@ -284,15 +283,13 @@ void XAxiEthernet_Stop(XAxiEthernet *InstancePtr)
 	}
 
 	printf("XAxiEthernet_Stop\r\n");
-	printf(
-		"XAxiEthernet_Stop: disabling interrupts\r\n");
+	printf("XAxiEthernet_Stop: disabling interrupts\r\n");
 
 	/* Disable interrupts */
 	XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 							XAE_IE_OFFSET, 0);
 
-	printf(
-		"XAxiEthernet_Stop: disabling receiver\r\n");
+	printf("XAxiEthernet_Stop: disabling receiver\r\n");
 
 	/* Disable the receiver */
 	Reg = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
@@ -1695,15 +1692,15 @@ void XAxiEthernet_PhyRead(XAxiEthernet *InstancePtr, u32 PhyAddress,
 	u32 value=0U;
 	volatile s32 TimeoutLoops;
 
+	printf("XAxiEthernet_PhyRead: BaseAddress: 0x%08x, register: 0x%lx\r\n",
+		InstancePtr->Config.BaseAddress, RegisterNum);
+
 	/*
 	 * Verify that each of the inputs are valid.
 	 */
 	Xil_AssertVoid(InstancePtr != NULL);
 	Xil_AssertVoid(PhyAddress <= XAE_PHY_ADDR_LIMIT);
 	Xil_AssertVoid(RegisterNum <= XAE_PHY_REG_NUM_LIMIT);
-
-	printf("XAxiEthernet_PhyRead: BaseAddress: 0x%08x, resgiter: 0x%lx\r\n",
-		InstancePtr->Config.BaseAddress, RegisterNum);
 
 	/*
 	 * Wait till MDIO interface is ready to accept a new transaction.

@@ -466,23 +466,46 @@ void AxiEthernetUtilFrameMemClear(EthernetFrame * FramePtr)
 #define PHY_DETECT_MASK 0x1808
 
 u32 AxiEthernetDetectPHY(XAxiEthernet * AxiEthernetInstancePtr);
+
+
 u32 AxiEthernetDetectPHY(XAxiEthernet * AxiEthernetInstancePtr)
 {
 	u16 PhyReg;
-	int PhyAddr;
+	u32 PhyAddr;
 
-	for (PhyAddr = 31; PhyAddr >= 0; PhyAddr--) {
+	for (PhyAddr = 0; PhyAddr <= 31; PhyAddr++) {
 		XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
 						PHY_DETECT_REG, &PhyReg);
-
 		if ((PhyReg != 0xFFFF) &&
 		   ((PhyReg & PHY_DETECT_MASK) == PHY_DETECT_MASK)) {
 			/* Found a valid PHY address */
+			printf("AxiEthernetDetectPHY found phy addr: %lu\r\n",PhyAddr);
 			return PhyAddr;
 		}
 	}
 
 	return 0;		/* Default to zero */
+}
+
+
+void AxiEthernetPrintPhy(XAxiEthernet * AxiEthernetInstancePtr);
+
+void AxiEthernetPrintPhy(XAxiEthernet * AxiEthernetInstancePtr) {
+	u8 PhyReg;
+	u16 Val = 0xFFFF;
+	u8 PhyAddr;
+
+	for (PhyAddr = 0; PhyAddr <= 31; PhyAddr++) {
+		for (PhyReg = 0; PhyReg <= 16; PhyReg++) {
+			printf("PhyAddr: %u; PhyReg: %u; Val=0x%x\r\n", PhyAddr, PhyReg, Val);
+			XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
+				PhyReg, &Val);
+			if (Val != 0xFFFF) {
+				printf("PhyAddr: %u; PhyReg: %u; Val=0x%x\r\n", PhyAddr, PhyReg, Val);
+				__asm volatile( "ebreak" ); for( ;; );
+			}
+		}
+	}
 }
 
 /******************************************************************************/
@@ -548,6 +571,63 @@ u32 AxiEthernetDetectPHY(XAxiEthernet * AxiEthernetInstancePtr)
 #define TI_PHY_CR_DEVAD_EN		0x001F
 #define TI_PHY_CR_DEVAD_DATAEN		0x4000
 
+
+void AxiEthernetPrintAllRegs(XAxiEthernet *AxiEthernetInstancePtr) {
+	printf("AxiEthernetPrintAllRegs\r\n");
+
+	printf("Ethernet Regs\r\n");
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_RAF_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TPF_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_IFGP_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_IS_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_IP_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_IE_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TTAG_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_RTAG_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_UAWL_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_UAWU_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TPID0_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TPID1_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_PPST_OFFSET);
+
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_RCW0_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_RCW1_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TC_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_FCC_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_EMMC_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_RXFC_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TXFC_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TX_TIMESTAMP_ADJ_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_PHYC_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_IDREG_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_ARREG_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MDIO_MC_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MDIO_MCR_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MDIO_MWD_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MDIO_MRD_OFFSET);
+
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MDIO_MIS_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MDIO_MIP_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MDIO_MIE_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MDIO_MIC_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_UAW0_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_UAW1_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_FMI_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_AF0_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_AF1_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TX_VLAN_DATA_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_RX_VLAN_DATA_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MCAST_TABLE_OFFSET);
+	
+	/*
+	printf("Statictisc Counters Regs\r\n");
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_RXBL_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_RXBU_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TXBL_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TXBU_OFFSET);
+	*/
+}
+
 /******************************************************************************/
 /**
 *
@@ -581,6 +661,8 @@ int AxiEthernetUtilEnterLoopback(XAxiEthernet *AxiEthernetInstancePtr,
 	/* Get the Phy Interface */
 	PhyType = XAxiEthernet_GetPhysicalInterface(AxiEthernetInstancePtr);
 
+	AxiEthernetPrintPhy(AxiEthernetInstancePtr);
+
 	/* Detect the PHY address */
 	if (PhyType != XAE_PHY_TYPE_1000BASE_X) {
 		PhyAddr = AxiEthernetDetectPHY(AxiEthernetInstancePtr);
@@ -588,6 +670,9 @@ int AxiEthernetUtilEnterLoopback(XAxiEthernet *AxiEthernetInstancePtr,
 		PhyAddr = XPAR_AXIETHERNET_0_PHYADDR;
 	}
 
+	// TODO: this is a hack
+	PhyAddr = XPAR_AXIETHERNET_0_PHYADDR;
+	printf("PhyAddr = 0x%x\r\n",PhyAddr);
 	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
 				PHY_R3_PHY_IDENT_REG, &PhyModel);
 	PhyModel = PhyModel & PHY_MODEL_NUM_MASK;

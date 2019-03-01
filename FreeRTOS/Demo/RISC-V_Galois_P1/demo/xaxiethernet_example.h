@@ -94,6 +94,8 @@ typedef unsigned char EthernetFrame[NUM_PACKETS * XAE_MAX_JUMBO_FRAME_SIZE] __at
 /*
  * Utility functions implemented in xaxiethernet_example_util.c
  */
+void AxiEthernetReadAllRegs(XAxiEthernet *AxiEthernetInstancePtr);
+
 void AxiEthernetUtilSetupUart(void);
 void AxiEthernetUtilFrameHdrFormatMAC(EthernetFrame * FramePtr,
 							char *DestAddr);

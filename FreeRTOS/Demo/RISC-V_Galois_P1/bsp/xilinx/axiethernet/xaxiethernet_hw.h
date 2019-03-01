@@ -64,6 +64,8 @@
 extern "C" {
 #endif
 
+
+//#define DEBUG 1
 /************************** Constant Definitions *****************************/
 
 /*
@@ -86,6 +88,7 @@ extern "C" {
 #define XAE_UAWU_OFFSET		0x00000024 /**< Unicast address word upper */
 #define XAE_TPID0_OFFSET	0x00000028 /**< VLAN TPID0 register */
 #define XAE_TPID1_OFFSET	0x0000002C /**< VLAN TPID1 register */
+#define XAE_PPST_OFFSET		0x00000030 /**< PCS PMA TEMAC Status register (PPST)*/
 
 /*
  * Statistics Counter Registers are from offset 0x200 to 0x3FF
@@ -880,12 +883,12 @@ extern int indent_on;
 	"unknown")
 
 #define XAxiEthernet_print_reg_o(BaseAddress, RegOffset, Value) 	\
-	xdbg_printf(XDBG_DEBUG_TEMAC_REG, "%s0x%0x -> %s(0x%0x)\n", 	\
+	printf("%s0x%0lx -> %s(0x%0lx)\r\n", 	\
 			XAxiEthernet_indent(RegOffset), (Value), 	\
 			XAxiEthernet_reg_name(RegOffset), (RegOffset)) 	\
 
 #define XAxiEthernet_print_reg_i(BaseAddress, RegOffset, Value) \
-	xdbg_printf(XDBG_DEBUG_TEMAC_REG, "%s%s(0x%0x) -> 0x%0x\n", \
+	printf("%s%s(0x%0lx) -> 0x%0lx\r\n", \
 		XAxiEthernet_indent(RegOffset),  \
 		XAxiEthernet_reg_name(RegOffset),(RegOffset), (Value)) \
 

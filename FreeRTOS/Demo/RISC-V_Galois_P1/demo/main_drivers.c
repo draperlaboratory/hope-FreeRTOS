@@ -368,6 +368,9 @@ int AxiEthernetMcastExample(INTC *IntcInstancePtr,
 		return XST_FAILURE;
 	}
 
+	printf("Before ethernet Cfg Init\r\n");
+	AxiEthernetPrintAllRegs(AxiEthernetInstancePtr);
+
 	/*
 	 * Initialize AxiEthernet hardware.
 	 */
@@ -377,6 +380,9 @@ int AxiEthernetMcastExample(INTC *IntcInstancePtr,
 		AxiEthernetUtilErrorTrap("Error in initialize");
 		return XST_FAILURE;
 	}
+
+	printf("After ethernet Cfg Init\r\n");
+	AxiEthernetPrintAllRegs(AxiEthernetInstancePtr);
 
 	/*
 	 * Set the MAC address
@@ -465,6 +471,7 @@ int AxiEthernetMcastExample(INTC *IntcInstancePtr,
 		LoopbackSpeed = AXIETHERNET_LOOPBACK_SPEED_1G;
 	}
 
+
 	AxiEthernetUtilEnterLoopback(AxiEthernetInstancePtr, LoopbackSpeed);
 
 	/*
@@ -494,15 +501,26 @@ int AxiEthernetMcastExample(INTC *IntcInstancePtr,
 	/****************************/
 	/* Run the example 	    */
 	/****************************/
+	printf("Before running example\r\n");
+	AxiEthernetPrintAllRegs(AxiEthernetInstancePtr);
+    uint16_t Speed;
+    Status = XAxiEthernet_GetSgmiiStatus(AxiEthernetInstancePtr, &Speed);
+    if (Status != XST_SUCCESS) {
+		return XST_FAILURE;
+	}
+    printf("XAxiEthernet_GetSgmiiStatus returned %u\r\n",Speed);
+
 
 	/* Run the new multicast feature. Make sure HW has the capability */
 	if (XAxiEthernet_IsExtMcast(AxiEthernetInstancePtr)) {
-		Status = AxiEthernetSgDmaIntrExtMulticastExample
-		(AxiEthernetInstancePtr,DmaInstancePtr);
+		Status = AxiEthernetSgDmaIntrExtMulticastExample(AxiEthernetInstancePtr,DmaInstancePtr);
 		if (Status != XST_SUCCESS) {
 			return XST_FAILURE;
 		}
 	}
+
+	printf("After running example\r\n");
+	AxiEthernetPrintAllRegs(AxiEthernetInstancePtr);
 
 	/*
 	 * Disable the interrupts for the Axi Ethernet device
@@ -514,6 +532,9 @@ int AxiEthernetMcastExample(INTC *IntcInstancePtr,
 	 * Stop the device
 	 */
 	XAxiEthernet_Stop(AxiEthernetInstancePtr);
+
+	printf("After system stop\r\n");
+	AxiEthernetPrintAllRegs(AxiEthernetInstancePtr);
 
 	return XST_SUCCESS;
 }
