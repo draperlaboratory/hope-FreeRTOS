@@ -99,6 +99,7 @@ void sifive_fail_finish(void);
 
 int main( void )
 {
+	printf("Starting main\n");
 	/* The mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting is described at the top
 	of this file. */
 	#if( mainCREATE_SIMPLE_BLINKY_DEMO_ONLY == 1 )
@@ -151,6 +152,7 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 	( void ) pcTaskName;
 	( void ) pxTask;
 
+	printf("Stack overflow\n");
 	test_fail();
 	test_done();
 	/* Run time stack overflow checking is performed if

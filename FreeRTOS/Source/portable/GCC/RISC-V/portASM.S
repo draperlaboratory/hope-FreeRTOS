@@ -95,10 +95,17 @@ at the top of this file. */
 .extern ulTimerIncrementsForOneTick
 .extern xISRStackTop
 
+
+ram_start: .word 0x80000000
+
+sp_scrogged:
+       j sp_scrogged
 /*-----------------------------------------------------------*/
 
 .align 8
 freertos_risc_v_trap_handler:
+	lw t1, ram_start
+	ble sp, t1, sp_scrogged
 	addi sp, sp, -portCONTEXT_SIZE
 	sw x1, 1 * portWORD_SIZE( sp )
 	sw x5, 2 * portWORD_SIZE( sp )
