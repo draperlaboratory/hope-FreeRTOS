@@ -109,7 +109,7 @@
 #define XPAR_AXIETHERNET_0_TXVLAN_STRP 0
 #define XPAR_AXIETHERNET_0_RXVLAN_STRP 0
 // Extended multicast address filtering
-#define XPAR_AXIETHERNET_0_MCAST_EXTEND 0
+#define XPAR_AXIETHERNET_0_MCAST_EXTEND 1
 // Statistics gathering options
 #define XPAR_AXIETHERNET_0_STATS 1
 // Ethernet Audio Video Bridging

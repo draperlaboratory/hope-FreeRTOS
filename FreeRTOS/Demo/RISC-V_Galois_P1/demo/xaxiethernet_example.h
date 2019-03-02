@@ -120,7 +120,7 @@ int AxiEthernetUtilConfigureInternalPhy(XAxiEthernet *AxiEthernetInstancePtr,
 					int Speed);
 int AxiEtherentConfigureTIPhy(XAxiEthernet *AxiEthernetInstancePtr,
 			      u32 PhyAddr);
-
+void AxiEthernetPrintAllRegs(XAxiEthernet *AxiEthernetInstancePtr);
 /************************** Variable Definitions ****************************/
 
 extern char AxiEthernetMAC[];		/* Local MAC address */

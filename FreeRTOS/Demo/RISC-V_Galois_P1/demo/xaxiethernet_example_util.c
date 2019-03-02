@@ -69,6 +69,7 @@
 /*
  * Local MAC address
  */
+// TODO: change accordingly
 char AxiEthernetMAC[6] = { 0x00, 0x0A, 0x35, 0x01, 0x02, 0x03 };
 
 /******************************************************************************/
@@ -766,6 +767,7 @@ int AxiEthernetUtilEnterLoopback(XAxiEthernet *AxiEthernetInstancePtr,
 				PHY_R0_CTRL_REG,
 				PhyReg0 | PHY_R0_RESET);
 	AxiEthernetUtilPhyDelay(AXIETHERNET_PHY_DELAY_SEC);
+/*
 	XAxiEthernet_PhyRead(AxiEthernetInstancePtr,PhyAddr,
 				PHY_R0_CTRL_REG, &PhyReg0);
 	if (!ExternalLoopback) {
@@ -787,7 +789,7 @@ int AxiEthernetUtilEnterLoopback(XAxiEthernet *AxiEthernetInstancePtr,
 		(PhyType == XAE_PHY_TYPE_1000BASE_X)) {
 		AxiEthernetUtilConfigureInternalPhy(AxiEthernetInstancePtr, Speed);
 	}
-
+*/
 	AxiEthernetUtilPhyDelay(1);
 
 	return XST_SUCCESS;

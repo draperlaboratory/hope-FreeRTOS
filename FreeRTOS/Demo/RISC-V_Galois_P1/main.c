@@ -50,6 +50,9 @@
 #elif mainDEMO_TYPE == 3
 	#pragma message "Demo type 3: Drivers"
 	extern void main_drivers( void );
+#elif mainDEMO_TYPE == 4
+	#pragma message "Demo type 4: Ping"
+	extern void main_ping( void );
 #else
 	#error "Unsupported demo type"
 #endif /* #if mainCREATE_SIMPLE_BLINKY_DEMO_ONLY == 1 */
@@ -88,6 +91,10 @@ int main( void )
 	#elif mainDEMO_TYPE == 3
 	{
 		main_drivers();
+	}
+	#elif mainDEMO_TYPE == 4
+	{
+		main_ping();
 	}
 	#endif
 }

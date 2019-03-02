@@ -680,22 +680,22 @@ int AxiEthernetSgDmaIntrExtMulticastExample(XAxiEthernet *AxiEthernetInstancePtr
 	 * Read back the setup to make sure Multicast Table is configured with
 	 * MAC address.
 	 */
-	if (!XAxiEthernet_GetExtMulticastGroup(AxiEthernetInstancePtr,
-							MulticastMAC)) {
-		AxiEthernetUtilErrorTrap("Read back Multicast address fail");
-		return XST_FAILURE;
-	}
+	// if (!XAxiEthernet_GetExtMulticastGroup(AxiEthernetInstancePtr,
+	// 						MulticastMAC)) {
+	// 	AxiEthernetUtilErrorTrap("Read back Multicast address fail");
+	// 	return XST_FAILURE;
+	// }
 
-	/*
-	 * Setup multicast address for SW to perform final checking.
-	 */
-	AxiEthernet_AddExtMulticast(MulticastMAC);
+	// /*
+	//  * Setup multicast address for SW to perform final checking.
+	//  */
+	// AxiEthernet_AddExtMulticast(MulticastMAC);
 
 	/*
 	 * Make sure Tx, Rx and extended multicast are enabled.
 	 */
 	Status = XAxiEthernet_SetOptions(AxiEthernetInstancePtr,
-						XAE_RECEIVER_ENABLE_OPTION |
+						XAE_RECEIVER_ENABLE_OPTION | //XAE_PROMISC_OPTION |
 						XAE_TRANSMITTER_ENABLE_OPTION);
 	if (Status != XST_SUCCESS) {
 		AxiEthernetUtilErrorTrap("Error setting options");
@@ -860,32 +860,32 @@ int AxiEthernetSgDmaIntrExtMulticastExample(XAxiEthernet *AxiEthernetInstancePtr
 	 * the least significant bit of most significant byte is 1.
 	 * Check to see if further ethernet MAC verification is required...
 	 */
-	RxStatusControlWord =XAxiDma_BdRead(BdCurPtr,XAXIDMA_BD_USR2_OFFSET);
-	if(RxStatusControlWord & XAE_BD_RX_USR2_IP_MCAST_MASK) {
-	       /*
-		* The multicast MAC address is stored in status words
-		* 0 and 1 in the AXI4-Stream.
-		*/
+	// RxStatusControlWord =XAxiDma_BdRead(BdCurPtr,XAXIDMA_BD_USR2_OFFSET);
+	// if(RxStatusControlWord & XAE_BD_RX_USR2_IP_MCAST_MASK) {
+	//        /*
+	// 	* The multicast MAC address is stored in status words
+	// 	* 0 and 1 in the AXI4-Stream.
+	// 	*/
 
-		Reg = XAxiDma_BdRead(BdPtr, XAXIDMA_BD_USR0_OFFSET);
-		MulticastAdd[5] = ((Reg >> 8)  & 0xFF);
-		MulticastAdd[4] = (Reg & 0xFF);
+	// 	Reg = XAxiDma_BdRead(BdPtr, XAXIDMA_BD_USR0_OFFSET);
+	// 	MulticastAdd[5] = ((Reg >> 8)  & 0xFF);
+	// 	MulticastAdd[4] = (Reg & 0xFF);
 
-		Reg = XAxiDma_BdRead(BdPtr, XAXIDMA_BD_USR1_OFFSET);
-		MulticastAdd[3] = ((Reg >> 24) & 0xFF);
-		MulticastAdd[2] = ((Reg >> 16) & 0xFF);
-		MulticastAdd[1] = ((Reg >> 8)  & 0xFF);
-		MulticastAdd[0] = (Reg & 0xFF);
+	// 	Reg = XAxiDma_BdRead(BdPtr, XAXIDMA_BD_USR1_OFFSET);
+	// 	MulticastAdd[3] = ((Reg >> 24) & 0xFF);
+	// 	MulticastAdd[2] = ((Reg >> 16) & 0xFF);
+	// 	MulticastAdd[1] = ((Reg >> 8)  & 0xFF);
+	// 	MulticastAdd[0] = (Reg & 0xFF);
 
-		if (!AxiEthernet_GetExtMulticast(MulticastAdd)) {
-			AxiEthernetUtilErrorTrap("Multicast address mismatch\n");
-			return XST_FAILURE;
-		}
-	}
-	else {
-		AxiEthernetUtilErrorTrap("Not a multicast frame\n");
-		return XST_FAILURE;
-	}
+	// 	if (!AxiEthernet_GetExtMulticast(MulticastAdd)) {
+	// 		AxiEthernetUtilErrorTrap("Multicast address mismatch\n");
+	// 		return XST_FAILURE;
+	// 	}
+	// }
+	// else {
+	// 	AxiEthernetUtilErrorTrap("Not a multicast frame\n");
+	// 	return XST_FAILURE;
+	// }
 
 	/*
 	 * Destination address(multicast MAC address in this example) is part
@@ -1258,8 +1258,7 @@ static void RxIntrHandler(XAxiDma_BdRing *RxRingPtr)
 	 */
 	if (!(IrqStatus & XAXIDMA_IRQ_ALL_MASK)) {
 		DeviceErrors++;
-		AxiEthernetUtilErrorTrap
-		("AXIDma: No interrupts asserted in RX status register");
+		AxiEthernetUtilErrorTrap("AXIDma: No interrupts asserted in RX status register");
 		XAxiDma_Reset(&DmaInstance);
 		if(!XAxiDma_ResetIsDone(&DmaInstance)) {
 			AxiEthernetUtilErrorTrap ("Could not reset\n");
@@ -1378,7 +1377,6 @@ static int AxiEthernetSetupIntrSystem(INTC *IntcInstancePtr,
 	/*
 	 * Initialize the interrupt controller and connect the ISR
 	 */
-    // TODO: fixme
 	Status = PLIC_register_interrupt_handler(IntcInstancePtr, AxiEthernetIntrId,
 							(XInterruptHandler)
 							AxiEthernetErrorHandler,
