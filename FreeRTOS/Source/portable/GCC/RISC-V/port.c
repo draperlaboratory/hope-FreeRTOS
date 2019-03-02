@@ -183,6 +183,11 @@ void vPortEndScheduler( void )
 	for( ;; );
 }
 
+void vPortHandleInterrupt( void )
+{
+   /* Not implemented. */
+}
+
 
 
 

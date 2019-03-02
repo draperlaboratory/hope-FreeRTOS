@@ -107,7 +107,8 @@ VPATH += $(FREERTOS_DIR)/Demo/Common/Minimal
 TEST_SRC_DIR = ./tests
 TEST_SRC = \
 	$(APP_SRC_DIR)/tests/test_status.c \
-	$(APP_SRC_DIR)/tests/hello_works_1.c
+	$(APP_SRC_DIR)/tests/malloc_works_2.c
+
 
 TEST_INCLUDES = \
 	-I ./ \
