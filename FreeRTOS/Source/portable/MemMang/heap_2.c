@@ -147,7 +147,7 @@ size_t btow(size_t bytes){
 // Strip tag from a pointer
 void* __attribute__ ((noinline)) dover_remove_tag(void *volatile ptr) {
   void *volatile res;
-
+  
   vTaskSuspendAll();
 
   // remove tag from ptr
@@ -160,7 +160,7 @@ void* __attribute__ ((noinline)) dover_remove_tag(void *volatile ptr) {
 
 
 // Apply tags to a block of heap memory by writing tagged 0's to the memory cells
-//      Needs to be prevented from inlining and word aligned so proper
+//      Needs to be prevented from inlining and word aligned so propper 
 //      code tags can be applied
 void * __attribute__ ((noinline)) dover_tag(volatile uintptr_t *ptr, size_t bytes) {
   size_t words = btow(bytes);
@@ -183,15 +183,20 @@ void * __attribute__ ((noinline)) dover_tag(volatile uintptr_t *ptr, size_t byte
   res = p;
 #endif
   xTaskResumeAll();
+ 
 
  uintptr_t zero;
 
+ zero = (uintptr_t)dover_ptr_zero;
   count = 0;
+  //printk("do_tag %x\n", dover_remove_tag(p));
   while(count < words) {
-    *p = dover_ptr_zero; // Tag the word
+    //printk("do_tag(%d) %d\n", count, p);
+    *p = zero; // Tag the word
     p++;
     count++;
   }
+  //printk("do_tag %x\n", dover_remove_tag(p));
 
   return res;
 }
@@ -199,23 +204,28 @@ void * __attribute__ ((noinline)) dover_tag(volatile uintptr_t *ptr, size_t byte
 /*-----------------------------------------------------------*/
 
 // Apply tags to a block of heap memory by writing tagged 0's to the memory cells
-//      Needs to be prevented from inlining and word aligned so proper
+//      Needs to be prevented from inlining and word aligned so propper 
 //      code tags can be applied
 void __attribute__ ((noinline)) dover_untag(volatile uintptr_t *ptr, size_t bytes) {
   size_t words = btow(bytes);
   size_t count;
   volatile uintptr_t *p;
+  uintptr_t zero;
 
   p = ptr;
+  // grab a specially tagged zero
+  zero = (uintptr_t)dover_ptr_zero;
   count = 0;
   while(count < words) {
-    *p = (uintptr_t)dover_ptr_zero; // write specially tagged zero
+    //printk("do_untag(%d) %d\n", count, p);
+    *p = zero; // Tag the word
     p++;
     count++;
   }
 }
 
 /*-----------------------------------------------------------*/
+
 
 void *pvPortMalloc( size_t xWantedSize )
 {
@@ -297,10 +307,10 @@ void *pvReturn = NULL;
 	}
 	( void ) xTaskResumeAll();
 
-	if(pvReturn) {
-	  pxBlock->orig_req_size = orig_xWantedSize;
-	  pvReturn = dover_tag(pvReturn, orig_xWantedSize);
-	}
+        if(pvReturn)
+          pvReturn = dover_tag(pvReturn, xWantedSize - heapSTRUCT_SIZE);
+//        else
+//          printk("malloc allocation failure, size = %d\n", xWantedSize);
 
 	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
 	{
@@ -318,13 +328,14 @@ void *pvReturn = NULL;
 
 void vPortFree( void *pv )
 {
-uint8_t *puc;
-BlockLink_t *pxLink;
+	uint8_t *puc;
+	BlockLink_t *pxLink;
+
 
 	if( pv != NULL )
 	{
-		puc = ( uint8_t * ) dover_remove_tag(pv);
 
+		puc = ( uint8_t * ) dover_remove_tag(pv);
 		/* The memory being freed will have an BlockLink_t structure immediately
 		before it. */
 		puc -= heapSTRUCT_SIZE;
@@ -333,7 +344,7 @@ BlockLink_t *pxLink;
 		byte alignment warnings. */
 		pxLink = ( void * ) puc;
 
-		dover_untag(pv, pxLink->orig_req_size);
+		dover_untag(pv, pxLink->xBlockSize - heapSTRUCT_SIZE);
 
 		vTaskSuspendAll();
 		{
