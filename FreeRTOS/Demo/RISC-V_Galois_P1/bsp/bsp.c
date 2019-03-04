@@ -51,3 +51,8 @@ void sleep(uint32_t secs) {
 void msleep(uint32_t msecs) {
     vTaskDelay(pdMS_TO_TICKS(msecs));
 }
+
+// TODO: fixme
+UBaseType_t uxRand(void) {
+    return 42;
+}

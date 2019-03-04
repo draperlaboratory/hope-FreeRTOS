@@ -53,6 +53,9 @@
 #elif mainDEMO_TYPE == 4
 	#pragma message "Demo type 4: Ping"
 	extern void main_ping( void );
+#elif mainDEMO_TYPE == 5
+	#pragma message "Demo type 5: TCP"
+	extern void main_tcp( void );
 #else
 	#error "Unsupported demo type"
 #endif /* #if mainCREATE_SIMPLE_BLINKY_DEMO_ONLY == 1 */
@@ -95,6 +98,10 @@ int main( void )
 	#elif mainDEMO_TYPE == 4
 	{
 		main_ping();
+	}
+	#elif mainDEMO_TYPE == 5
+	{
+		main_tcp();
 	}
 	#endif
 }

@@ -21,6 +21,8 @@ CRT0	= bsp/boot.S
 $(info $$PROG is [${PROG}])
 
 FREERTOS_SOURCE_DIR	= ../../Source
+FREERTOS_PLUS_SOURCE_DIR = ../../../FreeRTOS-Plus/Source
+FREERTOS_TCP_SOURCE_DIR = $(FREERTOS_PLUS_SOURCE_DIR)/FreeRTOS-Plus-TCP
 
 WARNINGS= -Wall -Wextra -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wsign-compare \
 		-Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wunused
@@ -36,7 +38,7 @@ FREERTOS_SRC = \
 	$(FREERTOS_SOURCE_DIR)/tasks.c \
 	$(FREERTOS_SOURCE_DIR)/timers.c \
 	$(FREERTOS_SOURCE_DIR)/event_groups.c \
-	$(FREERTOS_SOURCE_DIR)/portable/MemMang/heap_2.c
+	$(FREERTOS_SOURCE_DIR)/portable/MemMang/heap_4.c # TODO TEST
 
 APP_SOURCE_DIR	= ../Common/Minimal
 
@@ -137,7 +139,29 @@ ifeq ($(PROG),main_ping)
 	DEMO_SRC += demo/xaxiethernet_example_util.c
 	INCLUDES += -I./demo
 else
+ifeq ($(PROG),main_tcp)
+	CFLAGS += -DmainDEMO_TYPE=5
+	INCLUDES += \
+		-I./demo \
+		-I$(FREERTOS_TCP_SOURCE_DIR) \
+		-I$(FREERTOS_TCP_SOURCE_DIR)/include \
+		-I$(FREERTOS_TCP_SOURCE_DIR)/portable/Compiler/GCC
+	FREERTOS_SRC += \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_IP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_ARP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DHCP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DNS.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Sockets.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_IP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_UDP_IP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_WIN.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Stream_Buffer.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/BufferManagement/BufferAllocation_2.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c
+
+else
 	$(info unknown demo: $(PROG))
+endif
 endif
 endif
 endif
