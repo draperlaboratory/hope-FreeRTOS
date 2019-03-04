@@ -790,6 +790,7 @@ int AxiEthernetUtilEnterLoopback(XAxiEthernet *AxiEthernetInstancePtr,
 		AxiEthernetUtilConfigureInternalPhy(AxiEthernetInstancePtr, Speed);
 	}
 */
+	AxiEtherentConfigureTIPhy(AxiEthernetInstancePtr, PhyAddr);
 	AxiEthernetUtilPhyDelay(1);
 
 	return XST_SUCCESS;

@@ -708,6 +708,10 @@ int AxiEthernetSgDmaIntrExtMulticastExample(XAxiEthernet *AxiEthernetInstancePtr
 	XAxiEthernet_Start(AxiEthernetInstancePtr);
 	XAxiEthernet_IntEnable(AxiEthernetInstancePtr, XAE_INT_RECV_ERROR_MASK);
 
+	printf("Going to vTaskDelay\r\n");
+	vTaskDelay(pdMS_TO_TICKS(5000)); // sleep for 5 s
+	printf("Woken up\r\n");
+
 	/*
 	 * Enable DMA receive related interrupts
 	 */
@@ -788,6 +792,9 @@ int AxiEthernetSgDmaIntrExtMulticastExample(XAxiEthernet *AxiEthernetInstancePtr
 		return XST_FAILURE;
 	}
 
+
+	printf("About to send\r\n");
+
 	/*
 	 * Start DMA TX channel. Transmission starts at once.
 	 */
@@ -824,6 +831,7 @@ int AxiEthernetSgDmaIntrExtMulticastExample(XAxiEthernet *AxiEthernetInstancePtr
 		return XST_FAILURE;
 	}
 
+	printf("About to receive\r\n");
 	/*
 	 * Wait for Rx indication
 	 */
