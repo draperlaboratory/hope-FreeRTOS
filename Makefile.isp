@@ -5,10 +5,9 @@
 ISP_PREFIX ?= /opt/isp/
 
 all:
-	make -C FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio
+	$(MAKE) -C FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio
 
 install:
 
-
 clean:
-	make -C FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio clean
+	$(MAKE) -C FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio clean
