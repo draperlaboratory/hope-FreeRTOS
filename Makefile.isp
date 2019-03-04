@@ -4,21 +4,11 @@
 
 ISP_PREFIX ?= /opt/isp/
 
-INSTALL_EXCLUDES := Makefile.isp
-INSTALL_EXCLUDES += .git
-INSTALL_EXCLUDES += .gitignore
-INSTALL_EXCLUDES += build
-INSTALL_EXCLUDES += *~
-INSTALL_EXCLUDES += /isp-support
-INSTALL_EXCLUDES += *.url
-
-RSYNC_EXCLUDE = $(patsubst %,--exclude '%',$(INSTALL_EXCLUDES))
-
 all:
+	make -C FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio
 
 install:
-	rm -rf $(ISP_PREFIX)/FreeRTOS
-	rsync -rupE . $(ISP_PREFIX)/FreeRTOS $(RSYNC_EXCLUDE)
+
 
 clean:
-	find -name "*~" -delete
+	make -C FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio clean
