@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017-2018 Dover Microsystems, Inc.
+ * Copyright © 2017-2019 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
  * All rights reserved. 
  *
  * Use and disclosure subject to the following license. 
@@ -64,6 +64,17 @@ int t_printf(const char *s, ...)
   puts(p);
 
   return 0;
+}
+
+void sifive_fail_finish(void)
+{
+#define SIFIVE_TEST_ADDR 0x100000
+
+#define SIFIVE_TEST_FAIL 0x3333
+#define SIFIVE_TEST_PASS 0x5555
+
+  volatile uint32_t *test_device = (uint32_t *)SIFIVE_TEST_ADDR;
+  *test_device = SIFIVE_TEST_FAIL;
 }
 
 /* XXX: Hack to pull in __wrap__ syms to fix a linker error */

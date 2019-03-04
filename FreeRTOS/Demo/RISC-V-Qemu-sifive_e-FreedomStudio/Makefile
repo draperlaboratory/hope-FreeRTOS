@@ -108,21 +108,17 @@ DEMO_COMMON_SRC =  \
 DEMO_COMMON_OBJS := $(patsubst %.c,$(APP_BUILD_DIR)/%.o,$(notdir $(DEMO_COMMON_SRC)))
 VPATH += $(FREERTOS_DIR)/Demo/Common/Minimal
 
-TEST_SRC_DIR = ./tests
+TEST_SRC_DIR = ./isp
 TEST_SRC = \
-	$(APP_SRC_DIR)/tests/test_status.c \
-	$(APP_SRC_DIR)/tests/malloc_works_2.c
-
+	$(APP_SRC_DIR)/isp/test_stub.c
 
 TEST_INCLUDES = \
-	-I ./ \
-	-I ./tests \
-	-I ./tests/isp-runtime-frtos
+	-I ./isp
 
-TEST_BUILD_DIR = $(BUILD_DIR)/tests
+TEST_BUILD_DIR = $(BUILD_DIR)/isp
 TEST_OBJS := $(patsubst %.c,$(TEST_BUILD_DIR)/%.o,$(notdir $(TEST_SRC)))
 VPATH += \
-	$(APP_SRC_DIR)/tests
+	$(APP_SRC_DIR)/isp
 
 OUT_ELF = $(BUILD_DIR)/FreeRTOS-$(PROJ_NAME).elf
 OUT_LIB = $(BUILD_DIR)/libfreertos.a
@@ -212,11 +208,11 @@ $(TEST_BUILD_DIR)/%.o : %.c
 	@echo "Finished Building: $<"
 
 # Generate ELF ___________________________________________________________________________
-$(OUT_ELF): $(OUT_LIB) $(TEST_OBJS)
+$(OUT_ELF): $(OUT_OBJS) $(TEST_OBJS)
 	@echo '___________________________________________________________________________________'
 	@echo 'Building target: $@'
 	@echo '_______________________________'
-	$(GCC) $(LDFLAGS) $(LDOPTS) -o $@ $(TEST_OBJS) $(OUT_LIB) $(LIB_FLAGS)
+	$(GCC) $(LDFLAGS) $(LDOPTS) -o $@ $(OUT_OBJS) $(TEST_OBJS) $(LIB_FLAGS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
