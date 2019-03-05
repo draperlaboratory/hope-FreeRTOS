@@ -319,13 +319,6 @@ u16 IpHeaderInfo[IP_HEADER_INFO_LEN] =
 	0x0800,	0x4500, 0x003C,	0x5566,	0x0000,	0x8001, 0x0000
 };
 
-/*
- * Buffers used for Transmission and Reception of Packets. These are declared as
- * global so that they are not a part of the stack.
- */
-static u8 RxFrame[NUM_OF_PING_REQ_PKTS * XAE_JUMBO_MTU];
-static u8 TxFrame[NUM_OF_PING_REQ_PKTS * XAE_JUMBO_MTU];
-
 static int RxBdSetup(XAxiDma *McDmaInstPtr, XAxiEthernet *AxiEthernetInstancePtr);
 static int TxBdSetup(XAxiDma *McDmaInstPtr, XAxiEthernet *AxiEthernetInstancePtr);
 
@@ -338,8 +331,6 @@ char TxBdSpace[TXBD_SPACE_BYTES] __attribute__ ((aligned(BD_ALIGNMENT)));
 volatile u32 RecvFrameLength;
 UINTPTR TxBuffPtr;
 UINTPTR RxBuffPtr;
-volatile int FramesTx;
-volatile int FramesRx;
 volatile int TxCount;
 volatile int RxCount;
 volatile int Padding;	/* For 1588 Packets we need to pad 8 bytes time stamp value */
@@ -385,10 +376,14 @@ void main_ping( void );
  */
 static void prvDriverTestTask( void *pvParameters );
 
-int AxiEthernetPingReqExample(XAxiEthernet *AxiEthernetInstancePtr,
-			      XAxiDma *DmaInstancePtr,
-			      u16 AxiEthernetDeviceId,
-			      u16 AxiMcDmaDeviceId);
+int AxiEthernetPingReqExample(INTC *IntcInstancePtr,
+				XAxiEthernet *AxiEthernetInstancePtr,
+				XAxiDma *DmaInstancePtr,
+				u16 AxiEthernetDeviceId,
+				u16 AxiDmaDeviceId,
+				u16 AxiEthernetIntrId,
+				u16 DmaRxIntrId,
+				u16 DmaTxIntrId);
 
 void SendArpReqFrame(XAxiEthernet *AxiEthernetInstancePtr,
 		     XAxiDma *DmaInstancePtr, u8 ChanId);
@@ -446,7 +441,10 @@ static void prvDriverTestTask( void *pvParameters ) {
 						&AxiEthernetInstance,
 						&DmaInstance,
 						XPAR_AXIETHERNET_0_DEVICE_ID,
-						XPAR_AXIDMA_0_DEVICE_ID);
+						XPAR_AXIDMA_0_DEVICE_ID,
+						PLIC_SOURCE_ETH,
+						XPAR_AXIETHERNET_0_DMA_RX_INTR,
+						XPAR_AXIETHERNET_0_DMA_TX_INTR);
 	if (Status != XST_SUCCESS) {
 		AxiEthernetUtilErrorTrap("Axiethernet Ping Example Failed\r\n");
 		AxiEthernetUtilErrorTrap("--- Exiting main() ---");
@@ -464,6 +462,32 @@ static void prvDriverTestTask( void *pvParameters ) {
 
 
 
+
+int PhySetup(XAxiEthernet *AxiEthernetInstancePtr)
+{
+	u16 PhyReg0;
+	signed int PhyAddr;
+	u16 status;
+
+	PhyAddr = XPAR_AXIETHERNET_0_PHYADDR;
+
+	/* Clear the PHY of any existing bits by zeroing this out */
+	PhyReg0 = 0;
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
+				 PHY_R0_CTRL_REG, &PhyReg0);
+
+	PhyReg0 &= (~PHY_R0_ANEG_ENABLE);
+	PhyReg0 &= (~PHY_R0_ISOLATE);
+	PhyReg0 |= PHY_R0_DFT_SPD_1000;
+
+	sleep(1);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr,
+				PHY_R0_CTRL_REG, PhyReg0);
+
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 1, &status);
+
+	return XST_SUCCESS;
+}
 
 /**
 *
@@ -491,21 +515,29 @@ static void prvDriverTestTask( void *pvParameters ) {
 *		initialization would reset AxiEthernet.
 *
 ******************************************************************************/
-int AxiEthernetPingReqExample(XAxiEthernet *AxiEthernetInstancePtr,
-			      XAxiDma *DmaInstancePtr,
-			      u16 AxiEthernetDeviceId,
-			      u16 AxiDmaDeviceId)
+int AxiEthernetPingReqExample(INTC *IntcInstancePtr,
+				XAxiEthernet *AxiEthernetInstancePtr,
+				XAxiDma *DmaInstancePtr,
+				u16 AxiEthernetDeviceId,
+				u16 AxiDmaDeviceId,
+				u16 AxiEthernetIntrId,
+				u16 DmaRxIntrId,
+				u16 DmaTxIntrId)
 {
 	int Status;
-	int Index;
-	int Count;
-	int EchoReplyStatus;
+	//int Index;
+	//int Count;
+	//int EchoReplyStatus;
 	XAxiEthernet_Config *MacCfgPtr;
 	XAxiDma_Config* DmaConfig;
 	SeqNum = 0;
 	RecvFrameLength = 0;
-	EchoReplyStatus = XST_FAILURE;
+	//EchoReplyStatus = XST_FAILURE;
 	NumOfPingReqPkts = NUM_OF_PING_REQ_PKTS;
+
+	XAxiDma_BdRing *RxRingPtr = XAxiDma_GetRxRing(DmaInstancePtr);
+	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(DmaInstancePtr);
+	XAxiDma_Bd BdTemplate;
 
 	/*
 	 *  Get the configuration of AxiEthernet hardware.
@@ -515,7 +547,7 @@ int AxiEthernetPingReqExample(XAxiEthernet *AxiEthernetInstancePtr,
 	/*
 	 * Check whether MCDMA is present or not
 	 */
-	if(MacCfgPtr->AxiDevType != XPAR_AXI_MCDMA) {
+	if(MacCfgPtr->AxiDevType != XPAR_AXI_DMA) {
 		printf
 			("Device HW not configured for MCDMA mode\r\n");
 		return XST_FAILURE;
@@ -615,11 +647,6 @@ int AxiEthernetPingReqExample(XAxiEthernet *AxiEthernetInstancePtr,
 		AxiEthernetUtilErrorTrap("Error initializing TxBD space");
 		return XST_FAILURE;
 	}
-
-	/* Buffer descriptor Setup for the MCDMA Channels */
-	// RxBdSetup(DmaInstancePtr, AxiEthernetInstancePtr);
-	// TxBdSetup(DmaInstancePtr, AxiEthernetInstancePtr);
-	// RxSetup(DmaInstancePtr, AxiEthernetInstancePtr, Mcdma_ChanId, NUM_OF_PING_REQ_PKTS * 10);
 
 	/*
 	 * Set the MAC address
@@ -739,109 +766,84 @@ int AxiEthernetPingReqExample(XAxiEthernet *AxiEthernetInstancePtr,
 	return XST_SUCCESS;
 }
 
-int PhySetup(XAxiEthernet *AxiEthernetInstancePtr)
-{
-	u16 PhyReg0;
-	signed int PhyAddr;
-	u16 status;
-
-	PhyAddr = XPAR_AXIETHERNET_0_PHYADDR;
-
-	/* Clear the PHY of any existing bits by zeroing this out */
-	PhyReg0 = 0;
-	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
-				 PHY_R0_CTRL_REG, &PhyReg0);
-
-	PhyReg0 &= (~PHY_R0_ANEG_ENABLE);
-	PhyReg0 &= (~PHY_R0_ISOLATE);
-	PhyReg0 |= PHY_R0_DFT_SPD_1000;
-
-	sleep(1);
-	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr,
-				PHY_R0_CTRL_REG, PhyReg0);
-
-	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 1, &status);
-
-	return XST_SUCCESS;
-}
 
 
 
-int XAxiEnet_Recv(XAxiDma *InstancePtr)
-{
-	 u16 Chan_id = 1;
-	 u32 i, Chan_SerMask;
-	 u32 len = 0;
+// int XAxiEnet_Recv(XAxiDma *InstancePtr)
+// {
+// 	 u16 Chan_id = 1;
+// 	 u32 i, Chan_SerMask;
+// 	 u32 len = 0;
 
-	 Chan_SerMask = XMcdma_ReadReg(InstancePtr->Config.BaseAddress,
-	                               XMCDMA_RX_OFFSET + XMCDMA_RXCH_SER_OFFSET);
+// 	 Chan_SerMask = XMcdma_ReadReg(InstancePtr->Config.BaseAddress,
+// 	                               XMCDMA_RX_OFFSET + XMCDMA_RXCH_SER_OFFSET);
 
-	 for (i = 1, Chan_id = 1; i != 0 && i <= Chan_SerMask; i <<= 1, Chan_id++)
-	       if (Chan_SerMask & i)
-	            len = PollRxData(InstancePtr, Chan_id);
+// 	 for (i = 1, Chan_id = 1; i != 0 && i <= Chan_SerMask; i <<= 1, Chan_id++)
+// 	       if (Chan_SerMask & i)
+// 	            len = PollRxData(InstancePtr, Chan_id);
 
-	  return len;
-}
+// 	  return len;
+// }
 
 
-int XAxienet_Send(XAxiEthernet *AxiEthernetInstancePtr, XAxiDma *DmaInstancePtr,
-		  u8 ChanId, UINTPTR TxBufPtr, u32 len)
-{
-	XMcdma_ChanCtrl *Chan;
-	XMcdma_Bd *BdCurPtr;
-	int Status;
+// int XAxienet_Send(XAxiEthernet *AxiEthernetInstancePtr, XAxiDma *DmaInstancePtr,
+// 		  u8 ChanId, UINTPTR TxBufPtr, u32 len)
+// {
+// 	XMcdma_ChanCtrl *Chan;
+// 	XMcdma_Bd *BdCurPtr;
+// 	int Status;
 
-	Xil_DCacheFlushRange((UINTPTR)TxBufPtr, len + Padding);
-	Chan = XMcdma_GetMcdmaTxChan(DmaInstancePtr, ChanId);
-	BdCurPtr = (XMcdma_Bd *)XMcdma_GetChanCurBd(Chan);
-	Status = XMcDma_ChanSubmit(Chan, TxBufPtr,
-				   len + Padding);
-	if (Status != XST_SUCCESS) {
-		printf("ChanSubmit failed\n\r");
-		return XST_FAILURE;
-	}
-	XMcDma_BdSetCtrl(BdCurPtr, XMCDMA_BD_CTRL_SOF_MASK |
-			 XMCDMA_BD_CTRL_EOF_MASK);
+// 	Xil_DCacheFlushRange((UINTPTR)TxBufPtr, len + Padding);
+// 	Chan = XMcdma_GetMcdmaTxChan(DmaInstancePtr, ChanId);
+// 	BdCurPtr = (XMcdma_Bd *)XMcdma_GetChanCurBd(Chan);
+// 	Status = XMcDma_ChanSubmit(Chan, TxBufPtr,
+// 				   len + Padding);
+// 	if (Status != XST_SUCCESS) {
+// 		printf("ChanSubmit failed\n\r");
+// 		return XST_FAILURE;
+// 	}
+// 	XMcDma_BdSetCtrl(BdCurPtr, XMCDMA_BD_CTRL_SOF_MASK |
+// 			 XMCDMA_BD_CTRL_EOF_MASK);
 
-	XMCDMA_CACHE_FLUSH((UINTPTR)(BdCurPtr));
-	Status = XMcDma_ChanToHw(Chan);
-	if (Status != XST_SUCCESS) {
-		printf("XMcDma_ChanToHw failed for Tx\n\r");
-		return XST_FAILURE;
-	}
+// 	XMCDMA_CACHE_FLUSH((UINTPTR)(BdCurPtr));
+// 	Status = XMcDma_ChanToHw(Chan);
+// 	if (Status != XST_SUCCESS) {
+// 		printf("XMcDma_ChanToHw failed for Tx\n\r");
+// 		return XST_FAILURE;
+// 	}
 
-	return XST_SUCCESS;
-}
+// 	return XST_SUCCESS;
+// }
 
-int GetBufAddr()
-{
-	UINTPTR TxBufPtr;
+// int GetBufAddr()
+// {
+// 	UINTPTR TxBufPtr;
 
-	if (TxCount !=0) {
-		TxBufPtr = TxBuffPtr + ICMP_PKT_SIZE;
-		TxBuffPtr += ICMP_PKT_SIZE;
-	} else {
-		TxBufPtr = TxBuffPtr;
-	}
+// 	if (TxCount !=0) {
+// 		TxBufPtr = TxBuffPtr + ICMP_PKT_SIZE;
+// 		TxBuffPtr += ICMP_PKT_SIZE;
+// 	} else {
+// 		TxBufPtr = TxBuffPtr;
+// 	}
 
-	TxCount++;
-	return TxBufPtr;
-}
+// 	TxCount++;
+// 	return TxBufPtr;
+// }
 
-int GetRxBufAddr()
-{
-	UINTPTR RxBufPtr;
+// int GetRxBufAddr()
+// {
+// 	UINTPTR RxBufPtr;
 
-	if (RxCount == 0)
-		RxBufPtr = RxBuffPtr;
-	else {
-		RxBuffPtr += XAE_JUMBO_MTU;
-		RxBufPtr = RxBuffPtr;
-	}
-	RxCount++;
+// 	if (RxCount == 0)
+// 		RxBufPtr = RxBuffPtr;
+// 	else {
+// 		RxBuffPtr += XAE_JUMBO_MTU;
+// 		RxBufPtr = RxBuffPtr;
+// 	}
+// 	RxCount++;
 
-	return RxBufPtr;
-}
+// 	return RxBufPtr;
+// }
 
 /*****************************************************************************/
 /**
@@ -859,105 +861,105 @@ int GetRxBufAddr()
 * @note		None.
 *
 ******************************************************************************/
-void SendArpReqFrame(XAxiEthernet *AxiEthernetInstancePtr,
-		     XAxiDma *DmaInstancePtr, u8 ChanId)
-{
-	u16 *TempPtr;
-	u16 *TxFramePtr;
-	UINTPTR BufAddr;
-	int Index, i;
+// void SendArpReqFrame(XAxiEthernet *AxiEthernetInstancePtr,
+// 		     XAxiDma *DmaInstancePtr, u8 ChanId)
+// {
+// 	u16 *TempPtr;
+// 	u16 *TxFramePtr;
+// 	UINTPTR BufAddr;
+// 	int Index, i;
 
-	FramesTx = 0;
-	TxFramePtr = (u16 *)(UINTPTR)GetBufAddr();
-	BufAddr = (UINTPTR) TxFramePtr;
+// 	FramesTx = 0;
+// 	TxFramePtr = (u16 *)(UINTPTR)GetBufAddr();
+// 	BufAddr = (UINTPTR) TxFramePtr;
 
-	if (Padding) {
-		for (i = 0 ; i < 4; i++)
-			*TxFramePtr++ = 0;
-	}
+// 	if (Padding) {
+// 		for (i = 0 ; i < 4; i++)
+// 			*TxFramePtr++ = 0;
+// 	}
 
-	/*
-	 * Add broadcast address.
-	 */
-	Index = MAC_ADDR_LEN;
-	while (Index--) {
-		*TxFramePtr++ = BROADCAST_ADDR;
-	}
+// 	/*
+// 	 * Add broadcast address.
+// 	 */
+// 	Index = MAC_ADDR_LEN;
+// 	while (Index--) {
+// 		*TxFramePtr++ = BROADCAST_ADDR;
+// 	}
 
-	/*
-	 * Add local MAC address.
-	 */
-	Index = 0;
-	TempPtr = (u16 *)LocalMacAddr;
-	while (Index < MAC_ADDR_LEN) {
-		*TxFramePtr++ = *(TempPtr + Index);
-		Index++;
-	}
+// 	/*
+// 	 * Add local MAC address.
+// 	 */
+// 	Index = 0;
+// 	TempPtr = (u16 *)LocalMacAddr;
+// 	while (Index < MAC_ADDR_LEN) {
+// 		*TxFramePtr++ = *(TempPtr + Index);
+// 		Index++;
+// 	}
 
-	/*
-	 * Add
-	 * 	- Ethernet proto type.
-	 *	- Hardware Type
-	 *	- Protocol IP Type
-	 *	- IP version (IPv6/IPv4)
-	 *	- ARP Request
-	 */
-	*TxFramePtr++ = Xil_Htons(XAE_ETHER_PROTO_TYPE_ARP);
-	*TxFramePtr++ = Xil_Htons(HW_TYPE);
-	*TxFramePtr++ = Xil_Htons(XAE_ETHER_PROTO_TYPE_IP);
-	*TxFramePtr++ = Xil_Htons(IP_VERSION);
-	*TxFramePtr++ = Xil_Htons(ARP_REQUEST);
+// 	/*
+// 	 * Add
+// 	 * 	- Ethernet proto type.
+// 	 *	- Hardware Type
+// 	 *	- Protocol IP Type
+// 	 *	- IP version (IPv6/IPv4)
+// 	 *	- ARP Request
+// 	 */
+// 	*TxFramePtr++ = Xil_Htons(XAE_ETHER_PROTO_TYPE_ARP);
+// 	*TxFramePtr++ = Xil_Htons(HW_TYPE);
+// 	*TxFramePtr++ = Xil_Htons(XAE_ETHER_PROTO_TYPE_IP);
+// 	*TxFramePtr++ = Xil_Htons(IP_VERSION);
+// 	*TxFramePtr++ = Xil_Htons(ARP_REQUEST);
 
-	/*
-	 * Add local MAC address.
-	 */
-	Index = 0;
-	TempPtr = (u16 *)LocalMacAddr;
-	while (Index < MAC_ADDR_LEN) {
-		*TxFramePtr++ = *(TempPtr + Index);
-		Index++;
-	}
+// 	/*
+// 	 * Add local MAC address.
+// 	 */
+// 	Index = 0;
+// 	TempPtr = (u16 *)LocalMacAddr;
+// 	while (Index < MAC_ADDR_LEN) {
+// 		*TxFramePtr++ = *(TempPtr + Index);
+// 		Index++;
+// 	}
 
-	/*
-	 * Add local IP address.
-	 */
-	Index = 0;
-	TempPtr = (u16 *)LocalIpAddress;
-	while (Index < IP_ADDR_LEN) {
-		*TxFramePtr++ = *(TempPtr + Index);
-		Index++;
-	}
+// 	/*
+// 	 * Add local IP address.
+// 	 */
+// 	Index = 0;
+// 	TempPtr = (u16 *)LocalIpAddress;
+// 	while (Index < IP_ADDR_LEN) {
+// 		*TxFramePtr++ = *(TempPtr + Index);
+// 		Index++;
+// 	}
 
-	/*
-	 * Fills 6 bytes of information with zeros as per protocol.
-	 */
-	Index = 0;
-	while (Index < 3) {
-		*TxFramePtr++ = 0x0000;
-		Index++;
-	}
+// 	/*
+// 	 * Fills 6 bytes of information with zeros as per protocol.
+// 	 */
+// 	Index = 0;
+// 	while (Index < 3) {
+// 		*TxFramePtr++ = 0x0000;
+// 		Index++;
+// 	}
 
-	/*
-	 * Add Destination IP address.
-	 */
-	Index = 0;
-	TempPtr = (u16 *)DestIpAddress;
-	while (Index < IP_ADDR_LEN) {
-		*TxFramePtr++ = *(TempPtr + Index);
-		Index++;
-	}
+// 	/*
+// 	 * Add Destination IP address.
+// 	 */
+// 	Index = 0;
+// 	TempPtr = (u16 *)DestIpAddress;
+// 	while (Index < IP_ADDR_LEN) {
+// 		*TxFramePtr++ = *(TempPtr + Index);
+// 		Index++;
+// 	}
 
-	/*
-	 * Transmit the Frame.
-	 */
-	XAxienet_Send(AxiEthernetInstancePtr, DmaInstancePtr, ChanId, BufAddr, ARP_REQ_PKT_SIZE);
-	while (1) {
-		CheckTxDmaResult(DmaInstancePtr);
-		if (FramesTx)
-			break;
-	}
+// 	/*
+// 	 * Transmit the Frame.
+// 	 */
+// 	XAxienet_Send(AxiEthernetInstancePtr, DmaInstancePtr, ChanId, BufAddr, ARP_REQ_PKT_SIZE);
+// 	while (1) {
+// 		CheckTxDmaResult(DmaInstancePtr);
+// 		if (FramesTx)
+// 			break;
+// 	}
 
-}
+// }
 
 /*****************************************************************************/
 /**
@@ -975,122 +977,122 @@ void SendArpReqFrame(XAxiEthernet *AxiEthernetInstancePtr,
 * @note		None.
 *
 ******************************************************************************/
-void SendEchoReqFrame(XAxiEthernet *AxiEthernetInstancePtr,
-	              XAxiDma *DmaInstancePtr, u8 ChanId)
-{
-	u16 *TempPtr;
-	u16 *TxFramePtr;
-	UINTPTR BufAddr;
-	u16 CheckSum;
-	int Index, i;
+// void SendEchoReqFrame(XAxiEthernet *AxiEthernetInstancePtr,
+// 	              XAxiDma *DmaInstancePtr, u8 ChanId)
+// {
+// 	u16 *TempPtr;
+// 	u16 *TxFramePtr;
+// 	UINTPTR BufAddr;
+// 	u16 CheckSum;
+// 	int Index, i;
 
-	FramesTx = 0;
-	TxFramePtr = (u16 *)(UINTPTR)GetBufAddr();
-	BufAddr = (UINTPTR) TxFramePtr;
+// 	FramesTx = 0;
+// 	TxFramePtr = (u16 *)(UINTPTR)GetBufAddr();
+// 	BufAddr = (UINTPTR) TxFramePtr;
 
-	if (Padding) {
-		for (i = 0 ; i < 4; i++)
-			*TxFramePtr++ = 0;
-	}
+// 	if (Padding) {
+// 		for (i = 0 ; i < 4; i++)
+// 			*TxFramePtr++ = 0;
+// 	}
 
-	/*
-	 * Add Destination MAC Address.
-	 */
-	Index = MAC_ADDR_LEN;
-	while (Index--) {
-		*(TxFramePtr + Index) = *(DestMacAddr + Index);
-	}
+// 	/*
+// 	 * Add Destination MAC Address.
+// 	 */
+// 	Index = MAC_ADDR_LEN;
+// 	while (Index--) {
+// 		*(TxFramePtr + Index) = *(DestMacAddr + Index);
+// 	}
 
-	/*
-	 * Add Source MAC Address.
-	 */
-	Index = MAC_ADDR_LEN;
-	TempPtr = (u16 *)LocalMacAddr;
-	while (Index--) {
-		*(TxFramePtr + (Index + SRC_MAC_ADDR_LOC )) =
-							*(TempPtr + Index);
-	}
+// 	/*
+// 	 * Add Source MAC Address.
+// 	 */
+// 	Index = MAC_ADDR_LEN;
+// 	TempPtr = (u16 *)LocalMacAddr;
+// 	while (Index--) {
+// 		*(TxFramePtr + (Index + SRC_MAC_ADDR_LOC )) =
+// 							*(TempPtr + Index);
+// 	}
 
-	/*
-	 * Add IP header information.
-	 */
-	Index = IP_START_LOC;
-	while (Index--) {
-		*(TxFramePtr + (Index + ETHER_PROTO_TYPE_LOC )) =
-				Xil_Htons(*(IpHeaderInfo + Index));
-	}
+// 	/*
+// 	 * Add IP header information.
+// 	 */
+// 	Index = IP_START_LOC;
+// 	while (Index--) {
+// 		*(TxFramePtr + (Index + ETHER_PROTO_TYPE_LOC )) =
+// 				Xil_Htons(*(IpHeaderInfo + Index));
+// 	}
 
-	/*
-	 * Add Source IP address.
-	 */
-	Index = IP_ADDR_LEN;
-	TempPtr = (u16 *)LocalIpAddress;
-	while (Index--) {
-		*(TxFramePtr + (Index + IP_REQ_SRC_IP_LOC )) =
-						*(TempPtr + Index);
-	}
+// 	/*
+// 	 * Add Source IP address.
+// 	 */
+// 	Index = IP_ADDR_LEN;
+// 	TempPtr = (u16 *)LocalIpAddress;
+// 	while (Index--) {
+// 		*(TxFramePtr + (Index + IP_REQ_SRC_IP_LOC )) =
+// 						*(TempPtr + Index);
+// 	}
 
-	/*
-	 * Add Destination IP address.
-	 */
-	Index = IP_ADDR_LEN;
-	TempPtr = (u16 *)DestIpAddress;
-	while (Index--) {
-		*(TxFramePtr + (Index + IP_REQ_DEST_IP_LOC )) =
-						*(TempPtr + Index);
-	}
+// 	/*
+// 	 * Add Destination IP address.
+// 	 */
+// 	Index = IP_ADDR_LEN;
+// 	TempPtr = (u16 *)DestIpAddress;
+// 	while (Index--) {
+// 		*(TxFramePtr + (Index + IP_REQ_DEST_IP_LOC )) =
+// 						*(TempPtr + Index);
+// 	}
 
-	/*
-	 * Checksum is calculated for IP field and added in the frame.
-	 */
-	CheckSum = CheckSumCalculation((u16 *)BufAddr, IP_START_LOC + 4,
-							IP_HEADER_LEN);
-	CheckSum = ~CheckSum;
-	*(TxFramePtr + IP_CHECKSUM_LOC) = Xil_Htons(CheckSum);
+// 	/*
+// 	 * Checksum is calculated for IP field and added in the frame.
+// 	 */
+// 	CheckSum = CheckSumCalculation((u16 *)BufAddr, IP_START_LOC + 4,
+// 							IP_HEADER_LEN);
+// 	CheckSum = ~CheckSum;
+// 	*(TxFramePtr + IP_CHECKSUM_LOC) = Xil_Htons(CheckSum);
 
-	/*
-	 * Add echo field information.
-	 */
-	*(TxFramePtr + ICMP_ECHO_FIELD_LOC) = Xil_Htons(XAE_ETHER_PROTO_TYPE_IP);
+// 	/*
+// 	 * Add echo field information.
+// 	 */
+// 	*(TxFramePtr + ICMP_ECHO_FIELD_LOC) = Xil_Htons(XAE_ETHER_PROTO_TYPE_IP);
 
-	/*
-	 * Checksum value is initialized to zeros.
-	 */
-	*(TxFramePtr + ICMP_DATA_LEN) = 0x0000;
+// 	/*
+// 	 * Checksum value is initialized to zeros.
+// 	 */
+// 	*(TxFramePtr + ICMP_DATA_LEN) = 0x0000;
 
-	/*
-	 * Add identifier and sequence number to the frame.
-	 */
-	*(TxFramePtr + ICMP_IDEN_FIELD_LOC) = (IDEN_NUM);
-	*(TxFramePtr + (ICMP_IDEN_FIELD_LOC + 1)) = Xil_Htons((u16)(++SeqNum));
+// 	/*
+// 	 * Add identifier and sequence number to the frame.
+// 	 */
+// 	*(TxFramePtr + ICMP_IDEN_FIELD_LOC) = (IDEN_NUM);
+// 	*(TxFramePtr + (ICMP_IDEN_FIELD_LOC + 1)) = Xil_Htons((u16)(++SeqNum));
 
-	/*
-	 * Add known data to the frame.
-	 */
-	Index = ICMP_KNOWN_DATA_LEN;
-	while (Index--) {
-		*(TxFramePtr + (Index + ICMP_KNOWN_DATA_LOC)) =
-				Xil_Htons(*(IcmpData + Index));
-	}
+// 	/*
+// 	 * Add known data to the frame.
+// 	 */
+// 	Index = ICMP_KNOWN_DATA_LEN;
+// 	while (Index--) {
+// 		*(TxFramePtr + (Index + ICMP_KNOWN_DATA_LOC)) =
+// 				Xil_Htons(*(IcmpData + Index));
+// 	}
 
-	/*
-	 * Checksum is calculated for Data Field and added in the frame.
-	 */
-	CheckSum = CheckSumCalculation((u16 *)BufAddr, ICMP_DATA_START_LOC + 4,
-						ICMP_DATA_FIELD_LEN );
-	CheckSum = ~CheckSum;
-	*(TxFramePtr + ICMP_DATA_CHECKSUM_LOC) = Xil_Htons(CheckSum);
+// 	/*
+// 	 * Checksum is calculated for Data Field and added in the frame.
+// 	 */
+// 	CheckSum = CheckSumCalculation((u16 *)BufAddr, ICMP_DATA_START_LOC + 4,
+// 						ICMP_DATA_FIELD_LEN );
+// 	CheckSum = ~CheckSum;
+// 	*(TxFramePtr + ICMP_DATA_CHECKSUM_LOC) = Xil_Htons(CheckSum);
 
-	/*
-	 * Transmit the Frame.
-	 */
-	XAxienet_Send(AxiEthernetInstancePtr, DmaInstancePtr, ChanId, BufAddr, ICMP_PKT_SIZE);
-	while (1) {
-		CheckTxDmaResult(DmaInstancePtr);
-		if (FramesTx)
-			break;
-	}
-}
+// 	/*
+// 	 * Transmit the Frame.
+// 	 */
+// 	XAxienet_Send(AxiEthernetInstancePtr, DmaInstancePtr, ChanId, BufAddr, ICMP_PKT_SIZE);
+// 	while (1) {
+// 		CheckTxDmaResult(DmaInstancePtr);
+// 		if (FramesTx)
+// 			break;
+// 	}
+// }
 
 /*****************************************************************************/
 /**
@@ -1110,116 +1112,116 @@ void SendEchoReqFrame(XAxiEthernet *AxiEthernetInstancePtr,
 * @note		This assumes MAC does not strip padding or CRC.
 *
 ******************************************************************************/
-int ProcessRecvFrame(XAxiEthernet *AxiEthernetInstancePtr,
-	             XAxiDma *DmaInstancePtr, u8 ChanId)
-{
-	u16 *RxFramePtr;
-	u16 *TempPtr;
-	u16 CheckSum;
-	int Index;
-	int Match = 0;
-	int DataWrong = 0;
+// int ProcessRecvFrame(XAxiEthernet *AxiEthernetInstancePtr,
+// 	             XAxiDma *DmaInstancePtr, u8 ChanId)
+// {
+// 	u16 *RxFramePtr;
+// 	u16 *TempPtr;
+// 	u16 CheckSum;
+// 	int Index;
+// 	int Match = 0;
+// 	int DataWrong = 0;
 
 
-	RxFramePtr = (u16 *)(UINTPTR)GetRxBufAddr();
-	TempPtr = (u16 *)LocalMacAddr;
+// 	RxFramePtr = (u16 *)(UINTPTR)GetRxBufAddr();
+// 	TempPtr = (u16 *)LocalMacAddr;
 
-	/*
-	 * Check Dest Mac address of the packet with the LocalMac address.
-	 */
-	Match = CompareData(RxFramePtr, TempPtr, 0, 0, MAC_ADDR_LEN);
-	if (Padding) {
-		RxFramePtr += 4;
-		Match = CompareData(RxFramePtr, TempPtr, 0, 0, MAC_ADDR_LEN);
-	}
-	if (Match == XST_SUCCESS) {
-		/*
-		 * Check ARP type.
-		 */
-		if (Xil_Ntohs(*(RxFramePtr + ETHER_PROTO_TYPE_LOC)) ==
-				XAE_ETHER_PROTO_TYPE_ARP ) {
+// 	/*
+// 	 * Check Dest Mac address of the packet with the LocalMac address.
+// 	 */
+// 	Match = CompareData(RxFramePtr, TempPtr, 0, 0, MAC_ADDR_LEN);
+// 	if (Padding) {
+// 		RxFramePtr += 4;
+// 		Match = CompareData(RxFramePtr, TempPtr, 0, 0, MAC_ADDR_LEN);
+// 	}
+// 	if (Match == XST_SUCCESS) {
+// 		/*
+// 		 * Check ARP type.
+// 		 */
+// 		if (Xil_Ntohs(*(RxFramePtr + ETHER_PROTO_TYPE_LOC)) ==
+// 				XAE_ETHER_PROTO_TYPE_ARP ) {
 
-			/*
-			 * Check ARP status.
-			 */
-			if (Xil_Ntohs(*(RxFramePtr + ARP_REQ_STATUS_LOC)) == ARP_REPLY) {
+// 			/*
+// 			 * Check ARP status.
+// 			 */
+// 			if (Xil_Ntohs(*(RxFramePtr + ARP_REQ_STATUS_LOC)) == ARP_REPLY) {
 
-				/*
-				 * Check destination IP address with
-				 * packet's source IP address.
-				 */
-				TempPtr = (u16 *)DestIpAddress;
-				Match = CompareData(RxFramePtr,
-						TempPtr, ARP_REQ_SRC_IP_LOC,
-						0, IP_ADDR_LEN);
-				if (Match == XST_SUCCESS) {
+// 				/*
+// 				 * Check destination IP address with
+// 				 * packet's source IP address.
+// 				 */
+// 				TempPtr = (u16 *)DestIpAddress;
+// 				Match = CompareData(RxFramePtr,
+// 						TempPtr, ARP_REQ_SRC_IP_LOC,
+// 						0, IP_ADDR_LEN);
+// 				if (Match == XST_SUCCESS) {
 
-					/*
-					 * Copy src Mac address of the received
-					 * packet.
-					 */
-					Index = MAC_ADDR_LEN;
-					TempPtr = (u16 *)DestMacAddr;
-					while (Index--) {
-						*(TempPtr + Index) =
-							*(RxFramePtr +
-							(SRC_MAC_ADDR_LOC +
-								Index));
-					}
+// 					/*
+// 					 * Copy src Mac address of the received
+// 					 * packet.
+// 					 */
+// 					Index = MAC_ADDR_LEN;
+// 					TempPtr = (u16 *)DestMacAddr;
+// 					while (Index--) {
+// 						*(TempPtr + Index) =
+// 							*(RxFramePtr +
+// 							(SRC_MAC_ADDR_LOC +
+// 								Index));
+// 					}
 
-					/*
-					 * Send Echo request packet.
-					 */
-					SendEchoReqFrame(AxiEthernetInstancePtr, DmaInstancePtr, ChanId);
-				}
-			}
-		}
+// 					/*
+// 					 * Send Echo request packet.
+// 					 */
+// 					SendEchoReqFrame(AxiEthernetInstancePtr, DmaInstancePtr, ChanId);
+// 				}
+// 			}
+// 		}
 
-		/*
-		 * Check for IP type.
-		 */
-		else if (Xil_Ntohs(*(RxFramePtr + ETHER_PROTO_TYPE_LOC)) ==
-						XAE_ETHER_PROTO_TYPE_IP) {
+// 		/*
+// 		 * Check for IP type.
+// 		 */
+// 		else if (Xil_Ntohs(*(RxFramePtr + ETHER_PROTO_TYPE_LOC)) ==
+// 						XAE_ETHER_PROTO_TYPE_IP) {
 
-			/*
-			 * Calculate checksum.
-			 */
-			CheckSum = CheckSumCalculation(RxFramePtr,
-							ICMP_DATA_START_LOC,
-							ICMP_DATA_FIELD_LEN);
+// 			/*
+// 			 * Calculate checksum.
+// 			 */
+// 			CheckSum = CheckSumCalculation(RxFramePtr,
+// 							ICMP_DATA_START_LOC,
+// 							ICMP_DATA_FIELD_LEN);
 
-			/*
-			 * Verify checksum, echo reply, identifier number and
-			 * sequence number of the received packet.
-			 */
-			if ((CheckSum == CORRECT_CHECKSUM_VALUE) &&
-			(Xil_Ntohs(*(RxFramePtr + ICMP_ECHO_FIELD_LOC)) == ECHO_REPLY) &&
-			(Xil_Ntohs(*(RxFramePtr + ICMP_IDEN_FIELD_LOC)) == IDEN_NUM) &&
-			(Xil_Ntohs(*(RxFramePtr + (ICMP_SEQ_NO_LOC))) == SeqNum)) {
+// 			/*
+// 			 * Verify checksum, echo reply, identifier number and
+// 			 * sequence number of the received packet.
+// 			 */
+// 			if ((CheckSum == CORRECT_CHECKSUM_VALUE) &&
+// 			(Xil_Ntohs(*(RxFramePtr + ICMP_ECHO_FIELD_LOC)) == ECHO_REPLY) &&
+// 			(Xil_Ntohs(*(RxFramePtr + ICMP_IDEN_FIELD_LOC)) == IDEN_NUM) &&
+// 			(Xil_Ntohs(*(RxFramePtr + (ICMP_SEQ_NO_LOC))) == SeqNum)) {
 
-				/*
-				 * Verify data in the received packet with known
-				 * data.
-				 */
-				TempPtr = IcmpData;
-				Match = CompareData(RxFramePtr,
-						TempPtr, ICMP_KNOWN_DATA_LOC,
-							0, ICMP_KNOWN_DATA_LEN);
-				if (Match == XST_FAILURE) {
-					DataWrong = 1;
-				}
-			}
-			if (DataWrong != 1) {
-				printf("Packet No: %d ",
-				NUM_OF_PING_REQ_PKTS - NumOfPingReqPkts);
-				printf("Seq NO %d Echo Packet received\r\n",
-								SeqNum);
-				return XST_SUCCESS;
-			}
-		}
-	}
-	return XST_FAILURE;
-}
+// 				/*
+// 				 * Verify data in the received packet with known
+// 				 * data.
+// 				 */
+// 				TempPtr = IcmpData;
+// 				Match = CompareData(RxFramePtr,
+// 						TempPtr, ICMP_KNOWN_DATA_LOC,
+// 							0, ICMP_KNOWN_DATA_LEN);
+// 				if (Match == XST_FAILURE) {
+// 					DataWrong = 1;
+// 				}
+// 			}
+// 			if (DataWrong != 1) {
+// 				printf("Packet No: %d ",
+// 				NUM_OF_PING_REQ_PKTS - NumOfPingReqPkts);
+// 				printf("Seq NO %d Echo Packet received\r\n",
+// 								SeqNum);
+// 				return XST_SUCCESS;
+// 			}
+// 		}
+// 	}
+// 	return XST_FAILURE;
+// }
 /*****************************************************************************/
 /**
 *
