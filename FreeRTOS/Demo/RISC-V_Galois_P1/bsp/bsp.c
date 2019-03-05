@@ -43,8 +43,6 @@ void external_interrupt_handler( uint32_t cause ) {
 }
 
 // TODO: a better fix
-#include "FreeRTOS.h"
-#include "task.h"
 void sleep(uint32_t secs) {
     vTaskDelay(pdMS_TO_TICKS(secs * 1000));
 }

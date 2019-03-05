@@ -103,14 +103,14 @@ void AxiEthernetUtilFrameHdrFormatType(EthernetFrame * FramePtr,
 							u16 FrameType);
 void AxiEthernetUtilFrameSetPayloadData(EthernetFrame * FramePtr,
 							int PayloadSize);
-void AxiEthernetUtilFrameHdrVlanFormatVid(EthernetFrame * FramePtr,
-						u32 VlanNumber,u32 Vid);
-void AxiEthernetUtilFrameHdrVlanFormatType(EthernetFrame * FramePtr,
-						u16 FrameType,u32 VlanNumber);
-void AxiEthernetUtilFrameSetVlanPayloadData(EthernetFrame * FramePtr,
-					int PayloadSize,u32 VlanNumber);
-int AxiEthernetUtilFrameVerify(EthernetFrame * CheckFrame,
-			 EthernetFrame * ActualFrame);
+// void AxiEthernetUtilFrameHdrVlanFormatVid(EthernetFrame * FramePtr,
+// 						u32 VlanNumber,u32 Vid);
+// void AxiEthernetUtilFrameHdrVlanFormatType(EthernetFrame * FramePtr,
+// 						u16 FrameType,u32 VlanNumber);
+// void AxiEthernetUtilFrameSetVlanPayloadData(EthernetFrame * FramePtr,
+// 					int PayloadSize,u32 VlanNumber);
+// int AxiEthernetUtilFrameVerify(EthernetFrame * CheckFrame,
+// 			 EthernetFrame * ActualFrame);
 void AxiEthernetUtilFrameMemClear(EthernetFrame * FramePtr);
 int AxiEthernetUtilEnterLoopback(XAxiEthernet * AxiEthernetInstancePtr,
 								int Speed);

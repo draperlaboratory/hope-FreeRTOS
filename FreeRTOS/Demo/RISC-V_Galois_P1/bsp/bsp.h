@@ -37,6 +37,9 @@
 #include "stdint.h"
 #include "plic_driver.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 #define PLIC_BASE_ADDR (0xC000000ULL)
 
 #define PLIC_SOURCE_UART0 0x1
@@ -190,6 +193,8 @@ void msleep(uint32_t msecs);
 	}    \
 	(timeout>0) ? 0 : -1;  \
  }  )
+
+ UBaseType_t uxRand(void);
 
 #endif /* RISCV_BLUESPEC_BSP_H */
 

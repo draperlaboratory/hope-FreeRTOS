@@ -138,7 +138,11 @@ void AxiEthernetUtilFrameHdrFormatType(EthernetFrame *FramePtr, u16 FrameType)
 	/*
 	 * Set the type
 	 */
-	*(u16 *) Frame = FrameType;
+	//*(u16 *) Frame = FrameType;
+	// Network is big endian, so lets just copy it over
+	*Frame = (u8)(FrameType >> 8);
+	Frame++;
+	*Frame = (u8)(FrameType & 0xFF);
 }
 
 /******************************************************************************/
@@ -195,221 +199,221 @@ void AxiEthernetUtilFrameSetPayloadData(EthernetFrame *FramePtr,
 	}
 }
 
-/******************************************************************************/
-/**
-*
-* Set the frame VLAN info for the specified frame.
-*
-* @param	FramePtr is the pointer to the frame.
-* @param	VlanNumber is the VlanValue insertion position to set in frame.
-* @param	Vid  is the 4 bytes Vlan value (TPID, Priority, CFI, VID)
-*		to be set in frame.
-*
-* @return	None.
-*
-* @note		None.
-*
-******************************************************************************/
-void AxiEthernetUtilFrameHdrVlanFormatVid(EthernetFrame *FramePtr,
-						u32 VlanNumber,	u32 Vid)
-{
-	char *Frame = (char *) FramePtr;
+// /******************************************************************************/
+// /**
+// *
+// * Set the frame VLAN info for the specified frame.
+// *
+// * @param	FramePtr is the pointer to the frame.
+// * @param	VlanNumber is the VlanValue insertion position to set in frame.
+// * @param	Vid  is the 4 bytes Vlan value (TPID, Priority, CFI, VID)
+// *		to be set in frame.
+// *
+// * @return	None.
+// *
+// * @note		None.
+// *
+// ******************************************************************************/
+// void AxiEthernetUtilFrameHdrVlanFormatVid(EthernetFrame *FramePtr,
+// 						u32 VlanNumber,	u32 Vid)
+// {
+// 	char *Frame = (char *) FramePtr;
 
-	/*
-	 * Increment to type field
-	 */
-	Frame = Frame + 12 + (VlanNumber * 4);
+// 	/*
+// 	 * Increment to type field
+// 	 */
+// 	Frame = Frame + 12 + (VlanNumber * 4);
 
-	Vid = Xil_Htonl(Vid);
+// 	Vid = Xil_Htonl(Vid);
 
-	/*
-	 * Set the type
-	 */
-	*(u32 *) Frame = Vid;
-}
+// 	/*
+// 	 * Set the type
+// 	 */
+// 	*(u32 *) Frame = Vid;
+// }
 
-/******************************************************************************/
-/**
-*
-* Set the frame type for the specified frame.
-*
-* @param	FramePtr is the pointer to the frame.
-* @param	FrameType is the Type to set in frame.
-* @param	VlanNumber is the VLAN friendly adjusted insertion position to
-*		set in frame.
-*
-* @return	None.
-*
-* @note		None.
-*
-******************************************************************************/
-void AxiEthernetUtilFrameHdrVlanFormatType(EthernetFrame *FramePtr,
-						u16 FrameType, u32 VlanNumber)
-{
-	char *Frame = (char *) FramePtr;
+// /******************************************************************************/
+// /**
+// *
+// * Set the frame type for the specified frame.
+// *
+// * @param	FramePtr is the pointer to the frame.
+// * @param	FrameType is the Type to set in frame.
+// * @param	VlanNumber is the VLAN friendly adjusted insertion position to
+// *		set in frame.
+// *
+// * @return	None.
+// *
+// * @note		None.
+// *
+// ******************************************************************************/
+// void AxiEthernetUtilFrameHdrVlanFormatType(EthernetFrame *FramePtr,
+// 						u16 FrameType, u32 VlanNumber)
+// {
+// 	char *Frame = (char *) FramePtr;
 
-	/*
-	 * Increment to type field
-	 */
-	Frame = Frame + 12 + (VlanNumber * 4);
+// 	/*
+// 	 * Increment to type field
+// 	 */
+// 	Frame = Frame + 12 + (VlanNumber * 4);
 
-	FrameType = Xil_Htons(FrameType);
+// 	FrameType = Xil_Htons(FrameType);
 
-	/*
-	 * Set the type
-	 */
-	*(u16 *) Frame = FrameType;
-}
+// 	/*
+// 	 * Set the type
+// 	 */
+// 	*(u16 *) Frame = FrameType;
+// }
 
-/******************************************************************************/
-/**
-* This function places a pattern in the payload section of a frame. The pattern
-* is a  8 bit incrementing series of numbers starting with 0.
-* Once the pattern reaches 256, then the pattern changes to a 16 bit
-* incrementing pattern:
-* <pre>
-*   0, 1, 2, ... 254, 255, 00, 00, 00, 01, 00, 02, ...
-* </pre>
-*
-* @param	FramePtr is a pointer to the frame to change.
-* @param	PayloadSize is the number of bytes in the payload that will be set.
-* @param	VlanNumber is the VLAN friendly adjusted insertion position to
-*		set in frame.
-*
-* @return	None.
-*
-* @note		None.
-*
-******************************************************************************/
-void AxiEthernetUtilFrameSetVlanPayloadData(EthernetFrame *FramePtr,
-					int PayloadSize, u32 VlanNumber)
-{
-	unsigned BytesLeft = PayloadSize;
-	u8 *Frame;
-	u16 Counter = 0;
+// /******************************************************************************/
+// /**
+// * This function places a pattern in the payload section of a frame. The pattern
+// * is a  8 bit incrementing series of numbers starting with 0.
+// * Once the pattern reaches 256, then the pattern changes to a 16 bit
+// * incrementing pattern:
+// * <pre>
+// *   0, 1, 2, ... 254, 255, 00, 00, 00, 01, 00, 02, ...
+// * </pre>
+// *
+// * @param	FramePtr is a pointer to the frame to change.
+// * @param	PayloadSize is the number of bytes in the payload that will be set.
+// * @param	VlanNumber is the VLAN friendly adjusted insertion position to
+// *		set in frame.
+// *
+// * @return	None.
+// *
+// * @note		None.
+// *
+// ******************************************************************************/
+// void AxiEthernetUtilFrameSetVlanPayloadData(EthernetFrame *FramePtr,
+// 					int PayloadSize, u32 VlanNumber)
+// {
+// 	unsigned BytesLeft = PayloadSize;
+// 	u8 *Frame;
+// 	u16 Counter = 0;
 
-	/*
-	 * Set the frame pointer to the start of the payload area
-	 */
-	Frame = (u8 *) FramePtr + XAE_HDR_SIZE + (VlanNumber * 4);
+// 	/*
+// 	 * Set the frame pointer to the start of the payload area
+// 	 */
+// 	Frame = (u8 *) FramePtr + XAE_HDR_SIZE + (VlanNumber * 4);
 
-	/*
-	 * Insert 8 bit incrementing pattern
-	 */
-	while (BytesLeft && (Counter < 256)) {
-		*Frame++ = (u8) Counter++;
-		BytesLeft--;
-	}
+// 	/*
+// 	 * Insert 8 bit incrementing pattern
+// 	 */
+// 	while (BytesLeft && (Counter < 256)) {
+// 		*Frame++ = (u8) Counter++;
+// 		BytesLeft--;
+// 	}
 
-	/*
-	 * Switch to 16 bit incrementing pattern
-	 */
-	while (BytesLeft) {
-		*Frame++ = (u8) (Counter >> 8);	/* high */
-		BytesLeft--;
+// 	/*
+// 	 * Switch to 16 bit incrementing pattern
+// 	 */
+// 	while (BytesLeft) {
+// 		*Frame++ = (u8) (Counter >> 8);	/* high */
+// 		BytesLeft--;
 
-		if (!BytesLeft)
-			break;
+// 		if (!BytesLeft)
+// 			break;
 
-		*Frame++ = (u8) Counter++;	/* low */
-		BytesLeft--;
-	}
-}
+// 		*Frame++ = (u8) Counter++;	/* low */
+// 		BytesLeft--;
+// 	}
+// }
 
-/******************************************************************************/
-/**
-* This function verifies the frame data against a CheckFrame.
-*
-* Validation occurs by comparing the ActualFrame to the header of the
-* CheckFrame. If the headers match, then the payload of ActualFrame is
-* verified for the same pattern Util_FrameSetPayloadData() generates.
-*
-* @param	CheckFrame is a pointer to a frame containing the 14 byte header
-*		that should be present in the ActualFrame parameter.
-* @param	ActualFrame is a pointer to a frame to validate.
-*
-* @return
-*		- XST_SUCCESS if successful.
-*		- XST_FAILURE in case of failure.
-*
-* @note		None.
-*
-******************************************************************************/
-int AxiEthernetUtilFrameVerify(EthernetFrame * CheckFrame,
-			 EthernetFrame * ActualFrame)
-{
-	unsigned char *CheckPtr = (unsigned char *) CheckFrame;
-	unsigned char *ActualPtr = (unsigned char *) ActualFrame;
-	u16 BytesLeft;
-	u16 Counter;
-	int Index;
+// /******************************************************************************/
+// /**
+// * This function verifies the frame data against a CheckFrame.
+// *
+// * Validation occurs by comparing the ActualFrame to the header of the
+// * CheckFrame. If the headers match, then the payload of ActualFrame is
+// * verified for the same pattern Util_FrameSetPayloadData() generates.
+// *
+// * @param	CheckFrame is a pointer to a frame containing the 14 byte header
+// *		that should be present in the ActualFrame parameter.
+// * @param	ActualFrame is a pointer to a frame to validate.
+// *
+// * @return
+// *		- XST_SUCCESS if successful.
+// *		- XST_FAILURE in case of failure.
+// *
+// * @note		None.
+// *
+// ******************************************************************************/
+// int AxiEthernetUtilFrameVerify(EthernetFrame * CheckFrame,
+// 			 EthernetFrame * ActualFrame)
+// {
+// 	unsigned char *CheckPtr = (unsigned char *) CheckFrame;
+// 	unsigned char *ActualPtr = (unsigned char *) ActualFrame;
+// 	u16 BytesLeft;
+// 	u16 Counter;
+// 	int Index;
 
-	CheckPtr = CheckPtr + Padding;
-	ActualPtr = ActualPtr + Padding;
+// 	CheckPtr = CheckPtr + Padding;
+// 	ActualPtr = ActualPtr + Padding;
 
-	/*
-	 * Compare the headers
-	 */
-	for (Index = 0; Index < XAE_HDR_SIZE; Index++) {
-		if (CheckPtr[Index] != ActualPtr[Index]) {
-			return XST_FAILURE;
-		}
-	}
+// 	/*
+// 	 * Compare the headers
+// 	 */
+// 	for (Index = 0; Index < XAE_HDR_SIZE; Index++) {
+// 		if (CheckPtr[Index] != ActualPtr[Index]) {
+// 			return XST_FAILURE;
+// 		}
+// 	}
 
-	Index = 0;
+// 	Index = 0;
 
-	BytesLeft = *(u16 *) &ActualPtr[12];
-	BytesLeft = Xil_Ntohs(BytesLeft);
-	/*
-	 * Get the length of the payload, do not use VLAN TPID here.
-	 * TPID needs to be verified.
-	 */
-	while ((0x8100 == BytesLeft) || (0x88A8 == BytesLeft) ||
-	       (0x9100 == BytesLeft) || (0x9200 == BytesLeft)) {
-		Index++;
-		BytesLeft = *(u16 *) &ActualPtr[12+(4*Index)];
-		BytesLeft = Xil_Ntohs(BytesLeft);
-	}
+// 	BytesLeft = *(u16 *) &ActualPtr[12];
+// 	BytesLeft = Xil_Ntohs(BytesLeft);
+// 	/*
+// 	 * Get the length of the payload, do not use VLAN TPID here.
+// 	 * TPID needs to be verified.
+// 	 */
+// 	while ((0x8100 == BytesLeft) || (0x88A8 == BytesLeft) ||
+// 	       (0x9100 == BytesLeft) || (0x9200 == BytesLeft)) {
+// 		Index++;
+// 		BytesLeft = *(u16 *) &ActualPtr[12+(4*Index)];
+// 		BytesLeft = Xil_Ntohs(BytesLeft);
+// 	}
 
-	/*
-	 * Validate the payload
-	 */
-	Counter = 0;
-	ActualPtr = &ActualPtr[14+(4*Index)];
+// 	/*
+// 	 * Validate the payload
+// 	 */
+// 	Counter = 0;
+// 	ActualPtr = &ActualPtr[14+(4*Index)];
 
-	/*
-	 * Check 8 bit incrementing pattern
-	 */
-	while (BytesLeft && (Counter < 256)) {
-		if (*ActualPtr++ != (u8) Counter++) {
+// 	/*
+// 	 * Check 8 bit incrementing pattern
+// 	 */
+// 	while (BytesLeft && (Counter < 256)) {
+// 		if (*ActualPtr++ != (u8) Counter++) {
 
-			return XST_FAILURE;
-		}
-		BytesLeft--;
-	}
+// 			return XST_FAILURE;
+// 		}
+// 		BytesLeft--;
+// 	}
 
-	/*
-	 * Check 16 bit incrementing pattern
-	 */
-	while (BytesLeft) {
-		if (*ActualPtr++ != (u8) (Counter >> 8)) {	/* high */
-			return XST_FAILURE;
-		}
+// 	/*
+// 	 * Check 16 bit incrementing pattern
+// 	 */
+// 	while (BytesLeft) {
+// 		if (*ActualPtr++ != (u8) (Counter >> 8)) {	/* high */
+// 			return XST_FAILURE;
+// 		}
 
-		BytesLeft--;
+// 		BytesLeft--;
 
-		if (!BytesLeft)
-			break;
+// 		if (!BytesLeft)
+// 			break;
 
-		if (*ActualPtr++ != (u8) Counter++) {	/* low */
-			return XST_FAILURE;
-		}
+// 		if (*ActualPtr++ != (u8) Counter++) {	/* low */
+// 			return XST_FAILURE;
+// 		}
 
-		BytesLeft--;
-	}
+// 		BytesLeft--;
+// 	}
 
-	return XST_SUCCESS;
-}
+// 	return XST_SUCCESS;
+// }
 
 /******************************************************************************/
 /**
@@ -574,6 +578,7 @@ void AxiEthernetPrintPhy(XAxiEthernet * AxiEthernetInstancePtr) {
 
 
 void AxiEthernetPrintAllRegs(XAxiEthernet *AxiEthernetInstancePtr) {
+	(void) AxiEthernetInstancePtr;
 	printf("AxiEthernetPrintAllRegs\r\n");
 
 	printf("Ethernet Regs\r\n");

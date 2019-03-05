@@ -45,15 +45,8 @@
 
 /*-----------------------------------------------------------*/
 
-/*
- * Called by main when mainCREATE_SIMPLE_BLINKY_DEMO_ONLY is set to 1 in
- * main.c.
- */
 void main_drivers( void );
 
-/**
- * Modified ethernet_multicast_example
- */
 static void prvDriverTestTask( void *pvParameters );
 
 /*-----------------------------------------------------------*/
@@ -65,12 +58,6 @@ void main_drivers( void )
 	/* Start the tasks and timer running. */
 	vTaskStartScheduler();
 
-	/* If all is well, the scheduler will now be running, and the following
-	line will never be reached.  If the following line does execute, then
-	there was insufficient FreeRTOS heap memory available for the Idle and/or
-	timer tasks to be created.  See the memory management section on the
-	FreeRTOS web site for more details on the FreeRTOS heap
-	http://www.freertos.org/a00111.html. */
 	for( ;; );
 }
 /*-----------------------------------------------------------*/
@@ -125,13 +112,6 @@ volatile int ExternalLoopback; /* Variable for External loopback */
  */
 char TargetMac[6] = { 0x01, 0x00, 0x5E, 0x04, 0x05, 0x06 };
 
-/*
- * Determine how much space for ALL multicast MAC addresses, there are 2**23
- * per RFC1112. Each bit represents an address. The total number of bytes are
- * (2**23)/8=2**20=1MB
- */
-u32 McastAddressTable[(MAX_MULTICAST_ADDR>>3)/sizeof(u32)];
-
 #define INTC plic_instance_t
 #define XPAR_AXIDMA_0_ENABLE_MULTI_CHANNEL 1 // assuming we have a multi channel DMA
 /*************************** Function Prototypes *****************************/
@@ -139,7 +119,7 @@ u32 McastAddressTable[(MAX_MULTICAST_ADDR>>3)/sizeof(u32)];
 /*
  * Examples
  */
-int AxiEthernetMcastExample(INTC *IntcInstancePtr,
+int AxiEthernetExample(INTC *IntcInstancePtr,
 				XAxiEthernet *AxiEthernetInstancePtr,
 				XAxiDma *DmaInstancePtr,
 				u16 AxiEthernetDeviceId,
@@ -151,10 +131,6 @@ int AxiEthernetMcastExample(INTC *IntcInstancePtr,
 int AxiEthernetSgDmaIntrExtMulticastExample(XAxiEthernet
 			*AxiEthernetInstancePtr, XAxiDma *DmaInstancePtr);
 
-/*
- * Interrupt setup and Callbacks for examples
- */
-
 static int AxiEthernetSetupIntrSystem(INTC *IntcInstancePtr,
 				XAxiEthernet *AxiEthernetInstancePtr,
 				XAxiDma *DmaInstancePtr,
@@ -165,32 +141,20 @@ static void AxiEthernetDisableIntrSystem(INTC *IntcInstancePtr,
 				   u16 AxiEthernetIntrId,
 				   u16 DmaRxIntrId, u16 DmaTxIntrId);
 
-/*
- * Manage functions for Multicast table in RAM
- */
-// static int AxiEthernet_AddExtMulticast(void *AddressPtr);
-// static int AxiEthernet_ClearExtMulticast(void *AddressPtr);
-// static int AxiEthernet_GetExtMulticast(void *AddressPtr);
-
 int PhySetup(XAxiEthernet *AxiEthernetInstancePtr, u16 AxiEthernetDeviceId);
 int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId);
-int AxiEthernetExample(XAxiDma *DmaInstancePtr);
+int AxiEthernetRunExample(XAxiDma *DmaInstancePtr);
 /*****************************************************************************/
 
-
-
-
-static void prvDriverTestTask( void *pvParameters ) {
+static void prvDriverTestTask( void *pvParameters ) 
+{
     (void) pvParameters;
     int Status;
 
     AxiEthernetUtilErrorTrap("\r\n--- Enter main() ---");
 	AxiEthernetUtilErrorTrap("This test may take several minutes to finish");
 
-	/*
-	 * Call the Axi Ethernet multicast example.
-	 */
-	Status = AxiEthernetMcastExample(&Plic,
+	Status = AxiEthernetExample(&Plic,
 						&AxiEthernetInstance,
 						&DmaInstance,
 						XPAR_AXIETHERNET_0_DEVICE_ID,
@@ -374,45 +338,7 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 	return XST_SUCCESS;
 }
 
-/*****************************************************************************/
-/**
-*
-* This function demonstrates the usage usage of the Axi Ethernet extended
-* multicast feature. It uses AXI DMA core in interrupt mode to transfer Ethernet
-* frames.
-*
-*
-* @param	IntcInstancePtr is a pointer to the instance of the Intc
-*		component.
-* @param	AxiEthernetInstancePtr is a pointer to the instance of the
-*		AxiEthernet component.
-* @param	DmaInstancePtr is a pointer to the instance of the AXIDMA
-*		component.
-* @param	AxiEthernetDeviceId is Device ID of the Axi Ethernet Device ,
-*		typically XPAR_<AXIETHERNET_instance>_DEVICE_ID value from
-*		xparameters.h.
-* @param	AxiDmaDeviceId is Device ID of the Axi DMAA Device ,
-*		typically XPAR_<AXIDMA_instance>_DEVICE_ID value from
-*		xparameters.h.
-* @param	AxiEthernetIntrId is the Interrupt ID and is typically
-*		XPAR_<INTC_instance>_<AXIETHERNET_instance>_VEC_ID
-*		value from xparameters.h.
-* @param	DmaRxIntrId is the interrupt id for DMA Rx and is typically
-*		taken from XPAR_<AXIETHERNET_instance>_CONNECTED_DMARX_INTR
-* @param	DmaTxIntrId is the interrupt id for DMA Tx and is typically
-*		taken from XPAR_<AXIETHERNET_instance>_CONNECTED_DMATX_INTR
-*
-* @return
-*		- XST_SUCCESS to indicate success.
-*		- XST_FAILURE.to indicate failure.
-*
-* @note		AxiDma hardware must be initialized before initializing
-*		AxiEthernet. Since AxiDma reset line is connected to the
-*		AxiEthernet reset line, a reset of AxiDma hardware during its
-*		initialization would reset AxiEthernet.
-*
-******************************************************************************/
-int AxiEthernetMcastExample(INTC *IntcInstancePtr,
+int AxiEthernetExample(INTC *IntcInstancePtr,
 				XAxiEthernet *AxiEthernetInstancePtr,
 				XAxiDma *DmaInstancePtr,
 				u16 AxiEthernetDeviceId,
@@ -422,10 +348,6 @@ int AxiEthernetMcastExample(INTC *IntcInstancePtr,
 				u16 DmaTxIntrId)
 {
 	int Status;
-	//int LoopbackSpeed;
-	
-	
-	
 
 	/*************************************/
 	/* Setup device for first-time usage */
@@ -442,26 +364,20 @@ int AxiEthernetMcastExample(INTC *IntcInstancePtr,
 		return XST_FAILURE;
 	}
 
-	
-	/*
-	 * Connect to the interrupt controller and enable interrupts
-	 */
 	Status = AxiEthernetSetupIntrSystem(IntcInstancePtr,
 			AxiEthernetInstancePtr, DmaInstancePtr,
 			AxiEthernetIntrId, DmaRxIntrId, DmaTxIntrId);
 
-	
-	/****************************/
-	/* Run the example 	    */
-	/****************************/
-    uint16_t Speed;
+	uint16_t Speed;
     Status = XAxiEthernet_GetSgmiiStatus(AxiEthernetInstancePtr, &Speed);
     if (Status != XST_SUCCESS) {
 		return XST_FAILURE;
 	}
     printf("XAxiEthernet_GetSgmiiStatus returned %u\r\n",Speed);
 
-    
+	/****************************/
+	/* Run the example 	    */
+	/****************************/
 	/*
 	 * Start the Axi Ethernet and enable its ERROR interrupts
 	 */
@@ -472,78 +388,8 @@ int AxiEthernetMcastExample(INTC *IntcInstancePtr,
 	vTaskDelay(pdMS_TO_TICKS(5000)); // sleep for 5 s
 	printf("Woken up\r\n");
 	
-
-	// /*
-	//  * Set PHY to loopback, speed depends on phy type.
-	//  * MII is 100 and all others are 1000.
-	//  */
-	// if (XAxiEthernet_GetPhysicalInterface(AxiEthernetInstancePtr)
-	// 			== XAE_PHY_TYPE_MII) {
-	// 	LoopbackSpeed = AXIETHERNET_LOOPBACK_SPEED;
-	// } else {
-	// 	LoopbackSpeed = AXIETHERNET_LOOPBACK_SPEED_1G;
-	// }
-
-
-	// AxiEthernetUtilEnterLoopback(AxiEthernetInstancePtr, LoopbackSpeed);
-
-	// /*
-	//  * Set PHY<-->MAC data clock
-	//  */
-	// Status =  XAxiEthernet_SetOperatingSpeed(AxiEthernetInstancePtr,
-	// 				(u16)LoopbackSpeed);
-	// if (Status != XST_SUCCESS) {
-	// 	return XST_FAILURE;
-	// }
-
-	/*
-	 * Setting the operating speed of the MAC needs a delay.  There
-	 * doesn't seem to be register to poll, so please consider this
-	 * during your application design.
-	 */
-	//AxiEthernetUtilPhyDelay(2);
-
-	// /*
-	//  * Connect to the interrupt controller and enable interrupts
-	//  */
-	// Status = AxiEthernetSetupIntrSystem(IntcInstancePtr,
-	// 		AxiEthernetInstancePtr, DmaInstancePtr,
-	// 		AxiEthernetIntrId, DmaRxIntrId, DmaTxIntrId);
-
-
-	// /****************************/
-	// /* Run the example 	    */
-	// /****************************/
-    // uint16_t Speed;
-    // Status = XAxiEthernet_GetSgmiiStatus(AxiEthernetInstancePtr, &Speed);
-    // if (Status != XST_SUCCESS) {
-	// 	return XST_FAILURE;
-	// }
-    // printf("XAxiEthernet_GetSgmiiStatus returned %u\r\n",Speed);
-
-
-	// /* Run the new multicast feature. Make sure HW has the capability */
-	// if (XAxiEthernet_IsExtMcast(AxiEthernetInstancePtr)) {
-	// 	printf("Running example\r\n");
-	// 	Status = AxiEthernetSgDmaIntrExtMulticastExample(AxiEthernetInstancePtr,DmaInstancePtr);
-	// 	if (Status != XST_SUCCESS) {
-	// 		return XST_FAILURE;
-	// 	}
-	// } else {
-	// 	printf("Not a multicast example, returnning\r\n");
-	// 	return XST_FAILURE;
-	// }
-
 	printf("Running example\r\n");
-	Status = AxiEthernetExample(DmaInstancePtr);
-	if (Status != XST_SUCCESS) {
-		return XST_FAILURE;
-	}
-	printf("Example done\r\n");
-
-
-	printf("Running example\r\n");
-	Status = AxiEthernetExample(DmaInstancePtr);
+	Status = AxiEthernetRunExample(DmaInstancePtr);
 	if (Status != XST_SUCCESS) {
 		return XST_FAILURE;
 	}
@@ -564,7 +410,7 @@ int AxiEthernetMcastExample(INTC *IntcInstancePtr,
 }
 
 
-int AxiEthernetExample(XAxiDma *DmaInstancePtr)
+int AxiEthernetRunExample(XAxiDma *DmaInstancePtr)
 {
 	int Status;
 	u32 TxFrameLength;
@@ -775,16 +621,6 @@ int AxiEthernetExample(XAxiDma *DmaInstancePtr)
 	printf("&RxFrame = %p\r\n",&RxFrame);
 
 	/*
-	 * Destination address(multicast MAC address in this example) is part
-	 * of received frame, comparing the Tx and Rx frame would include the
-	 * multicast address verification again.
-	 */
-	// if (AxiEthernetUtilFrameVerify(&TxFrame, &RxFrame) != 0) {
-	// 	AxiEthernetUtilErrorTrap("Data mismatch");
-	// 	return XST_FAILURE;
-	// }
-
-	/*
 	 * Return the RxBD back to the channel for later allocation. Free the
 	 * exact number we just post processed.
 	 */
@@ -797,344 +633,6 @@ int AxiEthernetExample(XAxiDma *DmaInstancePtr)
 	return XST_SUCCESS;
 
 }
-
-/*****************************************************************************/
-/**
-*
-* This example sends and receives a single packet in loopback mode with
-* extended multicast address support.
-*
-* The transmit frame will be addressed one of programed multicast addresses.
-*
-* On receive, HW should pass the frame to receive interrupt handler for further
-* address checking.
-*
-* @param	AxiEthernetInstancePtr is a pointer to the instance of the
-*		AxiEthernet component.
-* @param	DmaInstancePtr is a pointer to the instance of the AXI DMA
-*		component.
-*
-* @return
-*		- XST_SUCCESS to indicate success.
-*		- XST_FAILURE to indicate failure.
-*
-* @note     None.
-*
-******************************************************************************/
-// int AxiEthernetSgDmaIntrExtMulticastExample(XAxiEthernet *AxiEthernetInstancePtr
-// 			,			XAxiDma *DmaInstancePtr)
-// {
-// 	int Status;
-// 	u32 TxFrameLength;
-// 	u32 Reg;
-// 	u32 RxFrameLength;
-// 	u32 RxStatusControlWord;
-// 	int PayloadSize = PAYLOAD_SIZE;
-// 	XAxiDma_BdRing *RxRingPtr = XAxiDma_GetRxRing(DmaInstancePtr);
-// 	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(DmaInstancePtr);
-// 	XAxiDma_Bd *BdPtr;
-// 	XAxiDma_Bd *BdCurPtr;
-// 	u32 BdSts;
-
-// 	/*
-// 	 * Cannot run this example if extended features support is not enabled
-// 	 */
-// 	if (!XAxiEthernet_IsExtMcast(AxiEthernetInstancePtr)) {
-// 		AxiEthernetUtilErrorTrap("Extended multicast not available");
-// 		return XST_FAILURE;
-// 	}
-
-// 	/*
-// 	 * Clear variables shared with callbacks
-// 	 */
-// 	FramesRx = 0;
-// 	FramesTx = 0;
-// 	DeviceErrors = 0;
-
-// 	/*
-// 	 * Calculate frame length (not including FCS)
-// 	 */
-// 	TxFrameLength = XAE_HDR_SIZE + PayloadSize;
-
-// 	/*
-// 	 * Setup the packet to be transmitted, with destination address set
-// 	 * to provisioned multicast address.
-// 	 */
-// 	AxiEthernetUtilFrameMemClear(&TxFrame);
-// 	AxiEthernetUtilFrameHdrFormatMAC(&TxFrame, TargetMac);
-// 	AxiEthernetUtilFrameHdrFormatType(&TxFrame, PayloadSize);
-// 	AxiEthernetUtilFrameSetPayloadData(&TxFrame, PayloadSize);
-
-// 	/*
-// 	 * Clear out receive packet memory area
-// 	 */
-// 	AxiEthernetUtilFrameMemClear(&RxFrame);
-
-// 	/*
-// 	 * Interrupt coalescing parameters are set to their default settings
-// 	 * which is to interrupt the processor after every frame has been
-// 	 * processed by the DMA engine.
-// 	 */
-// 	Status = XAxiDma_BdRingSetCoalesce(TxRingPtr, 1, 1);
-// 	if (Status != XST_SUCCESS) {
-// 		AxiEthernetUtilErrorTrap("Error setting coalescing for transmit");
-// 		return XST_FAILURE;
-// 	}
-
-// 	Status = XAxiDma_BdRingSetCoalesce(RxRingPtr, 1, 1);
-// 	if (Status != XST_SUCCESS) {
-// 		AxiEthernetUtilErrorTrap("Error setting coalescing for recv");
-// 		return XST_FAILURE;
-// 	}
-
-// 	AxiEthernetInstancePtr->Options = XAE_DEFAULT_OPTIONS
-// 						| XAE_EXT_MULTICAST_OPTION;
-// 	Status = XAxiEthernet_SetOptions(AxiEthernetInstancePtr,
-// 					AxiEthernetInstancePtr->Options);
-
-// 	Status |= XAxiEthernet_ClearOptions(AxiEthernetInstancePtr,
-// 					~(AxiEthernetInstancePtr->Options));
-
-// 	/*
-// 	 * When extended multicasting is enabled, unicast MAC address needs
-// 	 * to be updated in registers UAWL and UAWU. Hence call driver
-// 	 * routine to take care of this.
-// 	 */
-// 	Status |= XAxiEthernet_SetMacAddress(AxiEthernetInstancePtr,
-// 							AxiEthernetMAC);
-// 	if (Status != XST_SUCCESS) {
-// 		AxiEthernetUtilErrorTrap("Error Options setup");
-// 		return XST_FAILURE;
-// 	}
-
-// 	/*
-// 	 * Make sure Tx, Rx and extended multicast are enabled.
-// 	 */
-// 	Status = XAxiEthernet_SetOptions(AxiEthernetInstancePtr,
-// 						XAE_RECEIVER_ENABLE_OPTION | //XAE_PROMISC_OPTION |
-// 						XAE_TRANSMITTER_ENABLE_OPTION);
-// 	if (Status != XST_SUCCESS) {
-// 		AxiEthernetUtilErrorTrap("Error setting options");
-// 		return XST_FAILURE;
-// 	}
-
-// 	/*
-// 	 * Start the Axi Ethernet and enable its ERROR interrupts
-// 	 */
-// 	XAxiEthernet_Start(AxiEthernetInstancePtr);
-// 	XAxiEthernet_IntEnable(AxiEthernetInstancePtr, XAE_INT_RECV_ERROR_MASK);
-
-// 	printf("Going to vTaskDelay\r\n");
-// 	vTaskDelay(pdMS_TO_TICKS(5000)); // sleep for 5 s
-// 	printf("Woken up\r\n");
-
-// 	/*
-// 	 * Enable DMA receive related interrupts
-// 	 */
-// 	XAxiDma_BdRingIntEnable(RxRingPtr, XAXIDMA_IRQ_ALL_MASK);
-
-// 	/*
-// 	 * Allocate 1 RxBD.
-// 	 */
-// 	Status = XAxiDma_BdRingAlloc(RxRingPtr, 1, &BdPtr);
-// 	if (Status != XST_SUCCESS) {
-// 		AxiEthernetUtilErrorTrap("Error allocating RxBD");
-// 		return XST_FAILURE;
-// 	}
-
-// 	/*
-// 	 * Setup the Rx BD.
-// 	 */
-// 	XAxiDma_BdSetBufAddr(BdPtr, (u32)&RxFrame);
-// #ifndef XPAR_AXIDMA_0_ENABLE_MULTI_CHANNEL
-// 	XAxiDma_BdSetLength(BdPtr, sizeof(RxFrame));
-// #else
-// 	XAxiDma_BdSetLength(BdPtr, sizeof(RxFrame),
-// 				RxRingPtr->MaxTransferLen);
-// #endif
-// 	XAxiDma_BdSetCtrl(BdPtr, 0);
-
-// 	/*
-// 	 * Enqueue to HW
-// 	 */
-// 	Status = XAxiDma_BdRingToHw(RxRingPtr, 1, BdPtr);
-// 	if (Status != XST_SUCCESS) {
-// 		AxiEthernetUtilErrorTrap("Error committing RxBD to HW");
-// 		return XST_FAILURE;
-// 	}
-
-// 	/*
-// 	 * Start DMA RX channel. Now it's ready to receive data.
-// 	 */
-// 	Status = XAxiDma_BdRingStart(RxRingPtr);
-// 	if (Status != XST_SUCCESS) {
-// 		return XST_FAILURE;
-// 	}
-
-// 	/*
-// 	 * Enable DMA transmit related interrupts
-// 	 */
-// 	XAxiDma_BdRingIntEnable(TxRingPtr, XAXIDMA_IRQ_ALL_MASK);
-
-// 	/*
-// 	 * Allocate 1 TxBD
-// 	 */
-// 	Status = XAxiDma_BdRingAlloc(TxRingPtr, 1, &BdPtr);
-// 	if (Status != XST_SUCCESS) {
-// 		AxiEthernetUtilErrorTrap("Error allocating TxBD");
-// 		return XST_FAILURE;
-// 	}
-
-// 	/*
-// 	 * Setup the TxBD
-// 	 */
-// 	XAxiDma_BdSetBufAddr(BdPtr, (u32)&TxFrame);
-
-// #ifndef XPAR_AXIDMA_0_ENABLE_MULTI_CHANNEL
-// 	XAxiDma_BdSetLength(BdPtr, TxFrameLength);
-// #else
-// 	XAxiDma_BdSetLength(BdPtr, TxFrameLength,
-// 				TxRingPtr->MaxTransferLen);
-// #endif
-// 	XAxiDma_BdSetCtrl(BdPtr, XAXIDMA_BD_CTRL_TXSOF_MASK |
-// 			     XAXIDMA_BD_CTRL_TXEOF_MASK);
-
-// 	/*
-// 	 * Enqueue to HW
-// 	 */
-// 	Status = XAxiDma_BdRingToHw(TxRingPtr, 1, BdPtr);
-// 	if (Status != XST_SUCCESS) {
-// 		AxiEthernetUtilErrorTrap("Error committing TxBD to HW");
-// 		return XST_FAILURE;
-// 	}
-
-
-// 	printf("About to send\r\n");
-
-// 	/*
-// 	 * Start DMA TX channel. Transmission starts at once.
-// 	 */
-// 	Status = XAxiDma_BdRingStart(TxRingPtr);
-// 	if (Status != XST_SUCCESS) {
-// 		return XST_FAILURE;
-// 	}
-
-// 	/*
-// 	 * Wait for transmission to complete
-// 	 */
-// 	while (!FramesTx);
-
-// 	/*
-// 	 * Now that the frame has been sent, post process our TxBDs.
-// 	 * Since we have only submitted 2 to HW, then there should be only 2
-// 	 * ready for post processing.
-// 	 */
-// 	if (XAxiDma_BdRingFromHw(TxRingPtr, 1, &BdPtr) == 0) {
-// 		AxiEthernetUtilErrorTrap("TxBDs were not ready for post processing");
-// 		return XST_FAILURE;
-// 	}
-
-// 	/*
-// 	 * Examine the TxBDs.
-// 	 *
-// 	 * There isn't much to do. The only thing to check would be DMA
-// 	 * exception bits. But this would also be caught in the error handler.
-// 	 * So we just return these BDs to the free list
-// 	 */
-// 	Status = XAxiDma_BdRingFree(TxRingPtr, 1, BdPtr);
-// 	if (Status != XST_SUCCESS) {
-// 		AxiEthernetUtilErrorTrap("Error freeing up TxBDs");
-// 		return XST_FAILURE;
-// 	}
-
-// 	printf("About to receive\r\n");
-// 	/*
-// 	 * Wait for Rx indication
-// 	 */
-// 	while (!FramesRx);
-
-// 	/*
-// 	 * Now that the frame has been received, post process our RxBD.
-// 	 * Since we have only submitted 1 to HW, then there should be only 1
-// 	 * ready for post processing.
-// 	 */
-// 	if (XAxiDma_BdRingFromHw(RxRingPtr, 1, &BdPtr) == 0) {
-// 		AxiEthernetUtilErrorTrap("RxBD was not ready for post processing");
-// 		return XST_FAILURE;
-// 	}
-
-// 	BdCurPtr = BdPtr;
-// 	BdSts = XAxiDma_BdGetSts(BdCurPtr);
-// 	if ((BdSts & XAXIDMA_BD_STS_ALL_ERR_MASK) ||
-// 		(!(BdSts & XAXIDMA_BD_STS_COMPLETE_MASK))) {
-// 			AxiEthernetUtilErrorTrap("Rx Error");
-// 			return XST_FAILURE;
-// 	}
-// 	else {
-
-// 		RxFrameLength =
-// 		(XAxiDma_BdRead(BdCurPtr,XAXIDMA_BD_USR4_OFFSET)) & 0x0000FFFF;
-// 	}
-
-// 	/*
-// 	 * This word has indication about what type of frame is received.
-// 	 * Current hardware flags Broadcast, IP multicast, and MAC multicast.
-// 	 * IP  multicast mode, MAC address is 01:00:5E:AB:CD:EF,
-// 	 * MAC multicast mode, MAC address is 01:QR:ST:UV:WX:YZ, e.g.
-// 	 * the least significant bit of most significant byte is 1.
-// 	 * Check to see if further ethernet MAC verification is required...
-// 	 */
-// 	// RxStatusControlWord =XAxiDma_BdRead(BdCurPtr,XAXIDMA_BD_USR2_OFFSET);
-// 	// if(RxStatusControlWord & XAE_BD_RX_USR2_IP_MCAST_MASK) {
-// 	//        /*
-// 	// 	* The multicast MAC address is stored in status words
-// 	// 	* 0 and 1 in the AXI4-Stream.
-// 	// 	*/
-
-// 	// 	Reg = XAxiDma_BdRead(BdPtr, XAXIDMA_BD_USR0_OFFSET);
-// 	// 	MulticastAdd[5] = ((Reg >> 8)  & 0xFF);
-// 	// 	MulticastAdd[4] = (Reg & 0xFF);
-
-// 	// 	Reg = XAxiDma_BdRead(BdPtr, XAXIDMA_BD_USR1_OFFSET);
-// 	// 	MulticastAdd[3] = ((Reg >> 24) & 0xFF);
-// 	// 	MulticastAdd[2] = ((Reg >> 16) & 0xFF);
-// 	// 	MulticastAdd[1] = ((Reg >> 8)  & 0xFF);
-// 	// 	MulticastAdd[0] = (Reg & 0xFF);
-
-// 	// 	if (!AxiEthernet_GetExtMulticast(MulticastAdd)) {
-// 	// 		AxiEthernetUtilErrorTrap("Multicast address mismatch\n");
-// 	// 		return XST_FAILURE;
-// 	// 	}
-// 	// }
-// 	// else {
-// 	// 	AxiEthernetUtilErrorTrap("Not a multicast frame\n");
-// 	// 	return XST_FAILURE;
-// 	// }
-
-// 	/*
-// 	 * Destination address(multicast MAC address in this example) is part
-// 	 * of received frame, comparing the Tx and Rx frame would include the
-// 	 * multicast address verification again.
-// 	 */
-// 	if (AxiEthernetUtilFrameVerify(&TxFrame, &RxFrame) != 0) {
-// 		AxiEthernetUtilErrorTrap("Data mismatch");
-// 		return XST_FAILURE;
-// 	}
-
-// 	/*
-// 	 * Return the RxBD back to the channel for later allocation. Free the
-// 	 * exact number we just post processed.
-// 	 */
-// 	Status = XAxiDma_BdRingFree(RxRingPtr, 1, BdPtr);
-// 	if (Status != XST_SUCCESS) {
-// 		AxiEthernetUtilErrorTrap("Error freeing up TxBDs");
-// 		return XST_FAILURE;
-// 	}
-
-// 	return XST_SUCCESS;
-// }
-
-
 
 /*****************************************************************************/
 /**
