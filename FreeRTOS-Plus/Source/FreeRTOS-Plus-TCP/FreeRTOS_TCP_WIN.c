@@ -311,7 +311,7 @@ void vListInsertGeneric( List_t * const pxList, ListItem_t * const pxNewListItem
 
 		if( xTCPSegments == NULL )
 		{
-			FreeRTOS_debug_printf( ( "prvCreateSectors: malloc %lu failed\n",
+			FreeRTOS_debug_printf( ( "prvCreateSectors: malloc %u failed\n",
 				ipconfigTCP_WIN_SEG_COUNT * sizeof( xTCPSegments[ 0 ] ) ) );
 
 			xReturn = pdFAIL;

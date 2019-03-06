@@ -791,7 +791,7 @@ NetworkBufferDescriptor_t xTempBuffer;
 							uxFrontSpace = 0u;
 						}
 
-						FreeRTOS_debug_printf( ( "%s: %lxip:%u: [%lu < %lu] winSize %ld\n",
+						FreeRTOS_debug_printf( ( "%s: %lxip:%u: [%u < %u] winSize %ld\n",
 						pxSocket->u.xTCP.bits.bLowWater ? "STOP" : "GO ",
 							pxSocket->u.xTCP.ulRemoteIP,
 							pxSocket->u.xTCP.usRemotePort,
@@ -952,7 +952,7 @@ NetworkBufferDescriptor_t xTempBuffer;
 static void prvTCPCreateWindow( FreeRTOS_Socket_t *pxSocket )
 {
 	if( xTCPWindowLoggingLevel )
-		FreeRTOS_debug_printf( ( "Limits (using): TCP Win size %lu Water %lu <= %lu <= %lu\n",
+		FreeRTOS_debug_printf( ( "Limits (using): TCP Win size %u Water %u <= %u <= %u\n",
 			pxSocket->u.xTCP.uxRxWinSize * ipconfigTCP_MSS,
 			pxSocket->u.xTCP.uxLittleSpace ,
 			pxSocket->u.xTCP.uxEnoughSpace,
@@ -1333,7 +1333,7 @@ UBaseType_t uxNewMSS;
 			ucFactor++;
 		}
 
-		FreeRTOS_debug_printf( ( "prvWinScaleFactor: uxRxWinSize %lu MSS %lu Factor %u\n",
+		FreeRTOS_debug_printf( ( "prvWinScaleFactor: uxRxWinSize %u MSS %u Factor %u\n",
 			pxSocket->u.xTCP.uxRxWinSize,
 			pxSocket->u.xTCP.usInitMSS,
 			ucFactor ) );
@@ -1736,7 +1736,7 @@ int32_t lStreamPos;
 				{
 					if( ulDataGot != ( uint32_t ) lDataLen )
 					{
-						FreeRTOS_debug_printf( ( "uxStreamBufferGet: pos %lu offs %lu only %lu != %lu\n",
+						FreeRTOS_debug_printf( ( "uxStreamBufferGet: pos %lu offs %u only %lu != %lu\n",
 							lStreamPos, uxOffset, ulDataGot, lDataLen ) );
 					}
 				}
@@ -1758,7 +1758,7 @@ int32_t lStreamPos;
 							size_t uxMid = pxSocket->u.xTCP.txStream->uxMid;
 							size_t uxTail = pxSocket->u.xTCP.txStream->uxTail;
 
-							FreeRTOS_debug_printf( ( "CheckClose %lu <= %lu (%lu <= %lu <= %lu)\n", ulDataGot, ulDistance,
+							FreeRTOS_debug_printf( ( "CheckClose %lu <= %lu (%u <= %u <= %u)\n", ulDataGot, ulDistance,
 								uxTail, uxMid, uxHead ) );
 						}
 						#endif

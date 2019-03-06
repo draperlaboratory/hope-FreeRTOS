@@ -2923,7 +2923,7 @@ void vSocketWakeUpUser( FreeRTOS_Socket_t *pxSocket )
 
 			if( xTCPWindowLoggingLevel != 0 )
 			{
-				FreeRTOS_debug_printf( ( "prvTCPCreateStream: %cxStream created %lu bytes (total %lu)\n", xIsInputStream ? 'R' : 'T', uxLength, uxSize ) );
+				FreeRTOS_debug_printf( ( "prvTCPCreateStream: %cxStream created %u bytes (total %u)\n", xIsInputStream ? 'R' : 'T', uxLength, uxSize ) );
 			}
 
 			if( xIsInputStream != 0 )
@@ -2991,7 +2991,7 @@ void vSocketWakeUpUser( FreeRTOS_Socket_t *pxSocket )
 		{
 			if( xResult != ( int32_t ) ulByteCount )
 			{
-				FreeRTOS_debug_printf( ( "lTCPAddRxdata: at %ld: %ld/%lu bytes (tail %lu head %lu space %lu front %lu)\n",
+				FreeRTOS_debug_printf( ( "lTCPAddRxdata: at %d: %ld/%lu bytes (tail %u head %u space %u front %u)\n",
 					uxOffset, xResult, ulByteCount,
 					pxStream->uxTail,
 					pxStream->uxHead,
