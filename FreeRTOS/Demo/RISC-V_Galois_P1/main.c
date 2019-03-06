@@ -39,7 +39,6 @@
 
 /******************************************************************************
  * This project provides test applications for Galois P1 SSITH processor.
- * TODO: update docs
  */
 #if mainDEMO_TYPE == 1
 	#pragma message "Demo type 1: Basic Blinky"
@@ -58,7 +57,7 @@
 	extern void main_tcp( void );
 #else
 	#error "Unsupported demo type"
-#endif /* #if mainCREATE_SIMPLE_BLINKY_DEMO_ONLY == 1 */
+#endif
 
 /* Prototypes for the standard FreeRTOS callback/hook functions implemented
 within this file.  See https://www.freertos.org/a00016.html */
@@ -68,12 +67,6 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName );
 void vApplicationTickHook( void );
 
 void vToggleLED( void );
-
-/*-----------------------------------------------------------*/
-
-/* The UART to which strings are output, and the GPIO used to toggle the LED. */
-//static UART_instance_t g_uart;
-//static gpio_instance_t g_gpio_out;
 
 /*-----------------------------------------------------------*/
 

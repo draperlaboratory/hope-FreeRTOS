@@ -40,6 +40,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* FreeRTOS+TCP includes. */
 #include "NetworkInterface.h"
 
+
 /* First statically allocate the buffers, ensuring an additional ipBUFFER_PADDING
 bytes are allocated to each buffer.  This example makes no effort to align
 the start of the buffers, but most hardware will have an alignment requirement.
@@ -48,11 +49,10 @@ ensure it also ends on an alignment boundary.  Below shows an example assuming
 the buffers must also end on an 8-byte boundary. */
 #define BUFFER_SIZE ( ipTOTAL_ETHERNET_FRAME_SIZE + ipBUFFER_PADDING )
 #define BUFFER_SIZE_ROUNDED_UP ( ( BUFFER_SIZE + 7 ) & ~0x07UL )
-static uint8_t ucBuffers[ ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS ][ BUFFER_SIZE_ROUNDED_UP ];
+static uint8_t ucBuffers[ ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS ][ BUFFER_SIZE_ROUNDED_UP ] __attribute__ ((section(".uncached"))) = {0};
 
 BaseType_t xNetworkInterfaceInitialise( void )
 {
-	// call pucGetNetworkBuffer() to get a pointer to network buffer?
 	// Init DMA
 	// Init Ethernet
 	// wait to bring up the devices
@@ -74,7 +74,6 @@ simply fills in the pucEthernetBuffer member of each descriptor. */
 void vNetworkInterfaceAllocateRAMToBuffers( NetworkBufferDescriptor_t pxNetworkBuffers[ ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS ] )
 {
 BaseType_t x;
-
     for( x = 0; x < ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS; x++ )
     {
         /* pucEthernetBuffer is set to point ipBUFFER_PADDING bytes in from the

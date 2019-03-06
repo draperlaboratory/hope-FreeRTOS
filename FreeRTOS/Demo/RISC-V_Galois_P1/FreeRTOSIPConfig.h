@@ -307,4 +307,58 @@ disconnecting stage will timeout after a period of non-activity. */
 #define ipconfigZERO_COPY_RX_DRIVER			( 1 )
 #define ipconfigZERO_COPY_TX_DRIVER			( 1 )
 
+/* Demo config */
+/* The address of an echo server that will be used by the two demo echo client
+tasks.
+http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/TCP_Echo_Clients.html
+http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/UDP_Echo_Clients.html */
+#define configECHO_SERVER_ADDR0	10
+#define configECHO_SERVER_ADDR1 88
+#define configECHO_SERVER_ADDR2 88
+#define configECHO_SERVER_ADDR3 4
+
+/* Default MAC address configuration.  The demo creates a virtual network
+connection that uses this MAC address by accessing the raw Ethernet/WiFi data
+to and from a real network connection on the host PC.  See the
+configNETWORK_INTERFACE_TO_USE definition above for information on how to
+configure the real network connection to use. */
+#define configMAC_ADDR0		0x00
+#define configMAC_ADDR1		0x0A
+#define configMAC_ADDR2		0x35
+#define configMAC_ADDR3		0x04
+#define configMAC_ADDR4		0xDB
+#define configMAC_ADDR5		0x77
+
+/* Default IP address configuration.  Used in ipconfigUSE_DNS is set to 0, or
+ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
+#define configIP_ADDR0		10
+#define configIP_ADDR1		88
+#define configIP_ADDR2		88
+#define configIP_ADDR3		3
+
+/* Default gateway IP address configuration.  Used in ipconfigUSE_DNS is set to
+0, or ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
+#define configGATEWAY_ADDR0	10
+#define configGATEWAY_ADDR1	88
+#define configGATEWAY_ADDR2	88
+#define configGATEWAY_ADDR3	1
+
+/* Default DNS server configuration.  OpenDNS addresses are 208.67.222.222 and
+208.67.220.220.  Used in ipconfigUSE_DNS is set to 0, or ipconfigUSE_DNS is set
+to 1 but a DNS server cannot be contacted.*/
+#define configDNS_SERVER_ADDR0 	4
+#define configDNS_SERVER_ADDR1 	2
+#define configDNS_SERVER_ADDR2 	2
+#define configDNS_SERVER_ADDR3 	2
+
+/* Default netmask configuration.  Used in ipconfigUSE_DNS is set to 0, or
+ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
+#define configNET_MASK0		255
+#define configNET_MASK1		255
+#define configNET_MASK2		255
+#define configNET_MASK3		0
+
+/* The UDP port to which print messages are sent. */
+#define configPRINT_PORT	( 45000 )
+
 #endif /* FREERTOS_IP_CONFIG_H */

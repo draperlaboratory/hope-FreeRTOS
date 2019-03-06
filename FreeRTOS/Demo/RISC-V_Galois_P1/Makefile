@@ -160,6 +160,8 @@ ifeq ($(PROG),main_tcp)
 		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c
 	APP_SRC += \
 		bsp/rand.c
+	DEMO_SRC += \
+		demo/SimpleUDPClientAndServer.c
 
 else
 	$(info unknown demo: $(PROG))
