@@ -116,6 +116,7 @@ things such as a DHCP transaction number or initial sequence number.  Random
 number generation is performed via this macro to allow applications to use their
 own random number generation method.  For example, it might be possible to
 generate a random number by sampling noise on an analogue input. */
+#include "rand.h"
 #define ipconfigRAND32()	uxRand()
 
 /* If ipconfigUSE_NETWORK_EVENT_HOOK is set to 1 then FreeRTOS+TCP will call the
@@ -302,6 +303,8 @@ disconnecting stage will timeout after a period of non-activity. */
 #define ipconfigTCP_KEEP_ALIVE				( 1 )
 #define ipconfigTCP_KEEP_ALIVE_INTERVAL		( 20 ) /* in seconds */
 
-// #define portINLINE __inline
+/* Enable zero-copy network stack */
+#define ipconfigZERO_COPY_RX_DRIVER			( 1 )
+#define ipconfigZERO_COPY_TX_DRIVER			( 1 )
 
 #endif /* FREERTOS_IP_CONFIG_H */

@@ -37,9 +37,6 @@
 #include "stdint.h"
 #include "plic_driver.h"
 
-#include "FreeRTOS.h"
-#include "task.h"
-
 #define PLIC_BASE_ADDR (0xC000000ULL)
 
 #define PLIC_SOURCE_UART0 0x1
@@ -70,7 +67,7 @@
 #define	XPAR_AXIDMA_0_BASEADDR 0x62200000ULL
 // Control/status stream
 #define XPAR_AXIDMA_0_SG_INCLUDE_STSCNTRL_STRM 1
-// AXI4 memory-mapped to stream TODO: Tx?
+// AXI4 memory-mapped to stream
 #define XPAR_AXIDMA_0_INCLUDE_MM2S 1
 // Allow unaligned transfers
 #define XPAR_AXIDMA_0_INCLUDE_MM2S_DRE 1
@@ -94,7 +91,6 @@
 // Ethernet defines
 #define XPAR_AXIETHERNET_0_PHYADDR 0x03
 #define XPAR_XAXIETHERNET_NUM_INSTANCES 1
-
 #define XPAR_AXIETHERNET_0_DEVICE_ID 0
 #define XPAR_AXIETHERNET_0_BASEADDR 0x62100000ULL
 // 0 for SoftTemac at 10/100 Mbps, 1 for SoftTemac at 10/100/1000 Mbps and 2 for Vitex6 Hard Temac 
@@ -112,7 +108,7 @@
 #define XPAR_AXIETHERNET_0_TXVLAN_STRP 0
 #define XPAR_AXIETHERNET_0_RXVLAN_STRP 0
 // Extended multicast address filtering
-#define XPAR_AXIETHERNET_0_MCAST_EXTEND 1
+#define XPAR_AXIETHERNET_0_MCAST_EXTEND 0
 // Statistics gathering options
 #define XPAR_AXIETHERNET_0_STATS 1
 // Ethernet Audio Video Bridging
@@ -123,7 +119,7 @@
 #define XPAR_AXIETHERNET_0_ENABLE_1588 0
 // Tells whether MAC is 1G or 2p5G.
 #define XPAR_AXIETHERNET_0_SPEED XAE_SPEED_1000_MBPS// TODO: not sure if this is right
-// Number of table entries for the multicast address filtering
+// Number of table entries for the multicast address filtering // TODO: we are not using it
 #define XPAR_AXIETHERNET_0_NUM_TABLE_ENTRIES 4
 // Axi Ethernet interrupt ID.
 #define XPAR_AXIETHERNET_0_INTR PLIC_SOURCE_ETH // TODO: doesn't appear to be used
@@ -148,6 +144,9 @@ void prvSetupHardware( void );
 void external_interrupt_handler( uint32_t cause );
 
 // Some xillinx drivers require to sleep for given number of seconds
+#include "FreeRTOS.h"
+#include "task.h"
+
 void sleep(uint32_t secs);
 void msleep(uint32_t msecs);
 
@@ -194,7 +193,6 @@ void msleep(uint32_t msecs);
 	(timeout>0) ? 0 : -1;  \
  }  )
 
- UBaseType_t uxRand(void);
 
 #endif /* RISCV_BLUESPEC_BSP_H */
 

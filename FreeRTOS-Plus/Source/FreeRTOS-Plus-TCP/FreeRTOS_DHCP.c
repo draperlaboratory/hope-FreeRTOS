@@ -632,7 +632,7 @@ const uint32_t ulMandatoryOptions = 2ul; /* DHCP server address, and the correct
 		pxDHCPMessage = ( DHCPMessage_t * ) ( pucUDPPayload );
 
 		/* Sanity check. */
-		if( ( lBytes >= sizeof( DHCPMessage_t ) ) &&
+		if( ( lBytes >= (int32_t)sizeof( DHCPMessage_t ) ) &&
 			( pxDHCPMessage->ulDHCPCookie == ( uint32_t ) dhcpCOOKIE ) &&
 			( pxDHCPMessage->ucOpcode == ( uint8_t ) dhcpREPLY_OPCODE ) &&
 			( pxDHCPMessage->ulTransactionID == FreeRTOS_htonl( xDHCPData.ulTransactionId ) ) )
