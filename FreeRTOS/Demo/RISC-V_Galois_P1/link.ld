@@ -79,8 +79,9 @@ _HEAP_SIZE = DEFINED(_HEAP_SIZE) ? _HEAP_SIZE : 0x4000;
  * Define memory layout
  ****************************************************************************/
 MEMORY {
-	imem : ORIGIN = 0x80000000, LENGTH = 0x00080000
-	dmem : ORIGIN = 0x80080000, LENGTH = 0x00800000 /* 8 MB RAM */
+   cmem : ORIGIN = 0x80000000, LENGTH = 0x00080000
+	imem : ORIGIN = 0xc0000000, LENGTH = 0x00080000
+	dmem : ORIGIN = 0xc0080000, LENGTH = 0x00800000 /* 8 MB RAM */
 }
 
 /* Specify the default entry point to the program */
@@ -91,7 +92,13 @@ ENTRY(boot)
  * Define the sections, and where they are mapped in memory 
  ****************************************************************************/
 SECTIONS {
+   .uncached : {
+   . = ALIGN(64);
+      *(.uncached);
+		*(.uncached.*);
+   } > cmem
 	.text : {
+      . = ALIGN(8);
 	    *boot.o(.text);
 		*(.text);
 		*(.text.*);
