@@ -10,7 +10,7 @@ SDK_DIR = ./freedom-e-sdk
 
 LINKER_SCRIPT = $(SDK_DIR)/env/freedom-e300-hifive1/flash.lds
 #-----------------------------------------------------------
-GCC     = $(CROSS_COMPILE_PREFIX)-gcc
+GCC     = /opt/isp/bin/clang
 OBJCOPY = $(CROSS_COMPILE_PREFIX)-objcopy
 OBJDUMP = $(CROSS_COMPILE_PREFIX)-objdump
 AR      = $(CROSS_COMPILE_PREFIX)-ar
@@ -18,9 +18,9 @@ RANLIB  = $(CROSS_COMPILE_PREFIX)-ranlib
 GDB     = $(CROSS_COMPILE_PREFIX)-gdb
 
 # if using the multi-arch (riscv64-unknown-elf-gcc):
-ARCH_FLAGS = -march=rv32imac -mabi=ilp32 -mcmodel=medany
+ARCH_FLAGS = -march=rv32ima -mabi=ilp32 -mcmodel=medium
 # Basic CFLAGS:
-CFLAGS  = -Wall -Wextra -O0 -g3 -msmall-data-limit=8 -std=gnu11
+CFLAGS  = -Wall -Wextra -O0 -g3 -std=gnu11
 CFLAGS += -ffunction-sections -fdata-sections -fno-builtin-printf
 CFLAGS += -DDONT_USE_PLIC -DDONT_USE_M_TIME
 CFLAGS += -include sys/cdefs.h
@@ -31,7 +31,6 @@ CFLAGS += -MT"$@" -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)"
 ASMFLAGS =  -O0 -g3
 ASMFLAGS += $(ARCH_FLAGS)
 ASMFLAGS += -DportasmHANDLE_INTERRUPT=handle_trap
-ASMFLAGS += -msmall-data-limit=8
 ASMFLAGS += -ffunction-sections -fdata-sections
 ASMFLAGS += -x assembler-with-cpp
 ASMFLAGS += -MT"$@" -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)"
