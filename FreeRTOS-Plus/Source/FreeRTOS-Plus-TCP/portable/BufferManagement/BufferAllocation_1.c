@@ -292,6 +292,7 @@ UBaseType_t uxCount;
 		}
 		else
 		{
+			FreeRTOS_debug_printf( ("failed to obtain network buffer\r\n") );
 			iptraceFAILED_TO_OBTAIN_NETWORK_BUFFER();
 		}
 	}

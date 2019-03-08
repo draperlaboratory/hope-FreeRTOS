@@ -157,7 +157,9 @@ ifeq ($(PROG),main_tcp)
 		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_WIN.c \
 		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Stream_Buffer.c \
 		$(FREERTOS_TCP_SOURCE_DIR)/portable/BufferManagement/BufferAllocation_1.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/riscv_hal_eth.c \
 		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c
+		
 	APP_SRC += \
 		bsp/rand.c
 	DEMO_SRC += \

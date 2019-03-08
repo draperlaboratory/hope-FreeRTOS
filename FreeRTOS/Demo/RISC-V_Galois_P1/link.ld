@@ -79,9 +79,9 @@ _HEAP_SIZE = DEFINED(_HEAP_SIZE) ? _HEAP_SIZE : 0x4000;
  * Define memory layout
  ****************************************************************************/
 MEMORY {
-   cmem : ORIGIN = 0x80000000, LENGTH = 0x00080000
+   cmem : ORIGIN = 0x80000000, LENGTH = 0x00800000
 	imem : ORIGIN = 0xc0000000, LENGTH = 0x00080000
-	dmem : ORIGIN = 0xc0080000, LENGTH = 0x00800000 /* 8 MB RAM */
+	dmem : ORIGIN = 0xc0080000, LENGTH = 0x00800000
 }
 
 /* Specify the default entry point to the program */
@@ -93,7 +93,7 @@ ENTRY(boot)
  ****************************************************************************/
 SECTIONS {
    .uncached : {
-   . = ALIGN(64);
+      . = ALIGN(64);
       *(.uncached);
 		*(.uncached.*);
    } > cmem

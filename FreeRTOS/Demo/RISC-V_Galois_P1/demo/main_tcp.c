@@ -83,13 +83,14 @@
 /* Simple UDP client and server task parameters. */
 #define mainSIMPLE_UDP_CLIENT_SERVER_TASK_PRIORITY		( tskIDLE_PRIORITY )
 #define mainSIMPLE_UDP_CLIENT_SERVER_PORT				( 5005UL )
+#define mainSIMPLE_UDP_CLIENT_SERVER_STACK_SIZE			( configMINIMAL_STACK_SIZE * 10 )
 
 /* Echo client task parameters - used for both TCP and UDP echo clients. */
-#define mainECHO_CLIENT_TASK_STACK_SIZE 				( configMINIMAL_STACK_SIZE * 2 )	/* Not used in the Windows port. */
+#define mainECHO_CLIENT_TASK_STACK_SIZE 				( configMINIMAL_STACK_SIZE * 10 )
 #define mainECHO_CLIENT_TASK_PRIORITY					( tskIDLE_PRIORITY + 1 )
 
 /* Echo server task parameters. */
-#define mainECHO_SERVER_TASK_STACK_SIZE					( configMINIMAL_STACK_SIZE * 2 )	/* Not used in the Windows port. */
+#define mainECHO_SERVER_TASK_STACK_SIZE					( configMINIMAL_STACK_SIZE * 10 )
 #define mainECHO_SERVER_TASK_PRIORITY					( tskIDLE_PRIORITY + 1 )
 
 /* Define a name that will be used for LLMNR and NBNS searches. */
@@ -182,11 +183,11 @@ void main_tcp( void )
 	vApplicationIPNetworkEventHook() below).  The address values passed in here
 	are used if ipconfigUSE_DHCP is set to 0, or if ipconfigUSE_DHCP is set to 1
 	but a DHCP server cannot be	contacted. */
-	FreeRTOS_debug_printf( ( "FreeRTOS_IPInit\n" ) );
+	FreeRTOS_debug_printf( ( "FreeRTOS_IPInit\r\n" ) );
 	FreeRTOS_IPInit( ucIPAddress, ucNetMask, ucGatewayAddress, ucDNSServerAddress, ucMACAddress );
 
 	/* Start the tasks and timer running. */
-	FreeRTOS_debug_printf( ("vTaskStartScheduler\n") );
+	FreeRTOS_debug_printf( ("vTaskStartScheduler\r\n") );
 	vTaskStartScheduler();
 
 	for( ;; );
@@ -213,7 +214,7 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
 			demo tasks. */
 			#if( mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS == 1 )
 			{
-				vStartSimpleUDPClientServerTasks( configMINIMAL_STACK_SIZE, mainSIMPLE_UDP_CLIENT_SERVER_PORT, mainSIMPLE_UDP_CLIENT_SERVER_TASK_PRIORITY );
+				vStartSimpleUDPClientServerTasks( mainSIMPLE_UDP_CLIENT_SERVER_STACK_SIZE, mainSIMPLE_UDP_CLIENT_SERVER_PORT, mainSIMPLE_UDP_CLIENT_SERVER_TASK_PRIORITY );
 			}
 			#endif /* mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS */
 
@@ -260,9 +261,9 @@ static void prvSRand( UBaseType_t ulSeed )
 static void prvMiscInitialisation( void )
 {
 	uint32_t seed = 42;
-	FreeRTOS_debug_printf( ( "Seed for randomiser: %lu\n", seed ) );
+	FreeRTOS_debug_printf( ( "Seed for randomiser: %lu\r\n", seed ) );
 	prvSRand( ( uint32_t ) seed );
-	FreeRTOS_debug_printf( ( "Random numbers: %08lX %08lX %08lX %08lX\n", ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32() ) );
+	FreeRTOS_debug_printf( ( "Random numbers: %08lX %08lX %08lX %08lX\r\n", ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32() ) );
 }
 /*-----------------------------------------------------------*/
 

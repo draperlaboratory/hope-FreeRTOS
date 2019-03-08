@@ -28,7 +28,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* FreeRTOS includes. */
 #include "FreeRTOS.h"
-#include <task.h>
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
 
 #include "FreeRTOS_IP.h"
 
@@ -40,6 +42,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* FreeRTOS+TCP includes. */
 #include "NetworkInterface.h"
 
+/* Board specific includes */
+#include "riscv_hal_eth.h"
+
+
+/* xTXDescriptorSemaphore is a counting semaphore with
+a maximum count of ETH_TXBUFNB, which is the number of
+DMA TX descriptors. */
+static SemaphoreHandle_t xTXDescriptorSemaphore = NULL;
 
 /* First statically allocate the buffers, ensuring an additional ipBUFFER_PADDING
 bytes are allocated to each buffer.  This example makes no effort to align
@@ -53,17 +63,74 @@ static uint8_t ucBuffers[ ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS ][ BUFFER_SIZE_
 
 BaseType_t xNetworkInterfaceInitialise( void )
 {
+	FreeRTOS_debug_printf( ("xNetworkInterfaceInitialise\r\n") );
+
+	/* Init counting semaphore*/
+	if( xTXDescriptorSemaphore == NULL )
+	{
+		xTXDescriptorSemaphore = xSemaphoreCreateCounting( ( UBaseType_t ) TXBD_CNT, ( UBaseType_t ) TXBD_CNT );
+		configASSERT( xTXDescriptorSemaphore );
+	}
+
 	// Init DMA
+	configASSERT(DmaSetup(&AxiDmaInstance, XPAR_AXIDMA_0_DEVICE_ID) == 0);
+
 	// Init Ethernet
-	// wait to bring up the devices
+	configASSERT(PhySetup(&AxiEthernetInstance, XPAR_AXIETHERNET_0_DEVICE_ID) == 0);
+
+	// Connect to PLIC
+	configASSERT(AxiEthernetSetupIntrSystem(&Plic, &AxiEthernetInstance, &AxiDmaInstance, PLIC_SOURCE_ETH, XPAR_AXIETHERNET_0_DMA_RX_INTR,
+						XPAR_AXIETHERNET_0_DMA_TX_INTR) == 0);
+	
+	uint16_t Speed;
+	configASSERT( XAxiEthernet_GetSgmiiStatus(&AxiEthernetInstance, &Speed) == 0);
+    FreeRTOS_debug_printf( ("xNetworkInterfaceInitialise: XAxiEthernet_GetSgmiiStatus returned %u\r\n",Speed) );
+
+	/*
+	 * Start the Axi Ethernet and enable its ERROR interrupts
+	 */
+	XAxiEthernet_Start(&AxiEthernetInstance);
+	XAxiEthernet_IntEnable(&AxiEthernetInstance, XAE_INT_RECV_ERROR_MASK);
+
+	FreeRTOS_debug_printf( ("xNetworkInterfaceInitialise: Going to sleep for %u seconds\r\n", AXIETHERNET_PHY_DELAY_SEC) );
+	vTaskDelay(pdMS_TO_TICKS(AXIETHERNET_PHY_DELAY_SEC*1000)); // sleep for 5 s
+	FreeRTOS_debug_printf( ("xNetworkInterfaceInitialise: Woken up\r\n") );
+
 	return pdPASS;
 }
 /*-----------------------------------------------------------*/
 
 BaseType_t xNetworkInterfaceOutput( NetworkBufferDescriptor_t * const pxNetworkBuffer, BaseType_t xReleaseAfterSend )
 {
-	(void) pxNetworkBuffer;
+	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: FramesTX = %i\r\n", FramesTx) );
+	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: FramesRX: %i\r\n", FramesRx));
+
+	/* unused, we always release after send */
 	(void) xReleaseAfterSend;
+
+	/* get BD ring descriptor */
+	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(&AxiDmaInstance);
+	XAxiDma_Bd * BdPtr;
+
+	//XAxiDma_BdRingIntEnable(TxRingPtr, XAXIDMA_IRQ_ALL_MASK);
+
+	/* allocate next BD from the BD ring */
+	configASSERT( XAxiDma_BdRingAlloc(TxRingPtr, 1, &BdPtr) == 0);
+
+	/* configure BD */
+	XAxiDma_BdSetBufAddr(BdPtr, (u32)pxNetworkBuffer->pucEthernetBuffer);
+	XAxiDma_BdSetLength(BdPtr, pxNetworkBuffer->xDataLength,TxRingPtr->MaxTransferLen);
+	XAxiDma_BdSetCtrl(BdPtr, XAXIDMA_BD_CTRL_TXSOF_MASK |
+			     XAXIDMA_BD_CTRL_TXEOF_MASK);
+	
+	/* pass BD to HW */
+	configASSERT( XAxiDma_BdRingToHw(TxRingPtr, 1, BdPtr) == 0 );
+
+	/* start transaction */
+	configASSERT( XAxiDma_BdRingStart(TxRingPtr) == 0);
+
+	/* Call the standard trace macro to log the send event. */
+    iptraceNETWORK_INTERFACE_TRANSMIT();
 
 	return pdPASS;
 }
@@ -73,7 +140,8 @@ BaseType_t xNetworkInterfaceOutput( NetworkBufferDescriptor_t * const pxNetworkB
 simply fills in the pucEthernetBuffer member of each descriptor. */
 void vNetworkInterfaceAllocateRAMToBuffers( NetworkBufferDescriptor_t pxNetworkBuffers[ ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS ] )
 {
-BaseType_t x;
+	FreeRTOS_debug_printf( ("vNetworkInterfaceAllocateRAMToBuffers\r\n") );
+	BaseType_t x;
     for( x = 0; x < ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS; x++ )
     {
         /* pucEthernetBuffer is set to point ipBUFFER_PADDING bytes in from the
@@ -90,7 +158,14 @@ BaseType_t x;
 
 BaseType_t xGetPhyLinkStatus( void )
 {
-	//
-	return pdPASS;
+	FreeRTOS_debug_printf( ("xGetPhyLinkStatus\r\n") );
+
+	if (PhyLinkStatus(&AxiEthernetInstance)) {
+		FreeRTOS_debug_printf( ("xGetPhyLinkStatus: Link is UP\r\n") );
+		return pdPASS;
+	} else {
+		FreeRTOS_debug_printf( ("xGetPhyLinkStatus: Link is DOWN\r\n") );
+		return pdFAIL;
+	}
 }
 /*-----------------------------------------------------------*/

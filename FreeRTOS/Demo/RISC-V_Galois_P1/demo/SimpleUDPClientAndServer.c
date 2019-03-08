@@ -216,6 +216,7 @@ Socket_t xListeningSocket;
 		/* Print the received characters. */
 		if( lBytes > 0 )
 		{
+			printf(">>>>>> received %s\r\n",pucUDPPayloadBuffer);
 			/* It is expected to receive one more byte than the string length as
 			the NULL terminator is also transmitted. */
 			configASSERT( lBytes == ( ( BaseType_t ) strlen( ( const char * ) pucUDPPayloadBuffer ) + 1 ) );

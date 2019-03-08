@@ -1064,6 +1064,10 @@ int XAxiDma_BdRingToHw(XAxiDma_BdRing * RingPtr, int NumBd,
 	/* Clear the completed status bit
 	 */
 	for (i = 0; i < NumBd - 1; i++) {
+		printf("bd num %i\r\n", i);
+		u32 len = XAxiDma_BdGetLength(CurBdPtr,
+				RingPtr->MaxTransferLen);
+		printf("Bd len = %u\r\n", len);
 
 		/* Make sure the length value in the BD is non-zero. */
 		if (XAxiDma_BdGetLength(CurBdPtr,
@@ -1095,6 +1099,9 @@ int XAxiDma_BdRingToHw(XAxiDma_BdRing * RingPtr, int NumBd,
 	}
 
 	/* Make sure the length value in the last BD is non-zero. */
+	u32 len = XAxiDma_BdGetLength(CurBdPtr,
+				RingPtr->MaxTransferLen);
+		printf("last Bd len = %u\r\n", len);
 	if (XAxiDma_BdGetLength(CurBdPtr,
 			RingPtr->MaxTransferLen) == 0) {
 

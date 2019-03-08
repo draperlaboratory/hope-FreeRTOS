@@ -31,8 +31,8 @@
 *
 ******************************************************************************/
 
-#ifndef RISCV_BLUESPEC_BSP_H
-#define RISCV_BLUESPEC_BSP_H
+#ifndef RISCV_P1_BSP_H
+#define RISCV_P1_BSP_H
 
 #include "stdint.h"
 #include "plic_driver.h"
@@ -194,6 +194,6 @@ void msleep(uint32_t msecs);
  }  )
 
 
-#endif /* RISCV_BLUESPEC_BSP_H */
+#endif /* RISCV_P1_BSP_H */
 
 
