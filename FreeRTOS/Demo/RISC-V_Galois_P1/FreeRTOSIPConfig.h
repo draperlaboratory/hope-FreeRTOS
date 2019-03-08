@@ -147,7 +147,7 @@ stack will revert to using the static IP address even when ipconfigUSE_DHCP is
 set to 1 if a valid configuration cannot be obtained from a DHCP server for any
 reason.  The static configuration used is that passed into the stack by the
 FreeRTOS_IPInit() function call. */
-#define ipconfigUSE_DHCP	1
+#define ipconfigUSE_DHCP	0
 
 /* When ipconfigUSE_DHCP is set to 1, DHCP requests will be sent out at
 increasing time intervals until either a reply is received from a DHCP server
@@ -360,5 +360,9 @@ ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
 
 /* The UDP port to which print messages are sent. */
 #define configPRINT_PORT	( 45000 )
+
+#define iptraceNETWORK_INTERFACE_TRANSMIT() FreeRTOS_debug_printf( ("iptraceNETWORK_INTERFACE_TRANSMIT\r\n"));
+#define iptraceETHERNET_RX_EVENT_LOST()     FreeRTOS_debug_printf( ("iptraceETHERNET_RX_EVENT_LOST\r\n"));
+#define iptraceNETWORK_INTERFACE_RECEIVE()    FreeRTOS_debug_printf( ("iptraceNETWORK_INTERFACE_RECEIVE\r\n"));
 
 #endif /* FREERTOS_IP_CONFIG_H */

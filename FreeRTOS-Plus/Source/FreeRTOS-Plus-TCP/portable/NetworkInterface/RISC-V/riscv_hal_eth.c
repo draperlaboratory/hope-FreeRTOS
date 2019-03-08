@@ -174,12 +174,17 @@ void DmaFreeBDTask( void *pvParameters ) {
 			continue;
 		}
 		
+		FreeRTOS_debug_printf( ("DmaFreeBDTask: BdPtr = %lx\r\n", (u32)BdPtr));
+
 		ucPayLoad = (uint8_t*)XAxiDma_BdGetBufAddr(BdPtr);
+		FreeRTOS_debug_printf( ("DmaFreeBDTask: ucPayLoad = %lx\r\n", ucPayLoad) );
 		if( ucPayLoad != NULL )
 		{
 			pxNetworkBuffer = pxPacketBuffer_to_NetworkBuffer( ucPayLoad );
+			FreeRTOS_debug_printf( ("DmaFreeBDTask: pxNetworkBuffer = %lx\r\n", pxNetworkBuffer) );
 			if( pxNetworkBuffer != NULL )
 			{
+				FreeRTOS_debug_printf( ("DmaFreeBDTask: releasing pxNetworkBuffer\r\n") );
 				vReleaseNetworkBufferAndDescriptor( pxNetworkBuffer ) ;
 			}
 		}
@@ -229,9 +234,11 @@ void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 			continue;
 		}
 
+		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: BdPtr = %lx\r\n", (u32)BdPtr));
+
 		// Buf address
 		pxDMARxDescriptor.pucEthernetBuffer = (uint8_t*)XAxiDma_BdGetBufAddr(BdPtr);
-		FreeRTOS_debug_printf( ("Payload addr %lx\r\n", (uint32_t)pxDMARxDescriptor.pucEthernetBuffer) );
+		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDMARxDescriptor.pucEthernetBuffer = %lx\r\n", (uint32_t)pxDMARxDescriptor.pucEthernetBuffer) );
 
 		/* Examine the BD */
 		BdSts = XAxiDma_BdGetSts(BdPtr);
@@ -242,18 +249,20 @@ void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 		else {
 			pxDMARxDescriptor.xDataLength =
 			(size_t) (XAxiDma_BdRead(BdPtr,XAXIDMA_BD_USR4_OFFSET)) & 0x0000FFFF;
-			FreeRTOS_debug_printf( ("received %u bytes\r\n", pxDMARxDescriptor.xDataLength) );
+			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: eceived %u bytes\r\n", pxDMARxDescriptor.xDataLength) );
 		}
 
 		/* Allocate a new network buffer descriptor that references an Ethernet
 		frame large enough to hold the maximum network packet size (as defined
 		in the FreeRTOSIPConfig.h header file). */
     	pxDescriptor = pxGetNetworkBufferWithDescriptor( ipTOTAL_ETHERNET_FRAME_SIZE, 0 );
-
+		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDescriptor = %p\r\n", &pxDescriptor) );
 
 		/* Copy the pointer to the newly allocated Ethernet frame to a temporary
 		variable. */
 		pucTemp = pxDescriptor->pucEthernetBuffer;
+		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDescriptor->pucEthernetBuffer = %p\r\n", pxDescriptor->pucEthernetBuffer) );
+		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDescriptor->xDataLength = %u\r\n", pxDescriptor->xDataLength) );
 
 		/* This example assumes that the DMADescriptor_t type has a member
 		called pucEthernetBuffer that points to the Ethernet buffer containing
@@ -261,7 +270,9 @@ void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 		of the received data.  Update the newly allocated network buffer descriptor
 		to point to the Ethernet buffer that contains the received data. */
 		pxDescriptor->pucEthernetBuffer = pxDMARxDescriptor.pucEthernetBuffer;
+		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDMARxDescriptor.pucEthernetBuffer = %p\r\n", pxDMARxDescriptor.pucEthernetBuffer) );
 		pxDescriptor->xDataLength = pxDMARxDescriptor.xDataLength;
+		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDMARxDescriptor.xDataLength = %u\r\n", pxDMARxDescriptor.xDataLength) );
 
 		/* Update the Ethernet Rx DMA descriptor to point to the newly allocated
 		Ethernet buffer. */
@@ -292,21 +303,25 @@ void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 		to be processed.  NOTE! It might be possible to do this in
 		the interrupt service routine itself, which would remove the need
 		to unblock this task for packets that don't need processing. */
+
+		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: eConsiderFrameForProcessing pxDescriptor->pucEthernetBuffer= %p\r\n", pxDescriptor->pucEthernetBuffer) );
+		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: eConsiderFrameForProcessing pxDescriptor->xDataLength= %u\r\n", pxDescriptor->xDataLength) );
 		if( eConsiderFrameForProcessing( pxDescriptor->pucEthernetBuffer )
 									== eProcessBuffer )
 		{
-			FreeRTOS_debug_printf( ("Considered for processing\r\n") );
+			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: Considered for processing\r\n") );
 			/* The event about to be sent to the TCP/IP is an Rx event. */
 			xRxEvent.eEventType = eNetworkRxEvent;
 
 			/* pvData is used to point to the network buffer descriptor that
 			references the received data. */
 			xRxEvent.pvData = ( void * ) pxDescriptor;
+			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: xRxEvent.pvData = %p\r\n", xRxEvent.pvData) );
 
 			/* Send the data to the TCP/IP stack. */
 			if( xSendEventStructToIPTask( &xRxEvent, 0 ) == pdFALSE )
 			{
-				FreeRTOS_debug_printf( ("Could not be passed to IP stack\r\n") );
+				FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: Could not be passed to IP stack\r\n") );
 				/* The buffer could not be sent to the IP task so the buffer
 				must be released. */
 				vReleaseNetworkBufferAndDescriptor( pxDescriptor );
@@ -319,7 +334,7 @@ void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 			{
 				/* The message was successfully sent to the TCP/IP stack.
 				Call the standard trace macro to log the occurrence. */
-				FreeRTOS_debug_printf( ("Interface received data\r\n") );
+				FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: Interface received data\r\n") );
 				iptraceNETWORK_INTERFACE_RECEIVE();
 			}
 		}
@@ -327,6 +342,7 @@ void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 		{
 			/* The Ethernet frame can be dropped, but the Ethernet buffer
 			must be released. */
+			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: vReleaseNetworkBufferAndDescriptor\r\n") );
 			vReleaseNetworkBufferAndDescriptor( pxDescriptor );
 		}
 	}
@@ -466,9 +482,9 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 
 	for (int Index = 0; Index < FreeBdCount; Index++) {
 
-		printf("Getting new buffer descriptor, bd = %lx\r\n", BdCurPtr);
+		printf("DmaSetup: Getting new buffer descriptor, BdCurPtr = %lx\r\n", BdCurPtr);
 		NetworkBufferDescriptor_t *pxNetworkBuffer = pxGetNetworkBufferWithDescriptor(ipTOTAL_ETHERNET_FRAME_SIZE, portMAX_DELAY);	
-		printf("%i: Current address us %lxx\r\n", Index, (uint32_t)(pxNetworkBuffer->pucEthernetBuffer));
+		printf("DmaSetup: %i: pxNetworkBuffer->pucEthernetBuffer = %lx\r\n", Index, (uint32_t)(pxNetworkBuffer->pucEthernetBuffer));
 		Status = XAxiDma_BdSetBufAddr(BdCurPtr, (u32)pxNetworkBuffer->pucEthernetBuffer);
 		//Status = XAxiDma_BdSetBufAddr(BdCurPtr, (u32)&RxFrameBuf[Index]);
 		if (Status != XST_SUCCESS) {
@@ -480,7 +496,7 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 		}
 
 		configASSERT(pxNetworkBuffer->xDataLength != 0);
-		printf( "ipTOTAL_ETHERNET_FRAME_SIZE=%lu, datalen = %u\r\n", ipTOTAL_ETHERNET_FRAME_SIZE, pxNetworkBuffer->xDataLength);
+		printf( "DmaSetup: ipTOTAL_ETHERNET_FRAME_SIZE=%lu, datalen = %u\r\n", ipTOTAL_ETHERNET_FRAME_SIZE, pxNetworkBuffer->xDataLength);
 		Status = XAxiDma_BdSetLength(BdCurPtr, (u32)pxNetworkBuffer->xDataLength,
 		//Status = XAxiDma_BdSetLength(BdCurPtr, sizeof(RxFrameBuf[Index]),
 					RxRingPtr->MaxTransferLen);
@@ -498,7 +514,7 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 
 		XAxiDma_BdSetId(BdCurPtr, Index);
 
-		printf("Current bd len = %lu\r\n", XAxiDma_BdGetLength(BdPtr, RxRingPtr->MaxTransferLen));
+		printf("DmaSetup: Current bd len = %lu\r\n", XAxiDma_BdGetLength(BdPtr, RxRingPtr->MaxTransferLen));
 
 		BdCurPtr = (XAxiDma_Bd *)XAxiDma_BdRingNext(RxRingPtr, BdCurPtr);
 	}

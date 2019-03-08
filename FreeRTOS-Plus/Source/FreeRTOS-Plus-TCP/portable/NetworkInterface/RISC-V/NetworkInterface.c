@@ -103,7 +103,6 @@ BaseType_t xNetworkInterfaceInitialise( void )
 BaseType_t xNetworkInterfaceOutput( NetworkBufferDescriptor_t * const pxNetworkBuffer, BaseType_t xReleaseAfterSend )
 {
 	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: FramesTX = %i\r\n", FramesTx) );
-	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: FramesRX: %i\r\n", FramesRx));
 
 	/* unused, we always release after send */
 	(void) xReleaseAfterSend;
@@ -112,7 +111,7 @@ BaseType_t xNetworkInterfaceOutput( NetworkBufferDescriptor_t * const pxNetworkB
 	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(&AxiDmaInstance);
 	XAxiDma_Bd * BdPtr;
 
-	//XAxiDma_BdRingIntEnable(TxRingPtr, XAXIDMA_IRQ_ALL_MASK);
+	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: BdPtr = %lx\r\n", (u32)BdPtr));
 
 	/* allocate next BD from the BD ring */
 	configASSERT( XAxiDma_BdRingAlloc(TxRingPtr, 1, &BdPtr) == 0);
@@ -148,11 +147,15 @@ void vNetworkInterfaceAllocateRAMToBuffers( NetworkBufferDescriptor_t pxNetworkB
         beginning of the allocated buffer. */
         pxNetworkBuffers[ x ].pucEthernetBuffer = &( ucBuffers[ x ][ ipBUFFER_PADDING ] );
 
+		FreeRTOS_debug_printf( ("vNetworkInterfaceAllocateRAMToBuffers: pxNetworkBuffers[ %lu ].pucEthernetBuffer = %lx\r\n", x, (uint32_t)pxNetworkBuffers[ x ].pucEthernetBuffer));
+
         /* The following line is also required, but will not be required in
         future versions. */
 		// TODO: if this works, add "#pragma GCC diagnostic ignored "-Wcast-align" to supress the warning
         *( ( uint32_t * ) &ucBuffers[ x ][ 0 ] ) = ( uint32_t ) &( pxNetworkBuffers[ x ] );
-    }
+
+		FreeRTOS_debug_printf( ("vNetworkInterfaceAllocateRAMToBuffers: &ucBuffers[ %lu ][ 0 ] = %lx\r\n", x, (uint32_t)&ucBuffers[ x ][ 0 ]));
+	}
 }
 /*-----------------------------------------------------------*/
 

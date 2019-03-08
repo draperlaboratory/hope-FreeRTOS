@@ -1,7 +1,11 @@
-
+#include <stddef.h> // maybe not needed
 #include <stdint.h>
 #include "uart_16550.h"
 
+#include "FreeRTOS.h"
+#include "semphr.h"
+
+SemaphoreHandle_t uart0_mutex = NULL;
 
 /* Struct for 16550 register space */
 struct __attribute__ ((aligned (4))) uart_pio
@@ -53,6 +57,7 @@ static struct uart_pio * pio = (void*)UART_BASE;
 
 int uart0_init(void)
 {
+  uart0_mutex = xSemaphoreCreateMutex();
   uint32_t divisor;
   divisor = UART_CLOCK_RATE / (16 * DEFAULT_BAUDRATE);
 
@@ -96,9 +101,12 @@ int uart0_rxchar(void)
 
 int uart0_txbuffer(char *ptr, int len) {
   int cnt;
+  configASSERT( uart0_mutex != NULL);
+  configASSERT( xSemaphoreTake(uart0_mutex, portMAX_DELAY) == pdTRUE);
   for (cnt = 0; cnt < len; cnt++) {
     uart0_txchar (*ptr++);
   }
+  xSemaphoreGive( uart0_mutex );
   return cnt;
 }
 
