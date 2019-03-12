@@ -9,7 +9,9 @@ set(UNIX 1 CACHE STRING "" FORCE)
 if (DEFINED ENV{ISP_PREFIX})
   set(ISP_PREFIX $ENV{ISP_PREFIX})
  else()
-  set(ISP_PREFIX "/opt/isp/")
+   set(ISP_PREFIX "/opt/isp/")
+   message (WARNING "You should have defined ISP_PREFIX var !!!")
+   message (WARNING "The CMake forced it to point to /opt/isp which might not be whant you want !!!")
 endif()
 
 # specify the cross compiler
