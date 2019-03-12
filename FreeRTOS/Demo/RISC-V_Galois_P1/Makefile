@@ -163,7 +163,9 @@ ifeq ($(PROG),main_tcp)
 	APP_SRC += \
 		bsp/rand.c
 	DEMO_SRC += \
-		demo/SimpleUDPClientAndServer.c
+		demo/SimpleUDPClientAndServer.c \
+		demo/TCPEchoClient_SingleTasks.c \
+		demo/SimpleTCPEchoServer.c
 
 else
 	$(info unknown demo: $(PROG))

@@ -230,7 +230,7 @@ UBaseType_t uxCount;
 			ipconfigBUFFER_ALLOC_LOCK();
 			{
 				pxReturn = ( NetworkBufferDescriptor_t * ) listGET_OWNER_OF_HEAD_ENTRY( &xFreeBuffersList );
-
+				FreeRTOS_debug_printf( ("pxGetNetworkBufferWithDescriptor: pxReturn=%p\r\n", pxReturn) );
 				if( ( bIsValidNetworkDescriptor( pxReturn ) != pdFALSE_UNSIGNED ) &&
 					listIS_CONTAINED_WITHIN( &xFreeBuffersList, &( pxReturn->xBufferListItem ) ) )
 				{
@@ -283,16 +283,17 @@ UBaseType_t uxCount;
 
 				if( xTCPWindowLoggingLevel > 3 )
 				{
-					FreeRTOS_debug_printf( ( "BUF_GET[%ld]: %p (%p)\n",
+					FreeRTOS_debug_printf( ( "BUF_GET[%ld]: %p (%p) (now %lu)\n",
 						bIsValidNetworkDescriptor( pxReturn ),
-						pxReturn, pxReturn->pucEthernetBuffer ) );
+						pxReturn, pxReturn->pucEthernetBuffer,
+						uxGetNumberOfFreeNetworkBuffers() ) );
 				}
 			}
 			iptraceNETWORK_BUFFER_OBTAINED( pxReturn );
 		}
 		else
 		{
-			FreeRTOS_debug_printf( ("failed to obtain network buffer\r\n") );
+			FreeRTOS_debug_printf( ("pxGetNetworkBufferWithDescriptor: failed to obtain network buffer\r\n") );
 			iptraceFAILED_TO_OBTAIN_NETWORK_BUFFER();
 		}
 	}

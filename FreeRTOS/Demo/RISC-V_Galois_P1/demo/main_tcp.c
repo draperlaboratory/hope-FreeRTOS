@@ -79,6 +79,8 @@
 
 /* Application includes */
 #include "SimpleUDPClientAndServer.h"
+#include "SimpleTCPEchoServer.h"
+#include "TCPEchoClient_SingleTasks.h"
 
 /* Simple UDP client and server task parameters. */
 #define mainSIMPLE_UDP_CLIENT_SERVER_TASK_PRIORITY		( tskIDLE_PRIORITY )

@@ -359,6 +359,7 @@ struct freertos_sockaddr xAddress;
 		 * 'NoEvent' value. */
 		if ( xQueueReceive( xNetworkEventQueue, ( void * ) &xReceivedEvent, xNextIPSleep ) == pdFALSE ) 
 		{
+			//FreeRTOS_debug_printf( ( "prvIPTask xQueueReceive timeout\n" ) );
 			xReceivedEvent.eEventType = eNoEvent;
 		}
 
@@ -1160,6 +1161,7 @@ BaseType_t xReturn, xSendMessage;
 	{
 		/* Only allow eNetworkDownEvent events if the IP task is not ready
 		yet.  Not going to attempt to send the message so the send failed. */
+		FreeRTOS_debug_printf( ( "xSendEventStructToIPTask: eNetworkDownEvent\r\n" ) );
 		xReturn = pdFAIL;
 	}
 	else
@@ -1179,7 +1181,9 @@ BaseType_t xReturn, xSendMessage;
 				{
 					/* Not actually going to send the message but this is not a
 					failure as the message didn't need to be sent. */
+					FreeRTOS_debug_printf( ( "xSendEventStructToIPTask: Not actually going to send the message\r\n" ) );
 					xSendMessage = pdFALSE;
+					
 				}
 			}
 		}
@@ -1194,7 +1198,9 @@ BaseType_t xReturn, xSendMessage;
 				xTimeout = ( TickType_t ) 0;
 			}
 
+			FreeRTOS_debug_printf( ( "xSendEventStructToIPTask: xQueueSendToBack, event type = %i\r\n", pxEvent->eEventType ) );
 			xReturn = xQueueSendToBack( xNetworkEventQueue, pxEvent, xTimeout );
+			
 
 			if( xReturn == pdFAIL )
 			{
@@ -1207,6 +1213,7 @@ BaseType_t xReturn, xSendMessage;
 		{
 			/* It was not necessary to send the message to process the event so
 			even though the message was not sent the call was successful. */
+			FreeRTOS_debug_printf( ( "xSendEventStructToIPTask:  It was not necessary to send the message to process the event\r\n" ) );
 			xReturn = pdPASS;
 		}
 	}

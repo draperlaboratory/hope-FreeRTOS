@@ -844,6 +844,7 @@ FreeRTOS_Socket_t *pxSocket;
 				if( xSendEventStructToIPTask( &xStackTxEvent, xTicksToWait ) == pdPASS )
 				{
 					/* The packet was successfully sent to the IP task. */
+					printf("FreeRTOS_sendto The packet was successfully sent to the IP task\r\n");
 					lReturn = ( int32_t ) xTotalDataLength;
 					#if( ipconfigUSE_CALLBACKS == 1 )
 					{
@@ -862,6 +863,7 @@ FreeRTOS_Socket_t *pxSocket;
 					{
 						vReleaseNetworkBufferAndDescriptor( pxNetworkBuffer );
 					}
+					printf("FreeRTOS_sendto iptraceSTACK_TX_EVENT_LOST\r\n");
 					iptraceSTACK_TX_EVENT_LOST( ipSTACK_TX_EVENT );
 				}
 			}
@@ -871,11 +873,13 @@ FreeRTOS_Socket_t *pxSocket;
 				FREERTOS_ENOPKTS.  As it is, the function must return the
 				number of transmitted bytes, so the calling function knows
 				how	much data was actually sent. */
+				printf("FreeRTOS_sendto iptraceNO_BUFFER_FOR_SENDTO\r\n");
 				iptraceNO_BUFFER_FOR_SENDTO();
 			}
 		}
 		else
 		{
+			printf("FreeRTOS_sendto iptraceSENDTO_SOCKET_NOT_BOUND\r\n");
 			iptraceSENDTO_SOCKET_NOT_BOUND();
 		}
 	}

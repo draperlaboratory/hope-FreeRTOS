@@ -147,7 +147,7 @@ stack will revert to using the static IP address even when ipconfigUSE_DHCP is
 set to 1 if a valid configuration cannot be obtained from a DHCP server for any
 reason.  The static configuration used is that passed into the stack by the
 FreeRTOS_IPInit() function call. */
-#define ipconfigUSE_DHCP	0
+#define ipconfigUSE_DHCP	1
 
 /* When ipconfigUSE_DHCP is set to 1, DHCP requests will be sent out at
 increasing time intervals until either a reply is received from a DHCP server
@@ -265,7 +265,7 @@ perform the filtering instead (it is much less efficient for the stack to do it
 because the packet will already have been passed into the stack).  If the
 Ethernet driver does all the necessary filtering in hardware then software
 filtering can be removed by using a value other than 1 or 0. */
-#define ipconfigETHERNET_DRIVER_FILTERS_FRAME_TYPES	1
+#define ipconfigETHERNET_DRIVER_FILTERS_FRAME_TYPES	0
 
 // /* The windows simulator cannot really simulate MAC interrupts, and needs to
 // block occasionally to allow other tasks to run. */
@@ -315,7 +315,7 @@ http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/UDP_Echo_Clients.html */
 #define configECHO_SERVER_ADDR0	10
 #define configECHO_SERVER_ADDR1 88
 #define configECHO_SERVER_ADDR2 88
-#define configECHO_SERVER_ADDR3 4
+#define configECHO_SERVER_ADDR3 2
 
 /* Default MAC address configuration.  The demo creates a virtual network
 connection that uses this MAC address by accessing the raw Ethernet/WiFi data
@@ -361,8 +361,23 @@ ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
 /* The UDP port to which print messages are sent. */
 #define configPRINT_PORT	( 45000 )
 
+#define ipSTACK_TX_EVENT 42 // TODO: ???
 #define iptraceNETWORK_INTERFACE_TRANSMIT() FreeRTOS_debug_printf( ("iptraceNETWORK_INTERFACE_TRANSMIT\r\n"));
 #define iptraceETHERNET_RX_EVENT_LOST()     FreeRTOS_debug_printf( ("iptraceETHERNET_RX_EVENT_LOST\r\n"));
-#define iptraceNETWORK_INTERFACE_RECEIVE()    FreeRTOS_debug_printf( ("iptraceNETWORK_INTERFACE_RECEIVE\r\n"));
+#define iptraceNETWORK_INTERFACE_RECEIVE()  FreeRTOS_debug_printf( ("iptraceNETWORK_INTERFACE_RECEIVE\r\n"));
+#define iptraceNO_BUFFER_FOR_SENDTO() 		FreeRTOS_debug_printf( ("iptraceNO_BUFFER_FOR_SENDTO\r\n"));
+#define iptraceSENDTO_SOCKET_NOT_BOUND() 	FreeRTOS_debug_printf( ("iptraceSENDTO_SOCKET_NOT_BOUND\r\n"));
+#define iptraceSENDTO_DATA_TOO_LONG() 		FreeRTOS_debug_printf( ("iptraceSENDTO_DATA_TOO_LONG\r\n"));
+#define iptraceSTACK_TX_EVENT_LOST(_X)		FreeRTOS_debug_printf( ("iptraceSTACK_TX_EVENT_LOST: %u\r\n",_X));
+#define iptraceIP_TASK_STARTING() 			FreeRTOS_debug_printf( ("iptraceIP_TASK_STARTING\r\n"));
+#define ipconfigWATCHDOG_TIMER()			FreeRTOS_debug_printf( ("ipconfigWATCHDOG_TIMER\r\n"));
+#define iptraceNETWORK_EVENT_RECEIVED(_X)	FreeRTOS_debug_printf( ("iptraceNETWORK_EVENT_RECEIVED: %i\r\n",_X));
+#define iptraceSENDING_UDP_PACKET(_X)		FreeRTOS_debug_printf( ("iptraceSENDING_UDP_PACKET: addrs = %x\r\n",_X));
+#define iptraceFAILED_TO_OBTAIN_NETWORK_BUFFER() FreeRTOS_debug_printf( ("iptraceFAILED_TO_OBTAIN_NETWORK_BUFFER\r\n"));
+#define iptraceNETWORK_BUFFER_OBTAINED(_BUF) FreeRTOS_debug_printf( ("iptraceNETWORK_BUFFER_OBTAINED: %p (%p)\r\n", _BUF, _BUF->pucEthernetBuffer) );
+#define iptraceNETWORK_BUFFER_RELEASED(_BUF) FreeRTOS_debug_printf( ("iptraceNETWORK_BUFFER_RELEASED: %p (%p)\r\n", _BUF, _BUF->pucEthernetBuffer) );
+
+#define ipconfigCHECK_IP_QUEUE_SPACE 1
+#define ipconfigTCP_IP_SANITY 1
 
 #endif /* FREERTOS_IP_CONFIG_H */

@@ -67,7 +67,7 @@ void vStartSimpleUDPClientServerTasks( uint16_t usStackSize, uint32_t ulPort, UB
 {
 	/* Create the client and server tasks that do use the zero copy interface. */
 	xTaskCreate( prvSimpleZeroCopyUDPClientTask, "SimpZCpyClnt", usStackSize, ( void * ) ( ulPort + 1 ), uxPriority, NULL );
-	xTaskCreate( prvSimpleZeroCopyServerTask, "SimpZCpySrv", usStackSize, ( void * ) ( ulPort + 1 ), uxPriority + 1, NULL );
+	//xTaskCreate( prvSimpleZeroCopyServerTask, "SimpZCpySrv", usStackSize, ( void * ) ( ulPort + 1 ), uxPriority + 1, NULL );
 }
 /*-----------------------------------------------------------*/
 
@@ -103,6 +103,7 @@ const size_t xStringLength = strlen( pcStringToSend ) + 15;
 
 	for( ;; )
 	{
+		FreeRTOS_netstat();
 		/* Create the socket. */
 		xClientSocket = FreeRTOS_socket( FREERTOS_AF_INET, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP );
 		configASSERT( xClientSocket != FREERTOS_INVALID_SOCKET );
@@ -111,8 +112,11 @@ const size_t xStringLength = strlen( pcStringToSend ) + 15;
 		the server, and to break out of the do while loop below. */
 		ulCount = 0UL;
 
+		FreeRTOS_connect( xClientSocket, &xDestinationAddress, sizeof( xDestinationAddress ) );
+
 		do
 		{
+			printf("prvSimpleZeroCopyUDPClientTask: waiting for a buffer, ulCount = %u\r\n", ulCount);
 			/* This task is going to send using the zero copy interface.  The
 			data being sent is therefore written directly into a buffer that is
 			passed into, rather than copied into, the FreeRTOS_sendto()
@@ -126,6 +130,7 @@ const size_t xStringLength = strlen( pcStringToSend ) + 15;
 			{
 			} while( ( pucUDPPayloadBuffer = ( uint8_t * ) FreeRTOS_GetUDPPayloadBuffer( xStringLength, portMAX_DELAY ) ) == NULL );
 
+			printf("prvSimpleZeroCopyUDPClientTask: got a buffer at %p\r\n", pucUDPPayloadBuffer);
 			/* A buffer was successfully obtained.  Create the string that is
 			sent to the server.  First the string is filled with zeros as this will
 			effectively be the null terminator when the string is received at the other
@@ -143,6 +148,7 @@ const size_t xStringLength = strlen( pcStringToSend ) + 15;
 										FREERTOS_ZERO_COPY, 			/* ulFlags with the FREERTOS_ZERO_COPY bit set. */
 										&xDestinationAddress, 			/* Where the data is being sent. */
 										sizeof( xDestinationAddress ) );
+			printf("prvSimpleZeroCopyUDPClientTask: FreeRTOS_sendto returned %u\r\n", lReturned);
 
 			if( lReturned == 0 )
 			{
@@ -151,6 +157,7 @@ const size_t xStringLength = strlen( pcStringToSend ) + 15;
 				is not lost it must either be used again, or, as in this case,
 				returned to the IP stack using FreeRTOS_ReleaseUDPPayloadBuffer().
 				pucUDPPayloadBuffer can be safely re-used after this call. */
+				printf("prvSimpleZeroCopyUDPClientTask: lReturned == 0, returing pucUDPPayloadBuffer\r\n");
 				FreeRTOS_ReleaseUDPPayloadBuffer( ( void * ) pucUDPPayloadBuffer );
 			}
 			else
@@ -159,17 +166,20 @@ const size_t xStringLength = strlen( pcStringToSend ) + 15;
 				buffer pointed to by pucUDPPayloadBuffer, and the IP stack will
 				return the buffer once it has been sent.  pucUDPPayloadBuffer can
 				be safely re-used. */
+				printf("prvSimpleZeroCopyUDPClientTask: all well in the universe\r\n");
 			}
 
 			ulCount++;
+			vTaskDelay(pdMS_TO_TICKS(1000));
 
 		} while( ( lReturned != FREERTOS_SOCKET_ERROR ) && ( ulCount < ulLoopsPerSocket ) );
-
+		printf("prvSimpleZeroCopyUDPClientTask: closing and returning\r\n");
 		FreeRTOS_closesocket( xClientSocket );
 
 		/* A short delay to prevent the messages scrolling off the screen too
 		quickly. */
 		vTaskDelay( x150ms );
+		vTaskDelay(pdMS_TO_TICKS(500));
 	}
 }
 /*-----------------------------------------------------------*/
@@ -216,10 +226,12 @@ Socket_t xListeningSocket;
 		/* Print the received characters. */
 		if( lBytes > 0 )
 		{
-			printf(">>>>>> received %s\r\n",pucUDPPayloadBuffer);
+			printf("prvSimpleZeroCopyServerTask: received %lu bytes, expected %u, message is = %s\r\n",lBytes,
+				strlen( ( const char * ) pucUDPPayloadBuffer ) + 1,
+				pucUDPPayloadBuffer);
 			/* It is expected to receive one more byte than the string length as
 			the NULL terminator is also transmitted. */
-			configASSERT( lBytes == ( ( BaseType_t ) strlen( ( const char * ) pucUDPPayloadBuffer ) + 1 ) );
+			//configASSERT( lBytes == ( ( BaseType_t ) strlen( ( const char * ) pucUDPPayloadBuffer ) + 1 ) );
 		}
 
 		if( lBytes >= 0 )
