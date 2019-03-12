@@ -153,6 +153,9 @@ int AxiEtherentConfigureTIPhy(XAxiEthernet *AxiEthernetInstancePtr, u32 PhyAddr)
 	return XST_SUCCESS;
 }
 
+/**
+ *  Handles TX interrupts and frees BDs
+ **/
 void DmaFreeBDTask( void *pvParameters ) {
 	(void) pvParameters;
 	uint32_t bd_idx = 0;
@@ -181,7 +184,7 @@ void DmaFreeBDTask( void *pvParameters ) {
 		if( ucPayLoad != NULL )
 		{
 			pxNetworkBuffer = pxPacketBuffer_to_NetworkBuffer( ucPayLoad );
-			FreeRTOS_debug_printf( ("DmaFreeBDTask: pxNetworkBuffer = %lx\r\n", pxNetworkBuffer) );
+			FreeRTOS_debug_printf( ("DmaFreeBDTask: pxNetworkBuffer = %p\r\n", pxNetworkBuffer) );
 			if( pxNetworkBuffer != NULL )
 			{
 				FreeRTOS_debug_printf( ("DmaFreeBDTask: releasing pxNetworkBuffer\r\n") );
@@ -194,7 +197,9 @@ void DmaFreeBDTask( void *pvParameters ) {
 }
 
 
-
+/**
+ * Handle RX data
+ */
 void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 	(void) pvParameters;
 	uint32_t bd_idx = 0;
@@ -249,14 +254,14 @@ void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 		else {
 			pxDMARxDescriptor.xDataLength =
 			(size_t) (XAxiDma_BdRead(BdPtr,XAXIDMA_BD_USR4_OFFSET)) & 0x0000FFFF;
-			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: eceived %u bytes\r\n", pxDMARxDescriptor.xDataLength) );
+			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: received %u bytes\r\n", pxDMARxDescriptor.xDataLength) );
 		}
 
 		/* Allocate a new network buffer descriptor that references an Ethernet
 		frame large enough to hold the maximum network packet size (as defined
 		in the FreeRTOSIPConfig.h header file). */
     	pxDescriptor = pxGetNetworkBufferWithDescriptor( ipTOTAL_ETHERNET_FRAME_SIZE, 0 );
-		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDescriptor = %p\r\n", &pxDescriptor) );
+		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDescriptor = %p\r\n", pxDescriptor) );
 
 		/* Copy the pointer to the newly allocated Ethernet frame to a temporary
 		variable. */

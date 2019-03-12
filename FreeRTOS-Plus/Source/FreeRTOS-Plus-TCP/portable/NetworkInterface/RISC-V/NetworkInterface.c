@@ -111,10 +111,12 @@ BaseType_t xNetworkInterfaceOutput( NetworkBufferDescriptor_t * const pxNetworkB
 	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(&AxiDmaInstance);
 	XAxiDma_Bd * BdPtr;
 
-	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: BdPtr = %lx\r\n", (u32)BdPtr));
-
 	/* allocate next BD from the BD ring */
 	configASSERT( XAxiDma_BdRingAlloc(TxRingPtr, 1, &BdPtr) == 0);
+	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: BdPtr = %lx\r\n", (u32)BdPtr));
+	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: pxNetworkBuffer = %p\r\n", pxNetworkBuffer));
+	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: pxNetworkBuffer->pucEthernetBuffer = %lx\r\n", (u32)pxNetworkBuffer->pucEthernetBuffer));
+	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: pxNetworkBuffer->xDataLength = %lu\r\n", pxNetworkBuffer->xDataLength));
 
 	/* configure BD */
 	XAxiDma_BdSetBufAddr(BdPtr, (u32)pxNetworkBuffer->pucEthernetBuffer);
@@ -147,6 +149,7 @@ void vNetworkInterfaceAllocateRAMToBuffers( NetworkBufferDescriptor_t pxNetworkB
         beginning of the allocated buffer. */
         pxNetworkBuffers[ x ].pucEthernetBuffer = &( ucBuffers[ x ][ ipBUFFER_PADDING ] );
 
+		FreeRTOS_debug_printf( ("vNetworkInterfaceAllocateRAMToBuffers: pxNetworkBuffers[ %lu ] = %p\r\n", x, &pxNetworkBuffers[ x ]) );
 		FreeRTOS_debug_printf( ("vNetworkInterfaceAllocateRAMToBuffers: pxNetworkBuffers[ %lu ].pucEthernetBuffer = %lx\r\n", x, (uint32_t)pxNetworkBuffers[ x ].pucEthernetBuffer));
 
         /* The following line is also required, but will not be required in
