@@ -178,30 +178,40 @@ out_elf: directories $(OUT_ELF)
 $(APP_BUILD_DIR)/%.o : %.c
 	@echo "[APP Objects] : $@ ______________________________________________________________"
 	@echo "Building: $<"
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(APP_BUILD_DIR)
 	$(GCC) $(CFLAGS) $(APP_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
 $(APP_BUILD_DIR)/%.o : %.S
 	@echo "[APP Objects] : $@ ______________________________________________________________"
 	@echo "Building: $<"
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(APP_BUILD_DIR)
 	$(GCC) $(ASMFLAGS) $(APP_INCLUDES) $(FREERTOS_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
 $(FREERTOS_BUILD_DIR)/%.o : %.c
 	@echo "[FreeRTOS Objects] : $@ __________________________________________________________"
 	@echo "Building: $<"
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(FREERTOS_BUILD_DIR)
 	$(GCC) $(CFLAGS) $(FREERTOS_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
 $(FREERTOS_BUILD_DIR)/%.o : %.S
 	@echo "[FreeRTOS Objects] : $@ __________________________________________________________"
 	@echo "Building: $<"
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(FREERTOS_BUILD_DIR)
 	$(GCC) $(ASMFLAGS) $(FREERTOS_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
 $(TEST_BUILD_DIR)/%.o : %.c
 	@echo "[Test Objects] : $@ ______________________________________________________________"
 	@echo "Building: $<"
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(TEST_BUILD_DIR)
 	$(GCC) $(CFLAGS) $(TEST_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
