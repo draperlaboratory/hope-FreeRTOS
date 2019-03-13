@@ -10,6 +10,10 @@ include FreeRTOS.mk
 -include $(wildcard $(OUTDIR)/*.d)
 # Platform spcific settings for this application _____________________________________________
 
+CFLAGS := $(ISP_CFLAGS)
+ASMFLAGS := $(ISP_ASMFLAGS)
+LDFLAGS := $(ISP_LDFLAGS)
+
 ARCH = RISC-V
 ARCH_PORTABLE_INC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/
 ARCH_PORTABLE_SRC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/port.c
@@ -228,7 +232,7 @@ clean:
 	rm -rv $(BUILD_DIR)
 
 sim-qemu: $(OUT_ELF)
-	qemu-system-riscv32 -kernel $^  -S -s -machine sifive_e
+	qemu-system-riscv32 -kernel $^  -S -s -machine sifive_e -nographic
 
 gdb: $(OUT_ELF)
 	$(GDB) -iex "set mem inaccessible-by-default off" -iex "set arch riscv:rv32" -iex "set riscv use_compressed_breakpoint off"
