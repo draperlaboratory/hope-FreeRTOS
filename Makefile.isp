@@ -3,24 +3,21 @@
 .PHONY: clean
 
 ISP_PREFIX ?= /opt/isp/
-SOURCE_DIR := FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio
-BUILD_DIR := $(SOURCE_DIR)/build
+
+RV_DEMO_DIR := FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio
+COMMON_DEMO_DIR := FreeRTOS/Demo/Common
+SOURCE_DIR := FreeRTOS/Source
+
 INSTALL_DIR := $(ISP_PREFIX)/FreeRTOS
-FREERTOS_LIB := libfreertos.a
+DEMO_INSTALL_DIR := $(INSTALL_DIR)/Demo
 
-INCLUDE_DIR := FreeRTOS/Source/include
+all:
 
-all: $(BUILD_DIR)/$(FREERTOS_LIB)
-
-install: $(INSTALL_DIR)/$(FREERTOS_LIB)
-	cp -rf $(INCLUDE_DIR) $(INSTALL_DIR)
-
-$(INSTALL_DIR)/$(FREERTOS_LIB):
+install:
 	mkdir -p $(INSTALL_DIR)
-	cp $(BUILD_DIR)/$(FREERTOS_LIB) $(INSTALL_DIR)/$(FREERTOS_LIB)
-
-$(BUILD_DIR)/$(FREERTOS_LIB):
-	$(MAKE) -C FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio build/$(FREERTOS_LIB)
+	mkdir -p $(DEMO_INSTALL_DIR)
+	cp -rf $(RV_DEMO_DIR) $(COMMON_DEMO_DIR) $(DEMO_INSTALL_DIR)
+	cp -rf $(SOURCE_DIR) $(INSTALL_DIR)
 
 clean:
 	$(MAKE) -C FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio clean
