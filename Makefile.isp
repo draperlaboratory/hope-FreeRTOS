@@ -4,10 +4,20 @@
 
 ISP_PREFIX ?= /opt/isp/
 
+RV_DEMO_DIR := FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio
+COMMON_DEMO_DIR := FreeRTOS/Demo/Common
+SOURCE_DIR := FreeRTOS/Source
+
+INSTALL_DIR := $(ISP_PREFIX)/FreeRTOS
+DEMO_INSTALL_DIR := $(INSTALL_DIR)/Demo
+
 all:
-	$(MAKE) -C FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio
 
 install:
+	mkdir -p $(INSTALL_DIR)
+	mkdir -p $(DEMO_INSTALL_DIR)
+	cp -rf $(RV_DEMO_DIR) $(COMMON_DEMO_DIR) $(DEMO_INSTALL_DIR)
+	cp -rf $(SOURCE_DIR) $(INSTALL_DIR)
 
 clean:
 	$(MAKE) -C FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio clean
