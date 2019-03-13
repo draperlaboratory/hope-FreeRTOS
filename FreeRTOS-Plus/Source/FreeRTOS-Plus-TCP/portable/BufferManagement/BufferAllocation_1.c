@@ -230,7 +230,6 @@ UBaseType_t uxCount;
 			ipconfigBUFFER_ALLOC_LOCK();
 			{
 				pxReturn = ( NetworkBufferDescriptor_t * ) listGET_OWNER_OF_HEAD_ENTRY( &xFreeBuffersList );
-				FreeRTOS_debug_printf( ("pxGetNetworkBufferWithDescriptor: pxReturn=%p\r\n", pxReturn) );
 				if( ( bIsValidNetworkDescriptor( pxReturn ) != pdFALSE_UNSIGNED ) &&
 					listIS_CONTAINED_WITHIN( &xFreeBuffersList, &( pxReturn->xBufferListItem ) ) )
 				{
@@ -250,7 +249,6 @@ UBaseType_t uxCount;
 				/* _HT_ The function shall not be called from an ISR. Comment
 				was indeed misleading. Hopefully clear now?
 				So the printf()is OK here. */
-				FreeRTOS_debug_printf( ( "pxGetNetworkBufferWithDescriptor: INVALID BUFFER: %p (valid %lu)\n",
 					pxReturn, bIsValidNetworkDescriptor( pxReturn ) ) );
 				pxReturn = NULL;
 			}
@@ -293,7 +291,6 @@ UBaseType_t uxCount;
 		}
 		else
 		{
-			FreeRTOS_debug_printf( ("pxGetNetworkBufferWithDescriptor: failed to obtain network buffer\r\n") );
 			iptraceFAILED_TO_OBTAIN_NETWORK_BUFFER();
 		}
 	}
@@ -365,7 +362,6 @@ BaseType_t xListItemAlreadyInFreeList;
 
 	if( bIsValidNetworkDescriptor( pxNetworkBuffer ) == pdFALSE_UNSIGNED )
 	{
-		FreeRTOS_debug_printf( ( "vReleaseNetworkBufferAndDescriptor: Invalid buffer %p\n", pxNetworkBuffer ) );
 		return ;
 	}
 	/* Ensure the buffer is returned to the list of free buffers before the
@@ -385,7 +381,6 @@ BaseType_t xListItemAlreadyInFreeList;
 
 	if( xListItemAlreadyInFreeList )
 	{
-		FreeRTOS_debug_printf( ( "vReleaseNetworkBufferAndDescriptor: %p ALREADY RELEASED (now %lu)\n",
 			pxNetworkBuffer, uxGetNumberOfFreeNetworkBuffers( ) ) );
 	}
 	if( xListItemAlreadyInFreeList == pdFALSE )

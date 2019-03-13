@@ -266,6 +266,7 @@ size_t uxCount;
 				buffer storage area, then move the buffer pointer on past the
 				stored pointer so the pointer value is not overwritten by the
 				application when the buffer is used. */
+				#pragma GCC diagnostic ignored "-Wcast-align"
 				*( ( NetworkBufferDescriptor_t ** ) ( pxReturn->pucEthernetBuffer ) ) = pxReturn;
 				pxReturn->pucEthernetBuffer += ipBUFFER_PADDING;
 

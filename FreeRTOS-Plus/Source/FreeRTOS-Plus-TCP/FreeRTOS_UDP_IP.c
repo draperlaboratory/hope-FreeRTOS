@@ -81,11 +81,9 @@ uint32_t ulIPAddress = pxNetworkBuffer->ulIPAddress;
 
 	/* Map the UDP packet onto the start of the frame. */
 	pxUDPPacket = ( UDPPacket_t * ) pxNetworkBuffer->pucEthernetBuffer;
-	FreeRTOS_debug_printf( ( "vProcessGeneratedUDPPacket: pxUDPPacket = %p\r\n",pxUDPPacket) );
 
 	/* Determine the ARP cache status for the requested IP address. */
 	eReturned = eARPGetCacheEntry( &( ulIPAddress ), &( pxUDPPacket->xEthernetHeader.xDestinationAddress ) );
-	FreeRTOS_debug_printf( ( "vProcessGeneratedUDPPacket: eReturned = %u\r\n",eReturned) );
 	if( eReturned != eCantSendPacket )
 	{
 		if( eReturned == eARPCacheHit )
@@ -177,7 +175,6 @@ uint32_t ulIPAddress = pxNetworkBuffer->ulIPAddress;
 
 				if( ( ucSocketOptions & ( uint8_t ) FREERTOS_SO_UDPCKSUM_OUT ) != 0u )
 				{
-					FreeRTOS_debug_printf( ( "vProcessGeneratedUDPPacket: usGenerateProtocolChecksum\r\n") );
 					usGenerateProtocolChecksum( (uint8_t*)pxUDPPacket, pxNetworkBuffer->xDataLength, pdTRUE );
 				}
 				else
@@ -189,7 +186,6 @@ uint32_t ulIPAddress = pxNetworkBuffer->ulIPAddress;
 		}
 		else if( eReturned == eARPCacheMiss )
 		{
-			FreeRTOS_debug_printf( ( "vProcessGeneratedUDPPacket: eARPCacheMiss\r\n") );
 			/* Add an entry to the ARP table with a null hardware address.
 			This allows the ARP timer to know that an ARP reply is
 			outstanding, and perform retransmissions if necessary. */
@@ -198,7 +194,6 @@ uint32_t ulIPAddress = pxNetworkBuffer->ulIPAddress;
 			/* Generate an ARP for the required IP address. */
 			iptracePACKET_DROPPED_TO_GENERATE_ARP( pxNetworkBuffer->ulIPAddress );
 			pxNetworkBuffer->ulIPAddress = ulIPAddress;
-			FreeRTOS_debug_printf( ( "vProcessGeneratedUDPPacket: vARPGenerateRequestPacket with ulIPAddress = %u\r\n", ulIPAddress) );
 			vARPGenerateRequestPacket( pxNetworkBuffer );
 		}
 		else
@@ -228,14 +223,12 @@ uint32_t ulIPAddress = pxNetworkBuffer->ulIPAddress;
 			}
 		}
 		#endif
-		FreeRTOS_debug_printf( ( "vProcessGeneratedUDPPacket: calling xNetworkInterfaceOutput with pxNetworkBuffer = %p,datalen = %u\r\n",pxNetworkBuffer, pxNetworkBuffer->xDataLength) );
 		xNetworkInterfaceOutput( pxNetworkBuffer, pdTRUE );
 	}
 	else
 	{
 		/* The packet can't be sent (DHCP not completed?).  Just drop the
 		packet. */
-		FreeRTOS_debug_printf( ( "vProcessGeneratedUDPPacket: the packet can't be sent\r\n") );
 		vReleaseNetworkBufferAndDescriptor( pxNetworkBuffer );
 	}
 }

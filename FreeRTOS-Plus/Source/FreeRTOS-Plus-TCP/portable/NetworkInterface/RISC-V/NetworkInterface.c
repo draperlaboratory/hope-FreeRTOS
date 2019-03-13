@@ -45,32 +45,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* Board specific includes */
 #include "riscv_hal_eth.h"
 
-
-/* xTXDescriptorSemaphore is a counting semaphore with
-a maximum count of ETH_TXBUFNB, which is the number of
-DMA TX descriptors. */
-static SemaphoreHandle_t xTXDescriptorSemaphore = NULL;
-
-/* First statically allocate the buffers, ensuring an additional ipBUFFER_PADDING
-bytes are allocated to each buffer.  This example makes no effort to align
-the start of the buffers, but most hardware will have an alignment requirement.
-If an alignment is required then the size of each buffer must be adjusted to
-ensure it also ends on an alignment boundary.  Below shows an example assuming
-the buffers must also end on an 8-byte boundary. */
-#define BUFFER_SIZE ( ipTOTAL_ETHERNET_FRAME_SIZE + ipBUFFER_PADDING )
-#define BUFFER_SIZE_ROUNDED_UP ( ( BUFFER_SIZE + 7 ) & ~0x07UL )
-static uint8_t ucBuffers[ ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS ][ BUFFER_SIZE_ROUNDED_UP ] __attribute__ ((section(".uncached"))) = {0};
-
 BaseType_t xNetworkInterfaceInitialise( void )
 {
 	FreeRTOS_debug_printf( ("xNetworkInterfaceInitialise\r\n") );
-
-	/* Init counting semaphore*/
-	if( xTXDescriptorSemaphore == NULL )
-	{
-		xTXDescriptorSemaphore = xSemaphoreCreateCounting( ( UBaseType_t ) TXBD_CNT, ( UBaseType_t ) TXBD_CNT );
-		configASSERT( xTXDescriptorSemaphore );
-	}
 
 	// Init DMA
 	configASSERT(DmaSetup(&AxiDmaInstance, XPAR_AXIDMA_0_DEVICE_ID) == 0);
@@ -84,7 +61,6 @@ BaseType_t xNetworkInterfaceInitialise( void )
 	
 	uint16_t Speed;
 	configASSERT( XAxiEthernet_GetSgmiiStatus(&AxiEthernetInstance, &Speed) == 0);
-    FreeRTOS_debug_printf( ("xNetworkInterfaceInitialise: XAxiEthernet_GetSgmiiStatus returned %u\r\n",Speed) );
 
 	/*
 	 * Start the Axi Ethernet and enable its ERROR interrupts
@@ -92,39 +68,25 @@ BaseType_t xNetworkInterfaceInitialise( void )
 	XAxiEthernet_Start(&AxiEthernetInstance);
 	XAxiEthernet_IntEnable(&AxiEthernetInstance, XAE_INT_RECV_ERROR_MASK);
 
-	FreeRTOS_debug_printf( ("xNetworkInterfaceInitialise: Going to sleep for %u seconds\r\n", AXIETHERNET_PHY_DELAY_SEC) );
-	vTaskDelay(pdMS_TO_TICKS(AXIETHERNET_PHY_DELAY_SEC*1000)); // sleep for 5 s
-	FreeRTOS_debug_printf( ("xNetworkInterfaceInitialise: Woken up\r\n") );
-
+	vTaskDelay(pdMS_TO_TICKS(AXIETHERNET_PHY_DELAY_SEC*1000));
 	return pdPASS;
 }
 /*-----------------------------------------------------------*/
 
 BaseType_t xNetworkInterfaceOutput( NetworkBufferDescriptor_t * const pxNetworkBuffer, BaseType_t xReleaseAfterSend )
 {
-	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: FramesTX = %i\r\n", FramesTx) );
-
-	/* unused, we always release after send */
-	//(void) xReleaseAfterSend;
-	//configASSERT(xReleaseAfterSend != pdFALSE); // Seems to fails with TCP sockets...
-	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: release after send =  %u\r\n", xReleaseAfterSend));
-
 	/* get BD ring descriptor */
 	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(&AxiDmaInstance);
 	XAxiDma_Bd * BdPtr;
+
+	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput\r\n") );
 
 	/* allocate next BD from the BD ring */
 	taskENTER_CRITICAL();
 	configASSERT( XAxiDma_BdRingAlloc(TxRingPtr, 1, &BdPtr) == 0);
 	taskEXIT_CRITICAL();
 
-	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: BdPtr = %lx\r\n", (u32)BdPtr));
-	//FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: pxNetworkBuffer = %p\r\n", pxNetworkBuffer));
-	//FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: pxNetworkBuffer->pucEthernetBuffer = %lx\r\n", (u32)pxNetworkBuffer->pucEthernetBuffer));
-	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: pxNetworkBuffer->xDataLength = %lu\r\n", pxNetworkBuffer->xDataLength));
-
 	/* configure BD */
-	//XAxiDma_BdSetBufAddr(BdPtr, (u32)pxNetworkBuffer->pucEthernetBuffer);
 	uint8_t* xTxBuffer = AxiEthernetGetTxBuffer();
 	memcpy(xTxBuffer, pxNetworkBuffer->pucEthernetBuffer, pxNetworkBuffer->xDataLength);
 	XAxiDma_BdSetBufAddr(BdPtr,(u32)xTxBuffer);
@@ -156,40 +118,11 @@ BaseType_t xNetworkInterfaceOutput( NetworkBufferDescriptor_t * const pxNetworkB
 }
 /*-----------------------------------------------------------*/
 
-/* Next provide the vNetworkInterfaceAllocateRAMToBuffers() function, which
-simply fills in the pucEthernetBuffer member of each descriptor. */
-void vNetworkInterfaceAllocateRAMToBuffers( NetworkBufferDescriptor_t pxNetworkBuffers[ ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS ] )
-{
-	FreeRTOS_debug_printf( ("vNetworkInterfaceAllocateRAMToBuffers\r\n") );
-	BaseType_t x;
-    for( x = 0; x < ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS; x++ )
-    {
-        /* pucEthernetBuffer is set to point ipBUFFER_PADDING bytes in from the
-        beginning of the allocated buffer. */
-        pxNetworkBuffers[ x ].pucEthernetBuffer = &( ucBuffers[ x ][ ipBUFFER_PADDING ] );
-
-		FreeRTOS_debug_printf( ("vNetworkInterfaceAllocateRAMToBuffers: pxNetworkBuffers[ %lu ] = %p\r\n", x, &pxNetworkBuffers[ x ]) );
-		FreeRTOS_debug_printf( ("vNetworkInterfaceAllocateRAMToBuffers: pxNetworkBuffers[ %lu ].pucEthernetBuffer = %lx\r\n", x, (uint32_t)pxNetworkBuffers[ x ].pucEthernetBuffer));
-
-        /* The following line is also required, but will not be required in
-        future versions. */
-		// TODO: if this works, add "#pragma GCC diagnostic ignored "-Wcast-align" to supress the warning
-        *( ( uint32_t * ) &ucBuffers[ x ][ 0 ] ) = ( uint32_t ) &( pxNetworkBuffers[ x ] );
-
-		FreeRTOS_debug_printf( ("vNetworkInterfaceAllocateRAMToBuffers: &ucBuffers[ %lu ][ 0 ] = %lx\r\n", x, (uint32_t)&ucBuffers[ x ][ 0 ]));
-	}
-}
-/*-----------------------------------------------------------*/
-
 BaseType_t xGetPhyLinkStatus( void )
 {
-	FreeRTOS_debug_printf( ("xGetPhyLinkStatus\r\n") );
-
 	if (PhyLinkStatus(&AxiEthernetInstance)) {
-		FreeRTOS_debug_printf( ("xGetPhyLinkStatus: Link is UP\r\n") );
 		return pdPASS;
 	} else {
-		FreeRTOS_debug_printf( ("xGetPhyLinkStatus: Link is DOWN\r\n") );
 		return pdFAIL;
 	}
 }

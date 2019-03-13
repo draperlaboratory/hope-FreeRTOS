@@ -13,8 +13,8 @@ extern XAxiDma AxiDmaInstance;
 extern volatile int FramesTx;
 extern volatile int FramesRx;
 
-#define RXBD_CNT		10//ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS	/* Number of RxBDs to use */
-#define TXBD_CNT		10//ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS	/* Number of TxBDs to use */
+#define RXBD_CNT		10	/* Number of RxBDs to use */
+#define TXBD_CNT		10	/* Number of TxBDs to use */
 #define BD_ALIGNMENT		XAXIDMA_BD_MINIMUM_ALIGNMENT/* Byte alignment of
 							     * BDs
 							     */
@@ -27,7 +27,7 @@ extern volatile int FramesRx;
 						 * PHY to reset.
 						 */
 
-uint8_t* AxiEthernetGetTxBuffer();
+uint8_t* AxiEthernetGetTxBuffer(void);
 
 /* Interrupt handlers */
 void TxIntrHandler(XAxiDma_BdRing *TxRingPtr);

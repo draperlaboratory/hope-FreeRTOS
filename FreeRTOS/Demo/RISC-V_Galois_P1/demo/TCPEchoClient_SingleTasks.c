@@ -51,6 +51,7 @@
 #include "FreeRTOS_IP.h"
 #include "FreeRTOS_Sockets.h"
 
+/* Works great with `ncat -l 2000 --keep-open --exec "/bin/cat"` */
 #include "TCPEchoClient_SingleTasks.h"
 
 /* Exclude the whole file if FreeRTOSIPConfig.h is configured to use UDP only. */
@@ -112,7 +113,7 @@ BaseType_t x;
 	/* Create the echo client tasks. */
 	for( x = 0; x < echoNUM_ECHO_CLIENTS; x++ )
 	{
-		FreeRTOS_debug_printf( ("Creating Echo0 instance %u\r\n", x));
+		FreeRTOS_debug_printf( ("Creating Echo0 instance %lu\r\n", x));
 		xTaskCreate( 	prvEchoClientTask,	/* The function that implements the task. */
 						"Echo0",			/* Just a text name for the task to aid debugging. */
 						usTaskStackSize,	/* The stack size is defined in FreeRTOSIPConfig.h. */
@@ -159,12 +160,12 @@ TickType_t xTimeOnEntering;
 															configECHO_SERVER_ADDR1,
 															configECHO_SERVER_ADDR2,
 															configECHO_SERVER_ADDR3 );
-	FreeRTOS_debug_printf( ("prvEchoClientTask [%i] created\r\n", xInstance));
+	FreeRTOS_debug_printf( ("prvEchoClientTask [%li] created\r\n", xInstance));
 
 	for( ;; )
 	{
 		/* Create a TCP socket. */
-		FreeRTOS_debug_printf( ("prvEchoClientTask [%i]: creating a socket\r\n", xInstance));	
+		FreeRTOS_debug_printf( ("prvEchoClientTask [%li]: creating a socket\r\n", xInstance));	
 		xSocket = FreeRTOS_socket( FREERTOS_AF_INET, FREERTOS_SOCK_STREAM, FREERTOS_IPPROTO_TCP );
 		configASSERT( xSocket != FREERTOS_INVALID_SOCKET );
 
@@ -177,26 +178,26 @@ TickType_t xTimeOnEntering;
 		FreeRTOS_setsockopt( xSocket, 0, FREERTOS_SO_WIN_PROPERTIES, ( void * ) &xWinProps,	sizeof( xWinProps ) );
 
 		/* Connect to the echo server. */
-		FreeRTOS_debug_printf( ("prvEchoClientTask [%i]: connecting a socket\r\n", xInstance));	
+		FreeRTOS_debug_printf( ("prvEchoClientTask [%li]: connecting a socket\r\n", xInstance));	
 		if( FreeRTOS_connect( xSocket, &xEchoServerAddress, sizeof( xEchoServerAddress ) ) == 0 )
 		{
 			FreeRTOS_netstat();
 			ulConnections[ xInstance ]++;
-			FreeRTOS_debug_printf( ("prvEchoClientTask [%i]: socket connected, %u instanced\r\n", xInstance, ulConnections[ xInstance ]));	
+			FreeRTOS_debug_printf( ("prvEchoClientTask [%li]: socket connected, %lu instanced\r\n", xInstance, ulConnections[ xInstance ]));	
 
 			/* Send a number of echo requests. */
 			for( lLoopCount = 0; lLoopCount < lMaxLoopCount; lLoopCount++ )
 			{
-				FreeRTOS_debug_printf( ("prvEchoClientTask [%i]: creating request %u instanced\r\n", xInstance, lLoopCount));	
+				FreeRTOS_debug_printf( ("prvEchoClientTask [%li]: creating request %lu instanced\r\n", xInstance, lLoopCount));	
 
 				/* Create the string that is sent to the echo server. */
 				lStringLength = prvCreateTxData( pcTransmittedString, echoBUFFER_SIZES );
 
 				/* Add in some unique text at the front of the string. */
-				sprintf( pcTransmittedString, "TxRx message number %u", ulTxCount );
+				sprintf( pcTransmittedString, "TxRx message number %lu", ulTxCount );
 				ulTxCount++;
 
-				FreeRTOS_debug_printf( ("prvEchoClientTask [%i]: sending %u bytes\r\n", xInstance, lStringLength));
+				FreeRTOS_debug_printf( ("prvEchoClientTask [%li]: sending %lu bytes\r\n", xInstance, lStringLength));
 
 				/* Send the string to the socket. */
 				lTransmitted = FreeRTOS_send(	xSocket,						/* The socket being sent to. */
@@ -207,7 +208,7 @@ TickType_t xTimeOnEntering;
 				if( lTransmitted < 0 )
 				{
 					/* Error? */
-					FreeRTOS_debug_printf( ("prvEchoClientTask [%i]: error sending socket (%i), breaking\r\n", xInstance, lTransmitted));
+					FreeRTOS_debug_printf( ("prvEchoClientTask [%li]: error sending socket (%li), breaking\r\n", xInstance, lTransmitted));
 					break;
 				}
 
@@ -224,7 +225,7 @@ TickType_t xTimeOnEntering;
 											 lStringLength - xReceivedBytes,		/* The size of the buffer provided to receive the data. */
 											 0 );									/* No flags. */
 					
-					FreeRTOS_debug_printf( ("prvEchoClientTask [%i]: returned %i bytes\r\n", xInstance, xReturned));
+					FreeRTOS_debug_printf( ("prvEchoClientTask [%li]: returned %li bytes\r\n", xInstance, xReturned));
 
 					if( xReturned < 0 )
 					{
@@ -245,7 +246,7 @@ TickType_t xTimeOnEntering;
 					}
 				}
 
-				FreeRTOS_debug_printf( ("prvEchoClientTask [%i]: received %i bytes total\r\n", xInstance, xReceivedBytes));
+				FreeRTOS_debug_printf( ("prvEchoClientTask [%li]: received %li bytes total\r\n", xInstance, xReceivedBytes));
 
 				/* If an error occurred it will be latched in xReceivedBytes,
 				otherwise xReceived bytes will be just that - the number of
@@ -259,32 +260,32 @@ TickType_t xTimeOnEntering;
 						/* The echo reply was received without error. */
 						ulTxRxCycles[ xInstance ]++;
 
-						FreeRTOS_debug_printf( ("prvEchoClientTask [%i]: echo OK %u\r\n", xInstance, ulTxRxCycles[ xInstance ]));
+						FreeRTOS_debug_printf( ("prvEchoClientTask [%li]: echo OK %lu\r\n", xInstance, ulTxRxCycles[ xInstance ]));
 					}
 					else
 					{
 						/* The received string did not match the transmitted
 						string. */
 						ulTxRxFailures[ xInstance ]++;
-						FreeRTOS_debug_printf( ("prvEchoClientTask [%i]: strings didn't match %u\r\n", xInstance, ulTxRxCycles[ xInstance ]));
+						FreeRTOS_debug_printf( ("prvEchoClientTask [%li]: strings didn't match %lu\r\n", xInstance, ulTxRxCycles[ xInstance ]));
 						break;
 					}
 				}
 				else if( xReceivedBytes < 0 )
 				{
 					/* FreeRTOS_recv() returned an error. */
-					FreeRTOS_debug_printf( ("prvEchoClientTask [%i]: socket error\r\n", xInstance));
+					FreeRTOS_debug_printf( ("prvEchoClientTask [%li]: socket error\r\n", xInstance));
 					break;
 				}
 				else
 				{
 					/* Timed out without receiving anything? */
-					FreeRTOS_debug_printf( ("prvEchoClientTask [%i]: timeout\r\n", xInstance));
+					FreeRTOS_debug_printf( ("prvEchoClientTask [%li]: timeout\r\n", xInstance));
 					break;
 				}
 			}
 
-			FreeRTOS_debug_printf( ("prvEchoClientTask [%i]: shutting down\r\n", xInstance));
+			FreeRTOS_debug_printf( ("prvEchoClientTask [%li]: shutting down\r\n", xInstance));
 
 			/* Finished using the connected socket, initiate a graceful close:
 			FIN, FIN+ACK, ACK. */
@@ -302,14 +303,14 @@ TickType_t xTimeOnEntering;
 
 				if( xReturned < 0 )
 				{
-					FreeRTOS_debug_printf( ("prvEchoClientTask [%i]: shutdown complete\r\n", xInstance));
+					FreeRTOS_debug_printf( ("prvEchoClientTask [%li]: shutdown complete\r\n", xInstance));
 					break;
 				}
 
 			} while( ( xTaskGetTickCount() - xTimeOnEntering ) < xReceiveTimeOut );
 		}
 
-		FreeRTOS_debug_printf( ("prvEchoClientTask [%i]: close socket\r\n", xInstance));
+		FreeRTOS_debug_printf( ("prvEchoClientTask [%li]: close socket\r\n", xInstance));
 		/* Close this socket before looping back to create another. */
 		FreeRTOS_closesocket( xSocket );
 
