@@ -93,9 +93,8 @@ static TaskHandle_t prvEMACDeferredInterruptHandlerTaskHandle = NULL;
  */
 typedef unsigned char EthernetFrame[NUM_PACKETS * XAE_MAX_JUMBO_FRAME_SIZE] __attribute__ ((aligned(BD_ALIGNMENT)));
 
-//static EthernetFrame TxFrame __attribute__ ((section(".uncached")));	/* Transmit buffer */
-static EthernetFrame RxFrameBuf[RXBD_CNT] __attribute__ ((section(".uncached")));	/* Receive buffer */
-//static EthernetFrame RxFrame __attribute__ ((section(".uncached")));	/* Receive buffer */
+static EthernetFrame TxFrameBuf[TXBD_CNT] __attribute__ ((section(".uncached")));	/* Transmit buffers */
+static EthernetFrame RxFrameBuf[RXBD_CNT] __attribute__ ((section(".uncached")));	/* Receive buffers */
 
 /*
  * Aligned memory segments to be used for buffer descriptors
@@ -112,6 +111,12 @@ volatile int FramesTx;	  /* Num of frames that have been sent */
 volatile int DeviceErrors; /* Num of errors detected in the device */
 
 char AxiEthernetMAC[6] = { configMAC_ADDR0, configMAC_ADDR1, configMAC_ADDR2, configMAC_ADDR3, configMAC_ADDR4, configMAC_ADDR5 };
+
+
+uint8_t* AxiEthernetGetTxBuffer() {
+	static idx = 0;
+	return &TxFrameBuf[idx++ % TXBD_CNT];
+}
 
 void AxiEthernetUtilErrorTrap(char *Message)
 {
@@ -171,13 +176,13 @@ void DmaFreeBDTask( void *pvParameters ) {
 		bd_idx = ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
 		FreeRTOS_debug_printf( ("DmaFreeBDTask: got notified, count is %lu\r\n", bd_idx) );
 		
-		//taskENTER_CRITICAL();
+		taskENTER_CRITICAL();
 		int BdReturned = XAxiDma_BdRingFromHw(TxRingPtr, BdLimit, &BdPtr);
+		taskEXIT_CRITICAL();
 		if ( BdReturned != BdLimit) {
 			FreeRTOS_debug_printf( ("DmaFreeBDTask: warning, returned %i BDs, requested %i BDs\r\n", BdReturned, BdLimit) );
 			continue;
 		}
-		//taskEXIT_CRITICAL();
 		
 		FreeRTOS_debug_printf( ("DmaFreeBDTask: BdPtr = %lx\r\n", (u32)BdPtr));
 
@@ -195,9 +200,9 @@ void DmaFreeBDTask( void *pvParameters ) {
 		// 	}
 		// }
 
-		//taskENTER_CRITICAL();
+		taskENTER_CRITICAL();
 		configASSERT( XAxiDma_BdRingFree(TxRingPtr, BdLimit, BdPtr) == 0 );
-		//taskEXIT_CRITICAL();
+		taskEXIT_CRITICAL();
 	}
 }
 
@@ -226,6 +231,8 @@ void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
         counting semaphore to count Rx events, but is a lot more efficient than
         a semaphore. */
         bd_idx = ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+		size_t s = xPortGetFreeHeapSize();
+		FreeRTOS_debug_printf( ("FreeHeap: %lu\r\n",s) );
 		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: got notified, count is %lu\r\n", bd_idx) );
 
 		/* This example assumes GetNextRxDescriptor() is an Ethernet MAC driver
@@ -233,8 +240,9 @@ void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 		DMADescriptor_t again) that references the Ethernet buffer containing the
 		received data. */
 		
-		//taskENTER_CRITICAL();
+		taskENTER_CRITICAL();
 		int BdReturned = XAxiDma_BdRingFromHw(RxRingPtr, BdLimit, &BdPtr);
+		taskEXIT_CRITICAL();
 		if ( BdReturned != BdLimit) {
 			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: warning, returned %i BDs, requested %i BDs\r\n", BdReturned, BdLimit) );
 			continue;
@@ -607,11 +615,11 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 
 	for (int Index = 0; Index < FreeBdCount; Index++) {
 
-		printf("DmaSetup: Getting new buffer descriptor, BdCurPtr = %lx\r\n", BdCurPtr);
-		NetworkBufferDescriptor_t *pxNetworkBuffer = pxGetNetworkBufferWithDescriptor(ipTOTAL_ETHERNET_FRAME_SIZE, portMAX_DELAY);	
-		printf("DmaSetup: %i: pxNetworkBuffer->pucEthernetBuffer = %lx\r\n", Index, (uint32_t)(pxNetworkBuffer->pucEthernetBuffer));
-		Status = XAxiDma_BdSetBufAddr(BdCurPtr, (u32)pxNetworkBuffer->pucEthernetBuffer);
-		//Status = XAxiDma_BdSetBufAddr(BdCurPtr, (u32)&RxFrameBuf[Index]);
+		//printf("DmaSetup: Getting new buffer descriptor, BdCurPtr = %lx\r\n", BdCurPtr);
+		//NetworkBufferDescriptor_t *pxNetworkBuffer = pxGetNetworkBufferWithDescriptor(ipTOTAL_ETHERNET_FRAME_SIZE, portMAX_DELAY);	
+		//printf("DmaSetup: %i: pxNetworkBuffer->pucEthernetBuffer = %lx\r\n", Index, (uint32_t)(pxNetworkBuffer->pucEthernetBuffer));
+		//Status = XAxiDma_BdSetBufAddr(BdCurPtr, (u32)pxNetworkBuffer->pucEthernetBuffer);
+		Status = XAxiDma_BdSetBufAddr(BdCurPtr, (u32)&RxFrameBuf[Index]);
 		if (Status != XST_SUCCESS) {
 			printf("Rx set buffer addr %x on BD %x failed %d\r\n",
 			(unsigned int)&RxFrameBuf[Index],
@@ -620,10 +628,10 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 			return XST_FAILURE;
 		}
 
-		configASSERT(pxNetworkBuffer->xDataLength != 0);
-		printf( "DmaSetup: ipTOTAL_ETHERNET_FRAME_SIZE=%lu, datalen = %u\r\n", ipTOTAL_ETHERNET_FRAME_SIZE, pxNetworkBuffer->xDataLength);
-		Status = XAxiDma_BdSetLength(BdCurPtr, (u32)pxNetworkBuffer->xDataLength,
-		//Status = XAxiDma_BdSetLength(BdCurPtr, sizeof(RxFrameBuf[Index]),
+		//configASSERT(pxNetworkBuffer->xDataLength != 0);
+		//printf( "DmaSetup: ipTOTAL_ETHERNET_FRAME_SIZE=%lu, datalen = %u\r\n", ipTOTAL_ETHERNET_FRAME_SIZE, pxNetworkBuffer->xDataLength);
+		//Status = XAxiDma_BdSetLength(BdCurPtr, (u32)pxNetworkBuffer->xDataLength,
+		Status = XAxiDma_BdSetLength(BdCurPtr, sizeof(RxFrameBuf[Index]),
 					RxRingPtr->MaxTransferLen);
 		if (Status != XST_SUCCESS) {
 			printf("Rx set length %d on BD %x failed %d\r\n",
@@ -639,7 +647,7 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 
 		XAxiDma_BdSetId(BdCurPtr, Index);
 
-		printf("DmaSetup: Current bd len = %lu\r\n", XAxiDma_BdGetLength(BdPtr, RxRingPtr->MaxTransferLen));
+		//printf("DmaSetup: Current bd len = %lu\r\n", XAxiDma_BdGetLength(BdPtr, RxRingPtr->MaxTransferLen));
 
 		BdCurPtr = (XAxiDma_Bd *)XAxiDma_BdRingNext(RxRingPtr, BdCurPtr);
 	}

@@ -106,34 +106,39 @@ BaseType_t xNetworkInterfaceOutput( NetworkBufferDescriptor_t * const pxNetworkB
 
 	/* unused, we always release after send */
 	//(void) xReleaseAfterSend;
+	//configASSERT(xReleaseAfterSend != pdFALSE); // Seems to fails with TCP sockets...
 	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: release after send =  %u\r\n", xReleaseAfterSend));
 
 	/* get BD ring descriptor */
-	//taskENTER_CRITICAL();
 	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(&AxiDmaInstance);
 	XAxiDma_Bd * BdPtr;
 
 	/* allocate next BD from the BD ring */
+	taskENTER_CRITICAL();
 	configASSERT( XAxiDma_BdRingAlloc(TxRingPtr, 1, &BdPtr) == 0);
-	//taskEXIT_CRITICAL();
+	taskEXIT_CRITICAL();
+
 	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: BdPtr = %lx\r\n", (u32)BdPtr));
-	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: pxNetworkBuffer = %p\r\n", pxNetworkBuffer));
-	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: pxNetworkBuffer->pucEthernetBuffer = %lx\r\n", (u32)pxNetworkBuffer->pucEthernetBuffer));
+	//FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: pxNetworkBuffer = %p\r\n", pxNetworkBuffer));
+	//FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: pxNetworkBuffer->pucEthernetBuffer = %lx\r\n", (u32)pxNetworkBuffer->pucEthernetBuffer));
 	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: pxNetworkBuffer->xDataLength = %lu\r\n", pxNetworkBuffer->xDataLength));
 
 	/* configure BD */
-	//taskENTER_CRITICAL();
-	XAxiDma_BdSetBufAddr(BdPtr, (u32)pxNetworkBuffer->pucEthernetBuffer);
-	XAxiDma_BdSetLength(BdPtr, pxNetworkBuffer->xDataLength,TxRingPtr->MaxTransferLen);
+	//XAxiDma_BdSetBufAddr(BdPtr, (u32)pxNetworkBuffer->pucEthernetBuffer);
+	uint8_t* xTxBuffer = AxiEthernetGetTxBuffer();
+	memcpy(xTxBuffer, pxNetworkBuffer->pucEthernetBuffer, pxNetworkBuffer->xDataLength);
+	XAxiDma_BdSetBufAddr(BdPtr,(u32)xTxBuffer);
+	XAxiDma_BdSetLength(BdPtr, pxNetworkBuffer->xDataLength, TxRingPtr->MaxTransferLen);
 	XAxiDma_BdSetCtrl(BdPtr, XAXIDMA_BD_CTRL_TXSOF_MASK |
 			     XAXIDMA_BD_CTRL_TXEOF_MASK);
 	
 	/* pass BD to HW */
+	taskENTER_CRITICAL();
 	configASSERT( XAxiDma_BdRingToHw(TxRingPtr, 1, BdPtr) == 0 );
 
 	/* start transaction */
 	configASSERT( XAxiDma_BdRingStart(TxRingPtr) == 0);
-	//taskEXIT_CRITICAL();
+	taskEXIT_CRITICAL();
 
 	/* Call the standard trace macro to log the send event. */
     iptraceNETWORK_INTERFACE_TRANSMIT();

@@ -66,8 +66,8 @@ static void prvSimpleZeroCopyServerTask( void *pvParameters );
 void vStartSimpleUDPClientServerTasks( uint16_t usStackSize, uint32_t ulPort, UBaseType_t uxPriority )
 {
 	/* Create the client and server tasks that do use the zero copy interface. */
-	xTaskCreate( prvSimpleZeroCopyUDPClientTask, "SimpZCpyClnt", usStackSize, ( void * ) ( ulPort + 1 ), uxPriority, NULL );
-	//xTaskCreate( prvSimpleZeroCopyServerTask, "SimpZCpySrv", usStackSize, ( void * ) ( ulPort + 1 ), uxPriority + 1, NULL );
+	//xTaskCreate( prvSimpleZeroCopyUDPClientTask, "SimpZCpyClnt", usStackSize, ( void * ) ( ulPort + 1 ), uxPriority, NULL );
+	xTaskCreate( prvSimpleZeroCopyServerTask, "SimpZCpySrv", usStackSize, ( void * ) ( ulPort + 1 ), uxPriority + 1, NULL );
 }
 /*-----------------------------------------------------------*/
 
@@ -226,9 +226,8 @@ Socket_t xListeningSocket;
 		/* Print the received characters. */
 		if( lBytes > 0 )
 		{
-			printf("prvSimpleZeroCopyServerTask: received %lu bytes, expected %u, message is = %s\r\n",lBytes,
-				strlen( ( const char * ) pucUDPPayloadBuffer ) + 1,
-				pucUDPPayloadBuffer);
+			printf("prvSimpleZeroCopyServerTask: received %lu bytes, expected %u\r\n",lBytes,
+				strlen( ( const char * ) pucUDPPayloadBuffer ) + 1);
 			/* It is expected to receive one more byte than the string length as
 			the NULL terminator is also transmitted. */
 			//configASSERT( lBytes == ( ( BaseType_t ) strlen( ( const char * ) pucUDPPayloadBuffer ) + 1 ) );

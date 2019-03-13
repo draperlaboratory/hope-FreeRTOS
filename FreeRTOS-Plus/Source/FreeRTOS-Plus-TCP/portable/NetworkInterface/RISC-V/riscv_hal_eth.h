@@ -27,6 +27,8 @@ extern volatile int FramesRx;
 						 * PHY to reset.
 						 */
 
+uint8_t* AxiEthernetGetTxBuffer();
+
 /* Interrupt handlers */
 void TxIntrHandler(XAxiDma_BdRing *TxRingPtr);
 void TxCallBack(XAxiDma_BdRing *TxRingPtr);
