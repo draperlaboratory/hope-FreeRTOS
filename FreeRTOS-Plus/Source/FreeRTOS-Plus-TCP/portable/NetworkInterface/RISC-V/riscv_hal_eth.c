@@ -163,36 +163,41 @@ void DmaFreeBDTask( void *pvParameters ) {
 	XAxiDma_Bd * BdPtr;
 	int BdLimit = 1;
 
-	NetworkBufferDescriptor_t *pxNetworkBuffer;
-	uint8_t *ucPayLoad;
+	//NetworkBufferDescriptor_t *pxNetworkBuffer;
+	//uint8_t *ucPayLoad;
 
 	for (;;) {
 		/* wait for notification */
 		bd_idx = ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
 		FreeRTOS_debug_printf( ("DmaFreeBDTask: got notified, count is %lu\r\n", bd_idx) );
 		
+		//taskENTER_CRITICAL();
 		int BdReturned = XAxiDma_BdRingFromHw(TxRingPtr, BdLimit, &BdPtr);
 		if ( BdReturned != BdLimit) {
 			FreeRTOS_debug_printf( ("DmaFreeBDTask: warning, returned %i BDs, requested %i BDs\r\n", BdReturned, BdLimit) );
 			continue;
 		}
+		//taskEXIT_CRITICAL();
 		
 		FreeRTOS_debug_printf( ("DmaFreeBDTask: BdPtr = %lx\r\n", (u32)BdPtr));
 
-		ucPayLoad = (uint8_t*)XAxiDma_BdGetBufAddr(BdPtr);
-		FreeRTOS_debug_printf( ("DmaFreeBDTask: ucPayLoad = %lx\r\n", ucPayLoad) );
-		if( ucPayLoad != NULL )
-		{
-			pxNetworkBuffer = pxPacketBuffer_to_NetworkBuffer( ucPayLoad );
-			FreeRTOS_debug_printf( ("DmaFreeBDTask: pxNetworkBuffer = %p\r\n", pxNetworkBuffer) );
-			if( pxNetworkBuffer != NULL )
-			{
-				FreeRTOS_debug_printf( ("DmaFreeBDTask: releasing pxNetworkBuffer\r\n") );
-				vReleaseNetworkBufferAndDescriptor( pxNetworkBuffer ) ;
-			}
-		}
+		// Zero copy: free buffer
+		// ucPayLoad = (uint8_t*)XAxiDma_BdGetBufAddr(BdPtr);
+		// FreeRTOS_debug_printf( ("DmaFreeBDTask: ucPayLoad = %lx\r\n", ucPayLoad) );
+		// if( ucPayLoad != NULL )
+		// {
+		// 	pxNetworkBuffer = pxPacketBuffer_to_NetworkBuffer( ucPayLoad );
+		// 	FreeRTOS_debug_printf( ("DmaFreeBDTask: pxNetworkBuffer = %p\r\n", pxNetworkBuffer) );
+		// 	if( pxNetworkBuffer != NULL )
+		// 	{
+		// 		FreeRTOS_debug_printf( ("DmaFreeBDTask: releasing pxNetworkBuffer\r\n") );
+		// 		vReleaseNetworkBufferAndDescriptor( pxNetworkBuffer ) ;
+		// 	}
+		// }
 
+		//taskENTER_CRITICAL();
 		configASSERT( XAxiDma_BdRingFree(TxRingPtr, BdLimit, BdPtr) == 0 );
+		//taskEXIT_CRITICAL();
 	}
 }
 
@@ -200,50 +205,41 @@ void DmaFreeBDTask( void *pvParameters ) {
 /**
  * Handle RX data
  */
+// Simple driver
 void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 	(void) pvParameters;
-	uint32_t bd_idx = 0;
-	XAxiDma_BdRing *RxRingPtr = XAxiDma_GetRxRing(&AxiDmaInstance);
-	XAxiDma_Bd * BdPtr;
-	int BdLimit = 1;
-	//uint8_t *ucPayLoad;
-	//size_t payloadLen;
-	uint32_t BdSts;
-	//uint32_t RxFrameLength;
-
-	NetworkBufferDescriptor_t *pxDescriptor;
-	//size_t xBytesReceived;
-	NetworkBufferDescriptor_t pxDMARxDescriptor;
-
-	uint8_t *pucTemp;
+	NetworkBufferDescriptor_t *pxBufferDescriptor;
+	size_t xBytesReceived;
+	uint8_t* xRxBuffer;
 	/* Used to indicate that xSendEventStructToIPTask() is being called because
 	of an Ethernet receive event. */
 	IPStackEvent_t xRxEvent;
+	uint32_t bd_idx;
+	XAxiDma_BdRing *RxRingPtr = XAxiDma_GetRxRing(&AxiDmaInstance);
+ 	XAxiDma_Bd * BdPtr;
+ 	int BdLimit = 1;
+	 uint32_t BdSts;
 
-	for (;;) {
+	for(;;) {
 		/* Wait for the Ethernet MAC interrupt to indicate that another packet
-		has been received.  The task notification is used in a similar way to a
-		counting semaphore to count Rx events, but is a lot more efficient than
-		a semaphore. */
-		bd_idx = ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+        has been received.  The task notification is used in a similar way to a
+        counting semaphore to count Rx events, but is a lot more efficient than
+        a semaphore. */
+        bd_idx = ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
 		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: got notified, count is %lu\r\n", bd_idx) );
 
 		/* This example assumes GetNextRxDescriptor() is an Ethernet MAC driver
 		library function that returns a pointer to the DMA descriptor (of type
 		DMADescriptor_t again) that references the Ethernet buffer containing the
 		received data. */
-		//pxDMARxDescriptor = GetNextRxDescriptor();
+		
+		//taskENTER_CRITICAL();
 		int BdReturned = XAxiDma_BdRingFromHw(RxRingPtr, BdLimit, &BdPtr);
 		if ( BdReturned != BdLimit) {
 			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: warning, returned %i BDs, requested %i BDs\r\n", BdReturned, BdLimit) );
 			continue;
 		}
-
 		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: BdPtr = %lx\r\n", (u32)BdPtr));
-
-		// Buf address
-		pxDMARxDescriptor.pucEthernetBuffer = (uint8_t*)XAxiDma_BdGetBufAddr(BdPtr);
-		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDMARxDescriptor.pucEthernetBuffer = %lx\r\n", (uint32_t)pxDMARxDescriptor.pucEthernetBuffer) );
 
 		/* Examine the BD */
 		BdSts = XAxiDma_BdGetSts(BdPtr);
@@ -252,106 +248,230 @@ void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 				AxiEthernetUtilErrorTrap("Rx Error");
 		}
 		else {
-			pxDMARxDescriptor.xDataLength =
+			xBytesReceived =
 			(size_t) (XAxiDma_BdRead(BdPtr,XAXIDMA_BD_USR4_OFFSET)) & 0x0000FFFF;
-			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: received %u bytes\r\n", pxDMARxDescriptor.xDataLength) );
+			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: received %u bytes\r\n", xBytesReceived) );
 		}
 
-		/* Allocate a new network buffer descriptor that references an Ethernet
-		frame large enough to hold the maximum network packet size (as defined
-		in the FreeRTOSIPConfig.h header file). */
-    	pxDescriptor = pxGetNetworkBufferWithDescriptor( ipTOTAL_ETHERNET_FRAME_SIZE, 0 );
-		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDescriptor = %p\r\n", pxDescriptor) );
+		if (xBytesReceived > 0) {
+			/* Allocate a network buffer descriptor that points to a buffer
+            large enough to hold the received frame.  As this is the simple
+            rather than efficient example the received data will just be copied
+            into this buffer. */
+            pxBufferDescriptor = pxGetNetworkBufferWithDescriptor( xBytesReceived, 0 );
 
-		/* Copy the pointer to the newly allocated Ethernet frame to a temporary
-		variable. */
-		pucTemp = pxDescriptor->pucEthernetBuffer;
-		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDescriptor->pucEthernetBuffer = %p\r\n", pxDescriptor->pucEthernetBuffer) );
-		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDescriptor->xDataLength = %u\r\n", pxDescriptor->xDataLength) );
+			configASSERT( pxBufferDescriptor != NULL);
 
-		/* This example assumes that the DMADescriptor_t type has a member
-		called pucEthernetBuffer that points to the Ethernet buffer containing
-		the received data, and a member called xDataLength that holds the length
-		of the received data.  Update the newly allocated network buffer descriptor
-		to point to the Ethernet buffer that contains the received data. */
-		pxDescriptor->pucEthernetBuffer = pxDMARxDescriptor.pucEthernetBuffer;
-		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDMARxDescriptor.pucEthernetBuffer = %p\r\n", pxDMARxDescriptor.pucEthernetBuffer) );
-		pxDescriptor->xDataLength = pxDMARxDescriptor.xDataLength;
-		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDMARxDescriptor.xDataLength = %u\r\n", pxDMARxDescriptor.xDataLength) );
+			// Buf address
+			xRxBuffer = (uint8_t*)XAxiDma_BdGetBufAddr(BdPtr);
 
-		/* Update the Ethernet Rx DMA descriptor to point to the newly allocated
-		Ethernet buffer. */
-		pxDMARxDescriptor.pucEthernetBuffer = pucTemp;
+			/* pxBufferDescriptor->pucEthernetBuffer now points to an Ethernet
+                buffer large enough to hold the received data.  Copy the
+                received data into pcNetworkBuffer->pucEthernetBuffer.  Here it
+                is assumed ReceiveData() is a peripheral driver function that
+                copies the received data into a buffer passed in as the function's
+                parameter.  Remember! While is is a simple robust technique -
+               it is not efficient.  An example that uses a zero copy technique
+            is provided further down this page. */
+            memcpy(pxBufferDescriptor->pucEthernetBuffer,  xRxBuffer, xBytesReceived);
+            pxBufferDescriptor->xDataLength = xBytesReceived;
 
-    	/* A pointer to the descriptor is stored at the front of the buffer, so
-    	swap these too. */
-		*( ( NetworkBufferDescriptor_t ** )
-		( pxDescriptor->pucEthernetBuffer - ipBUFFER_PADDING ) ) = pxDescriptor;
+			/* See if the data contained in the received Ethernet frame needs
+            to be processed.  NOTE! It is preferable to do this in
+            the interrupt service routine itself, which would remove the need
+            to unblock this task for packets that don't need processing. */
+            if( eConsiderFrameForProcessing( pxBufferDescriptor->pucEthernetBuffer )
+                                                                  == eProcessBuffer )
+            {
+				/* The event about to be sent to the TCP/IP is an Rx event. */
+                xRxEvent.eEventType = eNetworkRxEvent;
 
-		*( ( NetworkBufferDescriptor_t ** )
-		( pxDMARxDescriptor.pucEthernetBuffer - ipBUFFER_PADDING ) ) = &pxDMARxDescriptor;
+                /* pvData is used to point to the network buffer descriptor that
+                now references the received data. */
+                xRxEvent.pvData = ( void * ) pxBufferDescriptor;
 
-		/*
-		* The network buffer descriptor now points to the Ethernet buffer that
-		* contains the received data, and the Ethernet DMA descriptor now points
-		* to a newly allocated (and empty) Ethernet buffer ready to receive more
-		* data.  No data was copied.  Only pointers to data were swapped.
-		*
-		* THE REST OF THE RECEIVE HANDLER FUNCTION FOLLOWS THE EXAMPLE PROVIDED
-		* FOR THE SIMPLE ETHERNET INTERFACE IMPLEMENTATION, whereby the network
-		* buffer descriptor is sent to the TCP/IP on the network event queue.
-		*/
+                /* Send the data to the TCP/IP stack. */
+                if( xSendEventStructToIPTask( &xRxEvent, 0 ) == pdFALSE )
+                {
+                    /* The buffer could not be sent to the IP task so the buffer
+                    must be released. */
+                    vReleaseNetworkBufferAndDescriptor( pxBufferDescriptor );
 
-
-
-		/* See if the data contained in the received Ethernet frame needs
-		to be processed.  NOTE! It might be possible to do this in
-		the interrupt service routine itself, which would remove the need
-		to unblock this task for packets that don't need processing. */
-
-		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: eConsiderFrameForProcessing pxDescriptor->pucEthernetBuffer= %p\r\n", pxDescriptor->pucEthernetBuffer) );
-		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: eConsiderFrameForProcessing pxDescriptor->xDataLength= %u\r\n", pxDescriptor->xDataLength) );
-		if( eConsiderFrameForProcessing( pxDescriptor->pucEthernetBuffer )
-									== eProcessBuffer )
-		{
-			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: Considered for processing\r\n") );
-			/* The event about to be sent to the TCP/IP is an Rx event. */
-			xRxEvent.eEventType = eNetworkRxEvent;
-
-			/* pvData is used to point to the network buffer descriptor that
-			references the received data. */
-			xRxEvent.pvData = ( void * ) pxDescriptor;
-			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: xRxEvent.pvData = %p\r\n", xRxEvent.pvData) );
-
-			/* Send the data to the TCP/IP stack. */
-			if( xSendEventStructToIPTask( &xRxEvent, 0 ) == pdFALSE )
-			{
-				FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: Could not be passed to IP stack\r\n") );
-				/* The buffer could not be sent to the IP task so the buffer
-				must be released. */
-				vReleaseNetworkBufferAndDescriptor( pxDescriptor );
-
-				/* Make a call to the standard trace macro to log the
-				occurrence. */
-				iptraceETHERNET_RX_EVENT_LOST();
+                    /* Make a call to the standard trace macro to log the
+                    occurrence. */
+                    iptraceETHERNET_RX_EVENT_LOST();
+                }
+                else
+                {
+                    /* The message was successfully sent to the TCP/IP stack.
+                    Call the standard trace macro to log the occurrence. */
+                    iptraceNETWORK_INTERFACE_RECEIVE();
+                }
 			}
 			else
-			{
-				/* The message was successfully sent to the TCP/IP stack.
-				Call the standard trace macro to log the occurrence. */
-				FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: Interface received data\r\n") );
-				iptraceNETWORK_INTERFACE_RECEIVE();
-			}
-		}
-		else
-		{
-			/* The Ethernet frame can be dropped, but the Ethernet buffer
-			must be released. */
-			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: vReleaseNetworkBufferAndDescriptor\r\n") );
-			vReleaseNetworkBufferAndDescriptor( pxDescriptor );
+            {
+                /* The Ethernet frame can be dropped, but the Ethernet buffer
+                must be released. */
+                vReleaseNetworkBufferAndDescriptor( pxBufferDescriptor );
+            }
 		}
 	}
 }
+
+
+// Zero copy driver
+// void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
+// 	(void) pvParameters;
+// 	uint32_t bd_idx = 0;
+// 	XAxiDma_BdRing *RxRingPtr = XAxiDma_GetRxRing(&AxiDmaInstance);
+// 	XAxiDma_Bd * BdPtr;
+// 	int BdLimit = 1;
+// 	//uint8_t *ucPayLoad;
+// 	//size_t payloadLen;
+// 	uint32_t BdSts;
+// 	//uint32_t RxFrameLength;
+
+// 	NetworkBufferDescriptor_t *pxDescriptor;
+// 	//size_t xBytesReceived;
+// 	NetworkBufferDescriptor_t pxDMARxDescriptor;
+
+// 	uint8_t *pucTemp;
+// 	/* Used to indicate that xSendEventStructToIPTask() is being called because
+// 	of an Ethernet receive event. */
+// 	IPStackEvent_t xRxEvent;
+
+// 	for (;;) {
+// 		/* Wait for the Ethernet MAC interrupt to indicate that another packet
+// 		has been received.  The task notification is used in a similar way to a
+// 		counting semaphore to count Rx events, but is a lot more efficient than
+// 		a semaphore. */
+// 		bd_idx = ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+// 		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: got notified, count is %lu\r\n", bd_idx) );
+
+// 		/* This example assumes GetNextRxDescriptor() is an Ethernet MAC driver
+// 		library function that returns a pointer to the DMA descriptor (of type
+// 		DMADescriptor_t again) that references the Ethernet buffer containing the
+// 		received data. */
+// 		//pxDMARxDescriptor = GetNextRxDescriptor();
+// 		int BdReturned = XAxiDma_BdRingFromHw(RxRingPtr, BdLimit, &BdPtr);
+// 		if ( BdReturned != BdLimit) {
+// 			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: warning, returned %i BDs, requested %i BDs\r\n", BdReturned, BdLimit) );
+// 			continue;
+// 		}
+
+// 		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: BdPtr = %lx\r\n", (u32)BdPtr));
+
+// 		// Buf address
+// 		pxDMARxDescriptor.pucEthernetBuffer = (uint8_t*)XAxiDma_BdGetBufAddr(BdPtr);
+// 		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDMARxDescriptor.pucEthernetBuffer = %lx\r\n", (uint32_t)pxDMARxDescriptor.pucEthernetBuffer) );
+
+// 		/* Examine the BD */
+// 		BdSts = XAxiDma_BdGetSts(BdPtr);
+// 		if ((BdSts & XAXIDMA_BD_STS_ALL_ERR_MASK) ||
+// 			(!(BdSts & XAXIDMA_BD_STS_COMPLETE_MASK))) {
+// 				AxiEthernetUtilErrorTrap("Rx Error");
+// 		}
+// 		else {
+// 			pxDMARxDescriptor.xDataLength =
+// 			(size_t) (XAxiDma_BdRead(BdPtr,XAXIDMA_BD_USR4_OFFSET)) & 0x0000FFFF;
+// 			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: received %u bytes\r\n", pxDMARxDescriptor.xDataLength) );
+// 		}
+
+// 		/* Allocate a new network buffer descriptor that references an Ethernet
+// 		frame large enough to hold the maximum network packet size (as defined
+// 		in the FreeRTOSIPConfig.h header file). */
+//     	pxDescriptor = pxGetNetworkBufferWithDescriptor( ipTOTAL_ETHERNET_FRAME_SIZE, 0 );
+// 		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDescriptor = %p\r\n", pxDescriptor) );
+
+// 		/* Copy the pointer to the newly allocated Ethernet frame to a temporary
+// 		variable. */
+// 		pucTemp = pxDescriptor->pucEthernetBuffer;
+// 		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDescriptor->pucEthernetBuffer = %p\r\n", pxDescriptor->pucEthernetBuffer) );
+// 		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDescriptor->xDataLength = %u\r\n", pxDescriptor->xDataLength) );
+
+// 		/* This example assumes that the DMADescriptor_t type has a member
+// 		called pucEthernetBuffer that points to the Ethernet buffer containing
+// 		the received data, and a member called xDataLength that holds the length
+// 		of the received data.  Update the newly allocated network buffer descriptor
+// 		to point to the Ethernet buffer that contains the received data. */
+// 		pxDescriptor->pucEthernetBuffer = pxDMARxDescriptor.pucEthernetBuffer;
+// 		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDMARxDescriptor.pucEthernetBuffer = %p\r\n", pxDMARxDescriptor.pucEthernetBuffer) );
+// 		pxDescriptor->xDataLength = pxDMARxDescriptor.xDataLength;
+// 		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: pxDMARxDescriptor.xDataLength = %u\r\n", pxDMARxDescriptor.xDataLength) );
+
+// 		/* Update the Ethernet Rx DMA descriptor to point to the newly allocated
+// 		Ethernet buffer. */
+// 		pxDMARxDescriptor.pucEthernetBuffer = pucTemp;
+
+//     	/* A pointer to the descriptor is stored at the front of the buffer, so
+//     	swap these too. */
+// 		*( ( NetworkBufferDescriptor_t ** )
+// 		( pxDescriptor->pucEthernetBuffer - ipBUFFER_PADDING ) ) = pxDescriptor;
+
+// 		*( ( NetworkBufferDescriptor_t ** )
+// 		( pxDMARxDescriptor.pucEthernetBuffer - ipBUFFER_PADDING ) ) = &pxDMARxDescriptor;
+
+// 		/*
+// 		* The network buffer descriptor now points to the Ethernet buffer that
+// 		* contains the received data, and the Ethernet DMA descriptor now points
+// 		* to a newly allocated (and empty) Ethernet buffer ready to receive more
+// 		* data.  No data was copied.  Only pointers to data were swapped.
+// 		*
+// 		* THE REST OF THE RECEIVE HANDLER FUNCTION FOLLOWS THE EXAMPLE PROVIDED
+// 		* FOR THE SIMPLE ETHERNET INTERFACE IMPLEMENTATION, whereby the network
+// 		* buffer descriptor is sent to the TCP/IP on the network event queue.
+// 		*/
+
+
+
+// 		/* See if the data contained in the received Ethernet frame needs
+// 		to be processed.  NOTE! It might be possible to do this in
+// 		the interrupt service routine itself, which would remove the need
+// 		to unblock this task for packets that don't need processing. */
+
+// 		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: eConsiderFrameForProcessing pxDescriptor->pucEthernetBuffer= %p\r\n", pxDescriptor->pucEthernetBuffer) );
+// 		FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: eConsiderFrameForProcessing pxDescriptor->xDataLength= %u\r\n", pxDescriptor->xDataLength) );
+// 		if( eConsiderFrameForProcessing( pxDescriptor->pucEthernetBuffer )
+// 									== eProcessBuffer )
+// 		{
+// 			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: Considered for processing\r\n") );
+// 			/* The event about to be sent to the TCP/IP is an Rx event. */
+// 			xRxEvent.eEventType = eNetworkRxEvent;
+
+// 			/* pvData is used to point to the network buffer descriptor that
+// 			references the received data. */
+// 			xRxEvent.pvData = ( void * ) pxDescriptor;
+// 			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: xRxEvent.pvData = %p\r\n", xRxEvent.pvData) );
+
+// 			/* Send the data to the TCP/IP stack. */
+// 			if( xSendEventStructToIPTask( &xRxEvent, 0 ) == pdFALSE )
+// 			{
+// 				FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: Could not be passed to IP stack\r\n") );
+// 				/* The buffer could not be sent to the IP task so the buffer
+// 				must be released. */
+// 				vReleaseNetworkBufferAndDescriptor( pxDescriptor );
+
+// 				/* Make a call to the standard trace macro to log the
+// 				occurrence. */
+// 				iptraceETHERNET_RX_EVENT_LOST();
+// 			}
+// 			else
+// 			{
+// 				/* The message was successfully sent to the TCP/IP stack.
+// 				Call the standard trace macro to log the occurrence. */
+// 				FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: Interface received data\r\n") );
+// 				iptraceNETWORK_INTERFACE_RECEIVE();
+// 			}
+// 		}
+// 		else
+// 		{
+// 			/* The Ethernet frame can be dropped, but the Ethernet buffer
+// 			must be released. */
+// 			FreeRTOS_debug_printf( ("prvEMACDeferredInterruptHandlerTask: vReleaseNetworkBufferAndDescriptor\r\n") );
+// 			vReleaseNetworkBufferAndDescriptor( pxDescriptor );
+// 		}
+// 	}
+// }
 
 /**
  * Initialize DMA

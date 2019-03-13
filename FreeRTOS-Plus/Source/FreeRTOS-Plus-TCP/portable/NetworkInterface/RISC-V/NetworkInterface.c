@@ -105,20 +105,24 @@ BaseType_t xNetworkInterfaceOutput( NetworkBufferDescriptor_t * const pxNetworkB
 	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: FramesTX = %i\r\n", FramesTx) );
 
 	/* unused, we always release after send */
-	(void) xReleaseAfterSend;
+	//(void) xReleaseAfterSend;
+	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: release after send =  %u\r\n", xReleaseAfterSend));
 
 	/* get BD ring descriptor */
+	//taskENTER_CRITICAL();
 	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(&AxiDmaInstance);
 	XAxiDma_Bd * BdPtr;
 
 	/* allocate next BD from the BD ring */
 	configASSERT( XAxiDma_BdRingAlloc(TxRingPtr, 1, &BdPtr) == 0);
+	//taskEXIT_CRITICAL();
 	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: BdPtr = %lx\r\n", (u32)BdPtr));
 	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: pxNetworkBuffer = %p\r\n", pxNetworkBuffer));
 	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: pxNetworkBuffer->pucEthernetBuffer = %lx\r\n", (u32)pxNetworkBuffer->pucEthernetBuffer));
 	FreeRTOS_debug_printf( ("xNetworkInterfaceOutput: pxNetworkBuffer->xDataLength = %lu\r\n", pxNetworkBuffer->xDataLength));
 
 	/* configure BD */
+	//taskENTER_CRITICAL();
 	XAxiDma_BdSetBufAddr(BdPtr, (u32)pxNetworkBuffer->pucEthernetBuffer);
 	XAxiDma_BdSetLength(BdPtr, pxNetworkBuffer->xDataLength,TxRingPtr->MaxTransferLen);
 	XAxiDma_BdSetCtrl(BdPtr, XAXIDMA_BD_CTRL_TXSOF_MASK |
@@ -129,9 +133,19 @@ BaseType_t xNetworkInterfaceOutput( NetworkBufferDescriptor_t * const pxNetworkB
 
 	/* start transaction */
 	configASSERT( XAxiDma_BdRingStart(TxRingPtr) == 0);
+	//taskEXIT_CRITICAL();
 
 	/* Call the standard trace macro to log the send event. */
     iptraceNETWORK_INTERFACE_TRANSMIT();
+
+	// simple driver
+	if( xReleaseAfterSend != pdFALSE )
+    {
+        /* It is assumed SendData() copies the data out of the FreeRTOS+TCP Ethernet
+        buffer.  The Ethernet buffer is therefore no longer needed, and must be
+        freed for re-use. */
+        vReleaseNetworkBufferAndDescriptor( pxNetworkBuffer );
+    }
 
 	return pdPASS;
 }

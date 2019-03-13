@@ -304,8 +304,8 @@ disconnecting stage will timeout after a period of non-activity. */
 #define ipconfigTCP_KEEP_ALIVE_INTERVAL		( 20 ) /* in seconds */
 
 /* Enable zero-copy network stack */
-#define ipconfigZERO_COPY_RX_DRIVER			( 1 )
-#define ipconfigZERO_COPY_TX_DRIVER			( 1 )
+#define ipconfigZERO_COPY_RX_DRIVER			( 0 )
+#define ipconfigZERO_COPY_TX_DRIVER			( 0 )
 
 /* Demo config */
 /* The address of an echo server that will be used by the two demo echo client
@@ -372,7 +372,7 @@ ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
 #define iptraceIP_TASK_STARTING() 			FreeRTOS_debug_printf( ("iptraceIP_TASK_STARTING\r\n"));
 #define ipconfigWATCHDOG_TIMER()			FreeRTOS_debug_printf( ("ipconfigWATCHDOG_TIMER\r\n"));
 #define iptraceNETWORK_EVENT_RECEIVED(_X)	FreeRTOS_debug_printf( ("iptraceNETWORK_EVENT_RECEIVED: %i\r\n",_X));
-#define iptraceSENDING_UDP_PACKET(_X)		FreeRTOS_debug_printf( ("iptraceSENDING_UDP_PACKET: addrs = %x\r\n",_X));
+#define iptraceSENDING_UDP_PACKET(_X)		FreeRTOS_debug_printf( ("iptraceSENDING_UDP_PACKET: addrs = %lx\r\n",_X));
 #define iptraceFAILED_TO_OBTAIN_NETWORK_BUFFER() FreeRTOS_debug_printf( ("iptraceFAILED_TO_OBTAIN_NETWORK_BUFFER\r\n"));
 #define iptraceNETWORK_BUFFER_OBTAINED(_BUF) FreeRTOS_debug_printf( ("iptraceNETWORK_BUFFER_OBTAINED: %p (%p)\r\n", _BUF, _BUF->pucEthernetBuffer) );
 #define iptraceNETWORK_BUFFER_RELEASED(_BUF) FreeRTOS_debug_printf( ("iptraceNETWORK_BUFFER_RELEASED: %p (%p)\r\n", _BUF, _BUF->pucEthernetBuffer) );
