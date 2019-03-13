@@ -26,7 +26,6 @@ ISP_CFLAGS += -DDONT_USE_PLIC -DDONT_USE_M_TIME
 ISP_CFLAGS += -include sys/cdefs.h
 ISP_CFLAGS += $(ARCH_FLAGS)
 # These flags are for outputing *.d dependency files for make
-ISP_CFLAGS += -MT"$@" -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)"
 
 ISP_ASMFLAGS =  -O0 -g3
 ISP_ASMFLAGS += $(ARCH_FLAGS)
@@ -34,7 +33,6 @@ ISP_ASMFLAGS += -DportasmHANDLE_INTERRUPT=handle_trap
 ISP_ASMFLAGS += -msmall-data-limit=8
 ISP_ASMFLAGS += -ffunction-sections -fdata-sections
 ISP_ASMFLAGS += -x assembler-with-cpp
-ISP_ASMFLAGS += -MT"$@" -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)"
 
 # Linker arguments __________________________________________
 ISP_LDFLAGS :=  -Xlinker --gc-sections -Xlinker --defsym=__stack_size=1K
