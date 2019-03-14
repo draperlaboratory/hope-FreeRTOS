@@ -273,6 +273,8 @@ BaseType_t xGivingUp = pdFALSE;
 		xDHCPData.eDHCPState = eWaitingSendFirstDiscover;
 	}
 
+   printf("State:  %d.\n", xDHCPData.eDHCPState);
+
 	switch( xDHCPData.eDHCPState )
 	{
 		case eWaitingSendFirstDiscover :
