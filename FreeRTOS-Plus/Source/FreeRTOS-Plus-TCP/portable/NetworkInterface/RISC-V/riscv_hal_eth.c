@@ -171,7 +171,6 @@ void DmaFreeBDTask( void *pvParameters ) {
 	for (;;) {
 		/* wait for notification */
 		bd_idx = ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
-		FreeRTOS_debug_printf( ("DmaFreeBDTask: got notified, count is %lu\r\n", bd_idx) );
 		
 		taskENTER_CRITICAL();
 		int BdReturned = XAxiDma_BdRingFromHw(TxRingPtr, BdLimit, &BdPtr);
@@ -180,8 +179,6 @@ void DmaFreeBDTask( void *pvParameters ) {
 			FreeRTOS_debug_printf( ("DmaFreeBDTask: warning, returned %i BDs, requested %i BDs\r\n", BdReturned, BdLimit) );
 			continue;
 		}
-		
-		FreeRTOS_debug_printf( ("DmaFreeBDTask: BdPtr = %lx\r\n", (u32)BdPtr));
 
 		taskENTER_CRITICAL();
 		configASSERT( XAxiDma_BdRingFree(TxRingPtr, BdLimit, BdPtr) == 0 );
