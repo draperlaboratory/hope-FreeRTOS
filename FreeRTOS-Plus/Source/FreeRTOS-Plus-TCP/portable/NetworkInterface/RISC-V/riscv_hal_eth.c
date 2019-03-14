@@ -163,14 +163,13 @@ int AxiEtherentConfigureTIPhy(XAxiEthernet *AxiEthernetInstancePtr, u32 PhyAddr)
  **/
 void DmaFreeBDTask( void *pvParameters ) {
 	(void) pvParameters;
-	uint32_t bd_idx = 0;
 	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(&AxiDmaInstance);
 	XAxiDma_Bd * BdPtr;
 	int BdLimit = 1;
 
 	for (;;) {
 		/* wait for notification */
-		bd_idx = ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+		ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
 		
 		taskENTER_CRITICAL();
 		int BdReturned = XAxiDma_BdRingFromHw(TxRingPtr, BdLimit, &BdPtr);

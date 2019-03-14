@@ -231,8 +231,6 @@ uint64_t port_get_current_mtime(void) {
 // TODO: these are very rudimentary and might overflow, use only as an example
 static void prvStatsTask( void *pvParameters ) {
 	(void) pvParameters;
-	TickType_t idle_ticks = 0;
-
 	FreeRTOS_debug_printf( ("prvStatsTask: starting\r\n") );
 	for(;;) {
 		vTaskDelay(pdMS_TO_TICKS(10000));
