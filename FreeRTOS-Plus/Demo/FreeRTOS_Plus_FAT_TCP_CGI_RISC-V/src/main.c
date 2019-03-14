@@ -483,15 +483,19 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
 		FreeRTOS_GetAddressConfiguration( &ulIPAddress, &ulNetMask, &ulGatewayAddress, &ulDNSServerAddress );
 		FreeRTOS_inet_ntoa( ulIPAddress, cBuffer );
 		FreeRTOS_printf( ( "IP Address: %s\r\n", cBuffer ) );
+      printf( ( "IP Address: %s\r\n", cBuffer ) );
 
 		FreeRTOS_inet_ntoa( ulNetMask, cBuffer );
 		FreeRTOS_printf( ( "Subnet Mask: %s\r\n", cBuffer ) );
+      printf( ( "Subnet Mask: %s\r\n", cBuffer ) );
 
 		FreeRTOS_inet_ntoa( ulGatewayAddress, cBuffer );
 		FreeRTOS_printf( ( "Gateway Address: %s\r\n", cBuffer ) );
+      printf( ( "Gateway Address: %s\r\n", cBuffer ) );
 
 		FreeRTOS_inet_ntoa( ulDNSServerAddress, cBuffer );
 		FreeRTOS_printf( ( "DNS Server Address: %s\r\n\r\n\r\n", cBuffer ) );
+      printf( ( "DNS Server Address: %s\r\n\r\n\r\n", cBuffer ) );
 	}
 }
 /*-----------------------------------------------------------*/
