@@ -265,6 +265,8 @@ static void prvSetupEthIRQ( void )
 	/*Enable Eth Interrupt*/
 	PLIC_enable_interrupt(&g_plic, 5);
 
+   PLIC_set_priority(&g_plic, 5, 1);
+
 	/* Make sure timers don't interrupt until the scheduler is running. */
 	portDISABLE_INTERRUPTS();
 }
