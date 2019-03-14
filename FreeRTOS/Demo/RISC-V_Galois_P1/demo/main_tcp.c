@@ -216,6 +216,7 @@ uint64_t port_get_current_mtime(void) {
 	volatile uint32_t * const pulTimeLow = ( volatile uint32_t * const ) ( configCLINT_BASE_ADDRESS + 0xBFF8 );
     uint64_t ullNextTime = 0ULL;
 
+	portENTER_CRITICAL();
     do
 		{
 			ulCurrentTimeHigh = *pulTimeHigh;
@@ -225,6 +226,7 @@ uint64_t port_get_current_mtime(void) {
     ullNextTime = ( uint64_t ) ulCurrentTimeHigh;
 	ullNextTime <<= 32ULL;
 	ullNextTime |= ( uint64_t ) ulCurrentTimeLow;
+	portEXIT_CRITICAL();
 
     return ullNextTime;
 }
@@ -235,7 +237,8 @@ static void prvStatsTask( void *pvParameters ) {
 	for(;;) {
 		vTaskDelay(pdMS_TO_TICKS(10000));
 		vTaskGetRunTimeStats( (char*)&statsBuffer );
-		FreeRTOS_debug_printf( ("Run-time stats:\r\nTask\tAbsTime\tpercent_time\r\n") );
+		FreeRTOS_debug_printf( ("prvStatsTask: xPortGetFreeHeapSize() = %u\r\n", xPortGetFreeHeapSize()) );
+		FreeRTOS_debug_printf( ("prvStatsTask: Run-time stats\r\nTask\tAbsTime\tpercent_time\r\n") );
 		FreeRTOS_debug_printf( ("%s\r\n", statsBuffer) );
 	}
 }
