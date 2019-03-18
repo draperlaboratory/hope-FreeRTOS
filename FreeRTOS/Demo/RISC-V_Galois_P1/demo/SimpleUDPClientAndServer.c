@@ -97,7 +97,11 @@ const size_t xStringLength = strlen( pcStringToSend ) + 15;
 	socket on the same IP address.  Setup the freertos_sockaddr structure with
 	this nodes IP address, and the port number being sent to.  The strange
 	casting is to try and remove compiler warnings on 32 bit machines. */
-	xDestinationAddress.sin_addr = ulIPAddress;
+	//xDestinationAddress.sin_addr = ulIPAddress; // NOTE: we cannot really send packets to ourselves
+	xDestinationAddress.sin_addr = FreeRTOS_inet_addr_quick( configECHO_SERVER_ADDR0,
+															configECHO_SERVER_ADDR1,
+															configECHO_SERVER_ADDR2,
+															configECHO_SERVER_ADDR3 );
 	xDestinationAddress.sin_port = ( uint16_t ) ( ( uint32_t ) pvParameters ) & 0xffffUL;
 	xDestinationAddress.sin_port = FreeRTOS_htons( xDestinationAddress.sin_port );
 
@@ -112,7 +116,8 @@ const size_t xStringLength = strlen( pcStringToSend ) + 15;
 		the server, and to break out of the do while loop below. */
 		ulCount = 0UL;
 
-		FreeRTOS_connect( xClientSocket, &xDestinationAddress, sizeof( xDestinationAddress ) );
+		// NOTE: No need to `connect` a UDP socket
+		//FreeRTOS_connect( xClientSocket, &xDestinationAddress, sizeof( xDestinationAddress ) );
 
 		do
 		{
