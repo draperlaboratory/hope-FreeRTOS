@@ -2,7 +2,6 @@
 #include "uart_16550.h"
 #include "plic_driver.h"
 
-
 // to communicate with the debugger in spike
 volatile uint64_t tohost __attribute__((aligned(64)));
 volatile uint64_t fromhost __attribute__((aligned(64)));
@@ -23,6 +22,7 @@ void prvSetupHardware( void )
     // initialize peripherals
 	uart0_init();
 }
+
 // Define an external interrupt handler
 // cause = 0x8000000b == Machine external interrupt
 void external_interrupt_handler( uint32_t cause ) {
@@ -42,10 +42,3 @@ void external_interrupt_handler( uint32_t cause ) {
     PLIC_complete_interrupt(&Plic,source_id);
 }
 
-// TODO: a better fix
-void sleep(uint32_t secs) {
-    vTaskDelay(pdMS_TO_TICKS(secs * 1000));
-}
-void msleep(uint32_t msecs) {
-    vTaskDelay(pdMS_TO_TICKS(msecs));
-}

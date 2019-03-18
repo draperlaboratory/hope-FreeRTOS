@@ -174,10 +174,7 @@ void DmaFreeBDTask( void *pvParameters ) {
 		taskENTER_CRITICAL();
 		int BdReturned = XAxiDma_BdRingFromHw(TxRingPtr, BdLimit, &BdPtr);
 		taskEXIT_CRITICAL();
-		if ( BdReturned != BdLimit) {
-			FreeRTOS_debug_printf( ("DmaFreeBDTask: warning, returned %i BDs, requested %i BDs\r\n", BdReturned, BdLimit) );
-			continue;
-		}
+		configASSERT(BdReturned == BdLimit);
 
 		taskENTER_CRITICAL();
 		configASSERT( XAxiDma_BdRingFree(TxRingPtr, BdLimit, BdPtr) == 0 );
@@ -213,10 +210,9 @@ void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 		taskENTER_CRITICAL();
 		int BdReturned = XAxiDma_BdRingFromHw(RxRingPtr, BdLimit, &BdPtr);
 		taskEXIT_CRITICAL();
-		if ( BdReturned != BdLimit) {
-			AxiEthernetUtilErrorTrap("BdReturned != BdLimit");
-			continue;
-		}
+		// TODO: optionally `continue` instead of throwing an exception, depending on how
+		// often this happens
+		configASSERT(BdReturned == BdLimit);
 
 		/* Examine the BD */
 		BdSts = XAxiDma_BdGetSts(BdPtr);
@@ -315,11 +311,7 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 	 * reset, and since AXIDMA reset line is connected to AxiEthernet, this
 	 * would ensure a reset of AxiEthernet.
 	 */
-	Status = XAxiDma_CfgInitialize(DmaInstancePtr, DmaConfig);
-	if(Status != XST_SUCCESS) {
-		AxiEthernetUtilErrorTrap("Error initializing DMA\r\n");
-		return XST_FAILURE;
-	}
+	configASSERT( XAxiDma_CfgInitialize(DmaInstancePtr, DmaConfig) == 0);
 
 	/*
 	 * Setup RxBD space.
@@ -341,16 +333,10 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 	 */
 	Status = XAxiDma_BdRingCreate(RxRingPtr, (u32) &RxBdSpace,
 				     (u32) &RxBdSpace, BD_ALIGNMENT, RXBD_CNT);
-	if (Status != XST_SUCCESS) {
-		AxiEthernetUtilErrorTrap("Error setting up RxBD space");
-		return XST_FAILURE;
-	}
+	configASSERT( Status == 0);
+
 	XAxiDma_BdClear(&BdTemplate);
-	Status = XAxiDma_BdRingClone(RxRingPtr, &BdTemplate);
-	if (Status != XST_SUCCESS) {
-		AxiEthernetUtilErrorTrap("Error initializing RxBD space");
-		return XST_FAILURE;
-	}
+	configASSERT( XAxiDma_BdRingClone(RxRingPtr, &BdTemplate) == 0);
 
 	/*
 	 * Setup TxBD space.
@@ -366,55 +352,33 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 	 */
 	Status = XAxiDma_BdRingCreate(TxRingPtr, (u32) &TxBdSpace,
 				     (u32) &TxBdSpace, BD_ALIGNMENT, TXBD_CNT);
-	if (Status != XST_SUCCESS) {
-		AxiEthernetUtilErrorTrap("Error setting up TxBD space");
-		return XST_FAILURE;
-	}
+	configASSERT( Status == 0);
 
 	/*
 	 * We reuse the bd template, as the same one will work for both rx and
 	 * tx.
 	 */
-	Status = XAxiDma_BdRingClone(TxRingPtr, &BdTemplate);
-	if (Status != XST_SUCCESS) {
-		AxiEthernetUtilErrorTrap("Error initializing TxBD space");
-		return XST_FAILURE;
-	}
+	configASSERT( XAxiDma_BdRingClone(TxRingPtr, &BdTemplate) == 0);
 
 	/*
 	 * Interrupt coalescing parameters are set to their default settings
 	 * which is to interrupt the processor after every frame has been
 	 * processed by the DMA engine.
 	 */
-	Status = XAxiDma_BdRingSetCoalesce(TxRingPtr, 1, 1);
-	if (Status != XST_SUCCESS) {
-		AxiEthernetUtilErrorTrap("Error setting coalescing for transmit");
-		return XST_FAILURE;
-	}
+	configASSERT( XAxiDma_BdRingSetCoalesce(TxRingPtr, 1, 1) == 0);
+	configASSERT( XAxiDma_BdRingSetCoalesce(RxRingPtr, 1, 1) == 0);
 
-	Status = XAxiDma_BdRingSetCoalesce(RxRingPtr, 1, 1);
-	if (Status != XST_SUCCESS) {
-		AxiEthernetUtilErrorTrap("Error setting coalescing for recv");
-		return XST_FAILURE;
-	}
-
-	
 	/* Check status */
 	int FreeBdCount = XAxiDma_BdRingGetFreeCnt(RxRingPtr);
 	configASSERT( FreeBdCount == RXBD_CNT);
-
 
 	/*
 	 * Allocate RXBD_CNT RxBD.
 	 */
 	Status = XAxiDma_BdRingAlloc(RxRingPtr, FreeBdCount, &BdPtr);
-	if (Status != XST_SUCCESS) {
-		AxiEthernetUtilErrorTrap("Error allocating RxBD");
-		return XST_FAILURE;
-	}
+	configASSERT( Status == 0);
 
 	BdCurPtr = BdPtr;
-
 	for (int Index = 0; Index < FreeBdCount; Index++) {
 		Status = XAxiDma_BdSetBufAddr(BdCurPtr, (u32)&RxFrameBuf[Index]);
 		if (Status != XST_SUCCESS) {
@@ -438,35 +402,25 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 		 * The hardware will set the SOF/EOF bits per stream status
 		 */
 		XAxiDma_BdSetCtrl(BdCurPtr, 0);
-
 		XAxiDma_BdSetId(BdCurPtr, Index);
-
 		BdCurPtr = (XAxiDma_Bd *)XAxiDma_BdRingNext(RxRingPtr, BdCurPtr);
 	}
 
 	/*
 	 * Enqueue to HW
 	 */
-	Status = XAxiDma_BdRingToHw(RxRingPtr, FreeBdCount, BdPtr);
-	if (Status != XST_SUCCESS) {
-		AxiEthernetUtilErrorTrap("Error committing RxBD to HW");
-		return XST_FAILURE;
-	}
+	configASSERT( XAxiDma_BdRingToHw(RxRingPtr, FreeBdCount, BdPtr) == 0);
 
 	/*
 	 * Start DMA RX channel. Now it's ready to receive data.
 	 */
-	Status = XAxiDma_BdRingStart(RxRingPtr);
-	if (Status != XST_SUCCESS) {
-		return XST_FAILURE;
-	}
+	configASSERT( XAxiDma_BdRingStart(RxRingPtr) == 0);
 
 	/* Enable all RX interrupts */
 	XAxiDma_BdRingIntEnable(RxRingPtr, XAXIDMA_IRQ_ALL_MASK);
 	/* Enable Cyclic DMA mode */
 	XAxiDma_BdRingEnableCyclicDMA(RxRingPtr);
 	XAxiDma_SelectCyclicMode(DmaInstancePtr, XAXIDMA_DEVICE_TO_DMA, 1);
-	//XAxiDma_SelectCyclicMode(DmaInstancePtr, XAXIDMA_DMA_TO_DEVICE, 0);
 
 	/*
 	 * Enable DMA transmit related interrupts
@@ -474,17 +428,12 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 	XAxiDma_BdRingIntEnable(TxRingPtr, XAXIDMA_IRQ_ALL_MASK);
 
 	/* Start RX DMA channel */
-	Status = XAxiDma_BdRingStart(RxRingPtr);
-	if (Status != XST_SUCCESS) {
-		printf("Rx start BD ring failed with %d\r\n", Status);
-		return XST_FAILURE;
-	}
+	configASSERT( XAxiDma_BdRingStart(RxRingPtr) == 0);
 
 	// create DmaFreeTask
 	xTaskCreate( DmaFreeBDTask, "DmaFreeBDTask", configMINIMAL_STACK_SIZE*5, NULL, ipconfigIP_TASK_PRIORITY - 1, &DmaFreeBDTaskHandle);
 	xTaskCreate( prvEMACDeferredInterruptHandlerTask, "prvEMACDeferredInterruptHandlerTask", configMINIMAL_STACK_SIZE*5, NULL,
 		ipconfigIP_TASK_PRIORITY - 1, &prvEMACDeferredInterruptHandlerTaskHandle);
-	
 
 	return XST_SUCCESS;
 }
@@ -495,7 +444,6 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
  */
 int PhySetup(XAxiEthernet *AxiEthernetInstancePtr, u16 AxiEthernetDeviceId)
 {
-	int Status;
 	XAxiEthernet_Config *MacCfgPtr;
 
 	/*
@@ -506,53 +454,33 @@ int PhySetup(XAxiEthernet *AxiEthernetInstancePtr, u16 AxiEthernetDeviceId)
 	/*
 	 * Check if DMA is present or not.
 	 */
-	if(MacCfgPtr->AxiDevType != XPAR_AXI_DMA) {
-		AxiEthernetUtilErrorTrap
-			("Device HW not configured for DMA mode\r\n");
-		return XST_FAILURE;
-	}
+	configASSERT( MacCfgPtr->AxiDevType != XPAR_AXI_DMA);
 
 	/*
 	 * Initialize AxiEthernet hardware.
 	 */
-	Status = XAxiEthernet_CfgInitialize(AxiEthernetInstancePtr, MacCfgPtr,
-						MacCfgPtr->BaseAddress);
-	if (Status != XST_SUCCESS) {
-		AxiEthernetUtilErrorTrap("Error in initialize");
-		return XST_FAILURE;
-	}
+	configASSERT( XAxiEthernet_CfgInitialize(AxiEthernetInstancePtr, MacCfgPtr,
+						MacCfgPtr->BaseAddress) == 0);
 
 	/*
 	 * Set the MAC address
 	 */
-	Status = XAxiEthernet_SetMacAddress(AxiEthernetInstancePtr,
-							AxiEthernetMAC);
-	if (Status != XST_SUCCESS) {
-		AxiEthernetUtilErrorTrap("Error setting MAC address");
-		return XST_FAILURE;
-	}
+	configASSERT( XAxiEthernet_SetMacAddress(AxiEthernetInstancePtr,
+							AxiEthernetMAC) == 0);
 
-	// Get MAC address
-    char MyMac[6] = { 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA };
-    XAxiEthernet_GetMacAddress(AxiEthernetInstancePtr,MyMac);
-	printf("Got mac address: getting mac address to:0x%08x%8x%8x%8x%8x%8x\r\n",
-		MyMac[0],  MyMac[1], MyMac[2], MyMac[3], MyMac[4], MyMac[5]);
-
-
+	// FIXME: replace `sleep` with a better solution
 	sleep(AXIETHERNET_PHY_DELAY_SEC);
 	AxiEtherentConfigureTIPhy(AxiEthernetInstancePtr, XPAR_AXIETHERNET_0_PHYADDR);
+
+	// FIXME: replace `sleep` with a better solution
 	sleep(AXIETHERNET_PHY_DELAY_SEC);
 
 	/*
 	 * Make sure Tx, Rx and extended multicast are enabled.
 	 */
-	Status = XAxiEthernet_SetOptions(AxiEthernetInstancePtr,
+	configASSERT( XAxiEthernet_SetOptions(AxiEthernetInstancePtr,
 						XAE_RECEIVER_ENABLE_OPTION | XAE_DEFAULT_OPTIONS |
-						XAE_TRANSMITTER_ENABLE_OPTION);
-	if (Status != XST_SUCCESS) {
-		AxiEthernetUtilErrorTrap("Error setting options");
-		return XST_FAILURE;
-	}
+						XAE_TRANSMITTER_ENABLE_OPTION) == 0);
 
 	return XST_SUCCESS;
 }
@@ -560,19 +488,12 @@ int PhySetup(XAxiEthernet *AxiEthernetInstancePtr, u16 AxiEthernetDeviceId)
 
 void TxCallBack(XAxiDma_BdRing *TxRingPtr)
 {
-	/*
-	 * Disable the transmit related interrupts
-	 */
-	//XAxiDma_BdRingIntDisable(TxRingPtr, XAXIDMA_IRQ_ALL_MASK);
 	(void) TxRingPtr;
 	configASSERT( DmaFreeBDTaskHandle != NULL);
 
 	static BaseType_t askForContextSwitch = pdFALSE;
 	vTaskNotifyGiveFromISR( DmaFreeBDTaskHandle, &askForContextSwitch);
 
-	/*
-	 * Increment the counter
-	 */
 	FramesTx++;
 }
 
@@ -619,12 +540,9 @@ void TxIntrHandler(XAxiDma_BdRing *TxRingPtr)
 	 */
 	if (!(IrqStatus & XAXIDMA_IRQ_ALL_MASK)) {
 		DeviceErrors++;
-		AxiEthernetUtilErrorTrap
-		("AXIDma: No interrupts asserted in TX status register");
+		printf("AXIDma: No interrupts asserted in TX status register");
 		XAxiDma_Reset(&AxiDmaInstance);
-		if(!XAxiDma_ResetIsDone(&AxiDmaInstance)) {
-			AxiEthernetUtilErrorTrap ("AxiDMA: Error: Could not reset\n");
-		}
+		configASSERT( XAxiDma_ResetIsDone(&AxiDmaInstance) == 1);
 		return;
 	}
 
@@ -633,17 +551,13 @@ void TxIntrHandler(XAxiDma_BdRing *TxRingPtr)
 	 * processing.
 	 */
 	if ((IrqStatus & XAXIDMA_IRQ_ERROR_MASK)) {
-
-		AxiEthernetUtilErrorTrap("AXIDMA: TX Error interrupts\n");
+		printf("AXIDMA: TX Error interrupts\n");
 		/*
 		 * Reset should never fail for transmit channel
 		 */
 		XAxiDma_Reset(&AxiDmaInstance);
 
-		if(!XAxiDma_ResetIsDone(&AxiDmaInstance)) {
-
-			AxiEthernetUtilErrorTrap ("AxiDMA: Error: Could not reset\n");
-		}
+		configASSERT( XAxiDma_ResetIsDone(&AxiDmaInstance) == 1);
 		return;
 	}
 
@@ -662,16 +576,12 @@ void RxCallBack(XAxiDma_BdRing *RxRingPtr)
 	/*
 	 * Disable the receive related interrupts
 	 */
-	//XAxiDma_BdRingIntDisable(RxRingPtr, XAXIDMA_IRQ_ALL_MASK);
 	(void) RxRingPtr;
 	configASSERT( prvEMACDeferredInterruptHandlerTaskHandle != NULL);
 
 	static BaseType_t askForContextSwitch = pdFALSE;
 	vTaskNotifyGiveFromISR( prvEMACDeferredInterruptHandlerTaskHandle, &askForContextSwitch);
-	/*
-	 * Increment the counter so that main thread knows something
-	 * happened
-	 */
+
 	FramesRx++;
 }
 
@@ -692,11 +602,9 @@ void RxIntrHandler(XAxiDma_BdRing *RxRingPtr)
 	 */
 	if (!(IrqStatus & XAXIDMA_IRQ_ALL_MASK)) {
 		DeviceErrors++;
-		AxiEthernetUtilErrorTrap("AXIDma: No interrupts asserted in RX status register");
+		printf("AXIDma: No interrupts asserted in RX status register");
 		XAxiDma_Reset(&AxiDmaInstance);
-		if(!XAxiDma_ResetIsDone(&AxiDmaInstance)) {
-			AxiEthernetUtilErrorTrap ("Could not reset\n");
-		}
+		configASSERT( XAxiDma_ResetIsDone(&AxiDmaInstance) == 1);
 		return;
 	}
 
@@ -705,17 +613,13 @@ void RxIntrHandler(XAxiDma_BdRing *RxRingPtr)
 	 * processing.
 	 */
 	if ((IrqStatus & XAXIDMA_IRQ_ERROR_MASK)) {
-
-		AxiEthernetUtilErrorTrap("AXIDMA: RX Error interrupts\n");
+		printf("AXIDMA: RX Error interrupts\n");
 
 		/* Reset could fail and hang
 		 * NEED a way to handle this or do not call it??
 		 */
 		XAxiDma_Reset(&AxiDmaInstance);
-
-		if(!XAxiDma_ResetIsDone(&AxiDmaInstance)) {
-			AxiEthernetUtilErrorTrap ("Could not reset\n");
-		}
+		configASSERT( XAxiDma_ResetIsDone(&AxiDmaInstance) == 1);
 
 		return;
 	}
@@ -734,18 +638,17 @@ void AxiEthernetErrorHandler(XAxiEthernet *AxiEthernet)
 	u32 Pending = XAxiEthernet_IntPending(AxiEthernet);
 
 	if (Pending & XAE_INT_RXRJECT_MASK) {
-		AxiEthernetUtilErrorTrap("AxiEthernet: Rx packet rejected");
+		printf("AxiEthernet: Rx packet rejected");
+		configASSERT( 0); // TODO: always fail for now
 	}
 
 	if (Pending & XAE_INT_RXFIFOOVR_MASK) {
-		AxiEthernetUtilErrorTrap("AxiEthernet: Rx fifo over run");
+		printf("AxiEthernet: Rx fifo over run");
+		configASSERT( 0); // TODO: always fail for now
 	}
 
 	XAxiEthernet_IntClear(AxiEthernet, Pending);
 
-	/*
-	 * Bump counter
-	 */
 	DeviceErrors++;
 }
 
