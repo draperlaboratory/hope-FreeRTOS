@@ -380,4 +380,5 @@ ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
 #define ipconfigCHECK_IP_QUEUE_SPACE 1
 #define ipconfigTCP_IP_SANITY 1
 
+//#define ipconfigETHERNET_MINIMUM_PACKET_BYTES 64
 #endif /* FREERTOS_IP_CONFIG_H */
