@@ -73,7 +73,8 @@ of their size. */
 typedef struct A_BLOCK_LINK
 {
 	struct A_BLOCK_LINK *pxNextFreeBlock;	/*<< The next free block in the list. */
-	size_t xBlockSize;						/*<< The size of the free block. */
+  size_t orig_req_size;
+  size_t xBlockSize;						/*<< The size of the free block. */
 } BlockLink_t;
 
 
@@ -209,15 +210,12 @@ void __attribute__ ((noinline)) dover_untag(volatile uintptr_t *ptr, size_t byte
   size_t words = btow(bytes);
   size_t count;
   volatile uintptr_t *p;
-  uintptr_t zero;
 
   p = ptr;
-  // grab a specially tagged zero
-  zero = (uintptr_t)dover_ptr_zero;
   count = 0;
   while(count < words) {
     //printk("do_untag(%d) %d\n", count, p);
-    *p = zero; // Tag the word
+    *p = (uintptr_t)dover_ptr_zero; // write specially tagged zero
     p++;
     count++;
   }
@@ -232,6 +230,8 @@ BlockLink_t *pxBlock, *pxPreviousBlock, *pxNewBlockLink;
 static BaseType_t xHeapHasBeenInitialised = pdFALSE;
 void *pvReturn = NULL;
 
+ size_t orig_xWantedSize = xWantedSize;
+ 
 	vTaskSuspendAll();
 	{
 		/* If this is the first call to malloc then the heap will require
@@ -304,9 +304,11 @@ void *pvReturn = NULL;
 	}
 	( void ) xTaskResumeAll();
 
-        if(pvReturn)
-          pvReturn = dover_tag(pvReturn, xWantedSize - heapSTRUCT_SIZE);
-//        else
+        if(pvReturn) {
+	  pxBlock->orig_req_size = orig_xWantedSize;
+          pvReturn = dover_tag(pvReturn, orig_xWantedSize);
+	}
+	  //        else
 //          printk("malloc allocation failure, size = %d\n", xWantedSize);
 
 	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
@@ -341,7 +343,7 @@ void vPortFree( void *pv )
 		byte alignment warnings. */
 		pxLink = ( void * ) puc;
 
-		dover_untag(pv, pxLink->xBlockSize - heapSTRUCT_SIZE);
+		dover_untag(pv, pxLink->orig_req_size);
 
 		vTaskSuspendAll();
 		{
