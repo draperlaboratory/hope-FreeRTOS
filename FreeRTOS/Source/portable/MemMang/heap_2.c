@@ -229,6 +229,8 @@ BlockLink_t *pxBlock, *pxPreviousBlock, *pxNewBlockLink;
 static BaseType_t xHeapHasBeenInitialised = pdFALSE;
 void *pvReturn = NULL;
 
+ size_t orig_xWantedSize = xWantedSize;
+ 
 	vTaskSuspendAll();
 	{
 		/* If this is the first call to malloc then the heap will require
@@ -302,7 +304,7 @@ void *pvReturn = NULL;
 	( void ) xTaskResumeAll();
 
         if(pvReturn)
-          pvReturn = dover_tag(pvReturn, xWantedSize - heapSTRUCT_SIZE);
+          pvReturn = dover_tag(pvReturn, orig_xWantedSize);
 //        else
 //          printk("malloc allocation failure, size = %d\n", xWantedSize);
 
