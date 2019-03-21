@@ -209,15 +209,12 @@ void __attribute__ ((noinline)) dover_untag(volatile uintptr_t *ptr, size_t byte
   size_t words = btow(bytes);
   size_t count;
   volatile uintptr_t *p;
-  uintptr_t zero;
 
   p = ptr;
-  // grab a specially tagged zero
-  zero = (uintptr_t)dover_ptr_zero;
   count = 0;
   while(count < words) {
     //printk("do_untag(%d) %d\n", count, p);
-    *p = zero; // Tag the word
+    *p = (uintptr_t)dover_ptr_zero; // write specially tagged zero
     p++;
     count++;
   }
