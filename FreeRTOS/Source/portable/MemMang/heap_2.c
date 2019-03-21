@@ -73,8 +73,8 @@ of their size. */
 typedef struct A_BLOCK_LINK
 {
 	struct A_BLOCK_LINK *pxNextFreeBlock;	/*<< The next free block in the list. */
-	size_t orig_req_size;
-	size_t xBlockSize;						/*<< The size of the free block. */
+  size_t orig_req_size;
+  size_t xBlockSize;						/*<< The size of the free block. */
 } BlockLink_t;
 
 
@@ -304,9 +304,11 @@ void *pvReturn = NULL;
 	}
 	( void ) xTaskResumeAll();
 
-        if(pvReturn)
+        if(pvReturn) {
+	  pxBlock->orig_req_size = orig_xWantedSize;
           pvReturn = dover_tag(pvReturn, orig_xWantedSize);
-//        else
+	}
+	  //        else
 //          printk("malloc allocation failure, size = %d\n", xWantedSize);
 
 	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
@@ -341,7 +343,7 @@ void vPortFree( void *pv )
 		byte alignment warnings. */
 		pxLink = ( void * ) puc;
 
-		dover_untag(pv, pxLink->xBlockSize - heapSTRUCT_SIZE);
+		dover_untag(pv, pxLink->orig_req_size);
 
 		vTaskSuspendAll();
 		{
