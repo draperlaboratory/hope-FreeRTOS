@@ -2,7 +2,12 @@
 #include <sys/stat.h>
 #include <sys/times.h>
 #include <sys/time.h>
-#include "uart_16550.h"
+
+//#include "uart_16550.h"
+// Board includes
+#include "xuartns550_l.h"
+#include "bsp.h"
+
 
 void* _sbrk (int nbytes);
 int _write(int file, char *ptr, int len);
@@ -23,7 +28,12 @@ void* _sbrk (int nbytes)
 
 int _write(int file, char *ptr, int len) {
   (void)file;
-  return uart0_txbuffer(ptr, len);
+  //return uart0_txbuffer(ptr, len);
+  int cnt;
+  for (cnt = 0; cnt < len; cnt++) {
+    XUartNs550_SendByte(XPAR_UARTNS550_0_BASEADDR, *ptr++);
+  }
+  return len;
 }
 
 int _close(int fd)

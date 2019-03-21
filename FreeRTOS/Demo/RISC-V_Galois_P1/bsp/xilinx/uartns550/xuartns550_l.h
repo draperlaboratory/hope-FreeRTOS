@@ -73,7 +73,7 @@ extern "C" {
 /*
  * Offset from the device base address to the IP registers.
  */
-#define XUN_REG_OFFSET 0x1000
+#define XUN_REG_OFFSET 0x0000
 
 /** @name Register Map
  *

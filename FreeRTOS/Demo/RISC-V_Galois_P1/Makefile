@@ -71,6 +71,8 @@ APP_SRC = \
 	bsp/xilinx/uartns550/xuartns550_selftest.c \
 	bsp/xilinx/uartns550/xuartns550_stats.c \
 	bsp/xilinx/uartns550/xuartns550_options.c \
+	bsp/xilinx/uartns550/xuartns550_intr.c \
+	bsp/xilinx/uartns550/xuartns550_l.c \
 	bsp/xilinx/axidma/xaxidma_bd.c \
 	bsp/xilinx/axidma/xaxidma_bdring.c \
 	bsp/xilinx/axidma/xaxidma.c \
@@ -168,7 +170,11 @@ ifeq ($(PROG),main_tcp)
 		demo/SimpleTCPEchoServer.c
 
 else
+ifeq ($(PROG),main_newuart)
+	CFLAGS += -DmainDEMO_TYPE=8
+else
 	$(info unknown demo: $(PROG))
+endif
 endif
 endif
 endif
