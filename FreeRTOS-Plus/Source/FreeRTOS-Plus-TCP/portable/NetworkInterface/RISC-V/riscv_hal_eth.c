@@ -454,7 +454,7 @@ int PhySetup(XAxiEthernet *AxiEthernetInstancePtr, u16 AxiEthernetDeviceId)
 	/*
 	 * Check if DMA is present or not.
 	 */
-	configASSERT( MacCfgPtr->AxiDevType != XPAR_AXI_DMA);
+	configASSERT( MacCfgPtr->AxiDevType == XPAR_AXI_DMA);
 
 	/*
 	 * Initialize AxiEthernet hardware.
