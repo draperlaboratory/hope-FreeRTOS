@@ -195,10 +195,43 @@ $(BUILD_DIRECTORIES):
 	mkdir -p $@
 
 clean:
-	rm -rv $(BUILD_DIR)
+	rm -rfv $(BUILD_DIR)
+	rm -rfv ./isp-output
+	rm -fv status.log
+	rm -fv uart.log
+
+# Policy Variables ___________________________________________
+POLICY_DIR = $(ISP_PREFIX)/kernels
+POLICY_RUNTIME ?= hifive
+POLICY ?= none
+QEMU_GDB = -S -s
+QEMU_SERIAL = mon:stdio # Sometimes file:uart.log
+ISP_PREFIX ?= /opt/isp
+PROJ_NAME = web-server
+
+# Generate ISP Tags _____________________________________________________________________
+gen-tags: $(OUT_ELF)
+	@echo '___________________________________________________________________________________'
+	@echo 'Generating Tags for $^'
+	isp_run_app $^ \
+	-r hifive \
+	--policy none \
+	-o ./isp-output \
+	--tag-only
 
 sim-qemu: $(OUT_ELF)
-	qemu-system-riscv32 -kernel $^ -machine sifive_e
+	LD_LIBRARY_PATH=$(POLICY_DIR)/osv.$(POLICY_RUNTIME).main.$(POLICY) \
+	qemu-system-riscv32 -kernel $< \
+	-serial $(QEMU_SERIAL) -nographic \
+	-machine sifive_e \
+	-D status.log -d nochain \
+	-singlestep \
+	--policy-validator-cfg yaml-cfg=./isp-output/isp-run-FreeRTOS-$(PROJ_NAME).elf-$(POLICY)/validator_cfg.yml $(QEMU_GDB)
+
+gdb-qemu: $(OUT_ELF)
+	$(GDB) -iex "set mem inaccessible-by-default off" -iex "set arch riscv:rv32" -iex "set riscv use-compressed-breakpoint off" -iex "source /opt/isp/gdb-scripts/qemu.gdb" -iex "target remote :1234" $(OUT_ELF)
+
+
 
 debug:
 	@echo "Application Objects: ___________________________"
