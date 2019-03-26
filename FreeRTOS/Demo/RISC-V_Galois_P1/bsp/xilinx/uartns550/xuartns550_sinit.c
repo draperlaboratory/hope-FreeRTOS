@@ -56,9 +56,6 @@
 
 /************************** Constant Definitions ****************************/
 
-#ifndef XPAR_DEFAULT_BAUD_RATE
-#define XPAR_DEFAULT_BAUD_RATE 19200
-#endif
 
 /**************************** Type Definitions ******************************/
 
@@ -148,7 +145,6 @@ int XUartNs550_Initialize(XUartNs550 *InstancePtr, u16 DeviceId)
 		return XST_DEVICE_NOT_FOUND;
 	}
 
-	ConfigPtr->DefaultBaudRate = XPAR_DEFAULT_BAUD_RATE;
 	return XUartNs550_CfgInitialize(InstancePtr, ConfigPtr,
 					ConfigPtr->BaseAddress);
 }

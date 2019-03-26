@@ -1,5 +1,5 @@
 #include "bsp.h"
-#include "uart_16550.h"
+#include "uart.h"
 #include "plic_driver.h"
 
 // to communicate with the debugger in spike

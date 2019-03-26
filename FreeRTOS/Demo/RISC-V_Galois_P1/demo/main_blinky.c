@@ -72,6 +72,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "uart.h"
 
 /* Priorities used by the tasks. */
 #define mainQUEUE_RECEIVE_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
@@ -102,6 +103,7 @@ void main_blinky( void );
  */
 static void prvQueueReceiveTask( void *pvParameters );
 static void prvQueueSendTask( void *pvParameters );
+static void prvUartReceiveTask( void *pvParameters );
 
 /*-----------------------------------------------------------*/
 
@@ -127,6 +129,7 @@ void main_blinky( void )
 					NULL );								/* The task handle is not required, so NULL is passed. */
 
 		xTaskCreate( prvQueueSendTask, "TX", configMINIMAL_STACK_SIZE * 2U, NULL, mainQUEUE_SEND_TASK_PRIORITY, NULL );
+		xTaskCreate( prvUartReceiveTask, "prvUartReceiveTask", configMINIMAL_STACK_SIZE * 2U, NULL, mainQUEUE_SEND_TASK_PRIORITY, NULL );
 
 		/* Start the tasks and timer running. */
 		vTaskStartScheduler();
@@ -141,6 +144,25 @@ void main_blinky( void )
 	for( ;; );
 }
 /*-----------------------------------------------------------*/
+
+static void prvUartReceiveTask( void *pvParameters ) {
+	(void)pvParameters;
+
+	char buf[10];
+	buf[9] = '\0';
+	for (;;)
+	{
+		int len = uart0_rxbuffer(buf, 1);
+		if (len == -1) {
+			printf("Timeout\r\n");
+		} else {
+			printf("Got %i bytes: %s\r\n", len, buf);
+		}
+		//char c = uart0_rxchar();
+		//uart0_txchar(c);
+	}
+}
+
 
 static void prvQueueSendTask( void *pvParameters )
 {
