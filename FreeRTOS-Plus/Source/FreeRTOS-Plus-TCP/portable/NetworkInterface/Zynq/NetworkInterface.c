@@ -44,7 +44,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* Xilinx library files. */
 #include <xemacps.h>
-#include "Zynq/x_topology.h"
 #include "Zynq/x_emacpsif.h"
 #include "Zynq/x_emacpsif_hw.h"
 
@@ -104,15 +103,6 @@ static void prvEMACHandlerTask( void *pvParameters );
 
 /* EMAC data/descriptions. */
 static xemacpsif_s xEMACpsif;
-struct xtopology_t xXTopology =
-{
-	.emac_baseaddr = XPAR_PS7_ETHERNET_0_BASEADDR,
-	.emac_type = xemac_type_emacps,
-	.intc_baseaddr = 0x0,
-	.intc_emac_intr = 0x0,
-	.scugic_baseaddr = XPAR_PS7_SCUGIC_0_BASEADDR,
-	.scugic_emac_intr = 0x36,
-};
 
 XEmacPs_Config mac_config =
 {

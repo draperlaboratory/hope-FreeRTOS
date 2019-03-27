@@ -35,7 +35,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "NetworkBufferManagement.h"
 
 #include "Zynq/x_emacpsif.h"
-#include "Zynq/x_topology.h"
 #include "xstatus.h"
 
 #include "xparameters.h"
@@ -71,12 +70,6 @@ static unsigned char *pxDMA_tx_buffers[ ipconfigNIC_N_TX_DESC ] = { NULL };
 	immediately to the IP-task.
 */
 static NetworkBufferDescriptor_t *pxDMA_rx_buffers[ ipconfigNIC_N_RX_DESC ] = { NULL };
-
-/*
-	The FreeRTOS+TCP port is using a fixed 'topology', which is declared in
-	./portable/NetworkInterface/Zynq/NetworkInterface.c
-*/
-extern struct xtopology_t xXTopology;
 
 static SemaphoreHandle_t xTXDescriptorSemaphore = NULL;
 
@@ -509,7 +502,6 @@ XStatus init_dma(xemacpsif_s *xemacpsif)
 	int iIndex;
 	UBaseType_t xRxSize;
 	UBaseType_t xTxSize;
-	struct xtopology_t *xtopologyp = &xXTopology;
 
 	xRxSize = ipconfigNIC_N_RX_DESC * sizeof( xemacpsif->rxSegments[ 0 ] );
 
