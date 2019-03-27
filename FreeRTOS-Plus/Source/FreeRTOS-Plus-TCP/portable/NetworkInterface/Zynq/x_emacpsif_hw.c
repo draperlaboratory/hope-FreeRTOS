@@ -66,8 +66,6 @@ void start_emacps (xemacpsif_s *xemacps)
 	XEmacPs_Start(&xemacps->emacps);
 }
 
-extern struct xtopology_t xXTopology;
-
 volatile int error_msg_count = 0;
 volatile const char *last_err_msg = "";
 
@@ -142,18 +140,14 @@ int xResult;
 static void emacps_handle_error(void *arg, u8 Direction, u32 ErrorWord)
 {
 	xemacpsif_s   *xemacpsif;
-	struct xtopology_t *xtopologyp;
 	XEmacPs *xemacps;
 
 	xemacpsif = (xemacpsif_s *)(arg);
-
-	xtopologyp = &xXTopology;
 
 	xemacps = &xemacpsif->emacps;
 
 	/* Do not appear to be used. */
 	( void ) xemacps;
-	( void ) xtopologyp;
 
 	last_err_msg = NULL;
 
