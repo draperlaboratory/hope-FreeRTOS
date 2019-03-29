@@ -12,60 +12,80 @@
 *
 * @note
 *
-* This file contains items which are architecture dependent.
+* Lorem impsum
 *
-* <pre>
-* MODIFICATION HISTORY:
-*
-* Ver   Who    Date   Changes
-* ----- ---- -------- -------------------------------------------------------
-* 1.00a rmm  12/14/01 First release
-*       rmm  05/09/03 Added "xassert always" macros to rid ourselves of diab
-*                     compiler warnings
-* 1.00a rpm  11/07/03 Added XNullHandler function as a stub interrupt handler
-* 1.00a rpm  07/21/04 Added XExceptionHandler typedef for processor exceptions
-* 1.00a xd   11/03/04 Improved support for doxygen.
-* 1.00a wre  01/25/07 Added Linux style data types u32, u16, u8, TRUE, FALSE
-* 1.00a rpm  04/02/07 Added ifndef KERNEL around u32, u16, u8 data types
-* </pre>
 *
 ******************************************************************************/
-
 #ifndef RISCV_P1_BSP_H
 #define RISCV_P1_BSP_H
 
 #include "stdint.h"
 #include "plic_driver.h"
 
+/**
+ * PLIC defines
+ */
 #define PLIC_BASE_ADDR (0xC000000ULL)
+
+#define PLIC_NUM_SOURCES 16
+#define PLIC_NUM_PRIORITIES 16
 
 #define PLIC_SOURCE_UART0 0x1
 #define PLIC_SOURCE_ETH 0x2
 #define PLIC_SOURCE_DMA_MM2S 0x3
 #define PLIC_SOURCE_DMA_S2MM 0x4
+// GFE:s
+#define PLIC_SOURCE_SPI0 0x5
+#define PLIC_SOURCE_UART1 0x6
+#define PLIC_SOURCE_IIC0 0x7
+#define PLIC_SOURCE_SPI1 0x8
+#define PLIC_SOURCE_IIC1 0x9
 
 #define PLIC_PRIORITY_UART0 0x1
 #define PLIC_PRIORITY_ETH 0x2
 #define PLIC_PRIORITY_DMA_MM2S 0x3
 #define PLIC_PRIORITY_DMA_S2MM 0x3
+// GFE:
+#define PLIC_PRIORITY_SPI0 0x3
+#define PLIC_PRIORITY_UART1 0x1
+#define PLIC_PRIORITY_IIC0 0x3
+#define PLIC_PRIORITY_SPI1 0x2
+#define PLIC_PRIORITY_IIC1 0x3
 
-// UART defines
-#define XPAR_XUARTNS550_NUM_INSTANCES 1
+extern plic_instance_t Plic;
+
+void prvSetupHardware(void);
+void external_interrupt_handler(uint32_t cause);
+
+/**
+ * UART defines
+ */
+#define XPAR_UART_USE_POLLING_MODE 1
+#define XPAR_XUARTNS550_NUM_INSTANCES 2
 #define XPAR_DEFAULT_BAUD_RATE 115200
 
+#define BSP_USE_UART0 1
 #define XPAR_UARTNS550_0_DEVICE_ID 0
 #define XPAR_UARTNS550_0_BAUD_RATE XPAR_DEFAULT_BAUD_RATE
 #define XPAR_UARTNS550_0_BASEADDR 0x62300000ULL
-#define XPAR_UARTNS550_0_CLOCK_HZ (83000000ULL) // 83MHz
+#define XPAR_UARTNS550_0_CLOCK_HZ configPERIPH_CLOCK_HZ
 
-// DMA defines
-#define XPAR_AXI_DMA 1
+#define BSP_USE_UART1 1
+#define XPAR_UARTNS550_1_DEVICE_ID 1
+#define XPAR_UARTNS550_1_BAUD_RATE XPAR_DEFAULT_BAUD_RATE
+#define XPAR_UARTNS550_1_BASEADDR (0x62340000ULL)
+#define XPAR_UARTNS550_1_CLOCK_HZ configPERIPH_CLOCK_HZ
+
+/**
+ * DMA defines
+ */
+#define BSP_USE_DMA 1
 #define XPAR_XAXIDMA_NUM_INSTANCES 1
+#define XPAR_AXI_DMA 1
 
-// TODO: make sure they are sane
-#define	XPAR_AXIDMA_0_DEVICE_ID 0
+#define XPAR_AXIDMA_0_DEVICE_ID 0
 // Virtual base address of DMA engine
-#define	XPAR_AXIDMA_0_BASEADDR 0x62200000ULL
+#define XPAR_AXIDMA_0_BASEADDR 0x62200000ULL
 // Control/status stream
 #define XPAR_AXIDMA_0_SG_INCLUDE_STSCNTRL_STRM 1
 // AXI4 memory-mapped to stream
@@ -81,20 +101,23 @@
 // Scatter-gather engine
 #define XPAR_AXIDMA_0_INCLUDE_SG 1
 #define XPAR_AXIDMA_0_NUM_MM2S_CHANNELS 1
-#define XPAR_AXIDMA_0_NUM_S2MM_CHANNELS 1 
+#define XPAR_AXIDMA_0_NUM_S2MM_CHANNELS 1
 #define XPAR_AXI_DMA_0_MM2S_BURST_SIZE 16
 #define XPAR_AXI_DMA_0_S2MM_BURST_SIZE 16
 #define XPAR_AXI_DMA_0_MICRO_DMA 0
 #define XPAR_AXI_DMA_0_ADDR_WIDTH 64
 #define XPAR_AXIDMA_0_SG_LENGTH_WIDTH 16
 
-
-// Ethernet defines
-#define XPAR_AXIETHERNET_0_PHYADDR 0x03
+/**
+ * Ethernet defines
+ */
+#define BSP_USE_ETHERNET 1
 #define XPAR_XAXIETHERNET_NUM_INSTANCES 1
+
+#define XPAR_AXIETHERNET_0_PHYADDR 0x03
 #define XPAR_AXIETHERNET_0_DEVICE_ID 0
 #define XPAR_AXIETHERNET_0_BASEADDR 0x62100000ULL
-// 0 for SoftTemac at 10/100 Mbps, 1 for SoftTemac at 10/100/1000 Mbps and 2 for Vitex6 Hard Temac 
+// 0 for SoftTemac at 10/100 Mbps, 1 for SoftTemac at 10/100/1000 Mbps and 2 for Vitex6 Hard Temac
 #define XPAR_AXIETHERNET_0_TEMAC_TYPE 2 // TODO: not sure if this is right
 // TxCsum indicates that the device has checksum offload on the Tx channel or not.
 #define XPAR_AXIETHERNET_0_TXCSUM 0
@@ -116,10 +139,10 @@
 #define XPAR_AXIETHERNET_0_AVB 0
 // SGMII over LVDS
 #define XPAR_AXIETHERNET_0_ENABLE_SGMII_OVER_LVDS 1
-// Enable 1588 option. 
+// Enable 1588 option.
 #define XPAR_AXIETHERNET_0_ENABLE_1588 0
 // Tells whether MAC is 1G or 2p5G.
-#define XPAR_AXIETHERNET_0_SPEED XAE_SPEED_1000_MBPS// TODO: not sure if this is right
+#define XPAR_AXIETHERNET_0_SPEED XAE_SPEED_1000_MBPS // TODO: not sure if this is right
 // Number of table entries for the multicast address filtering // TODO: we are not using it
 #define XPAR_AXIETHERNET_0_NUM_TABLE_ENTRIES 4
 // Axi Ethernet interrupt ID.
@@ -135,16 +158,48 @@
 // Axi DMA TX interrupt ID
 #define XPAR_AXIETHERNET_0_DMA_TX_INTR PLIC_SOURCE_DMA_MM2S
 
-extern plic_instance_t Plic;
+/**
+ * IIC Defines
+ */
+#define XPAR_XIIC_NUM_INSTANCES 2
+
+#define BSP_USE_IIC0 1
+#define XPAR_IIC_0_DEVICE_ID 0
+#define XPAR_IIC_0_BASEADDR (0x62310000ULL)
+#define XPAR_IIC_0_TEN_BIT_ADR 0
+#define XPAR_IIC_0_GPO_WIDTH 32
+
+#define BSP_USE_IIC1 1
+#define XPAR_IIC_1_DEVICE_ID 1
+#define XPAR_IIC_1_BASEADDR (0x62350000ULL)
+#define XPAR_IIC_1_TEN_BIT_ADR 0
+#define XPAR_IIC_1_GPO_WIDTH 32
 
 /**
- *  Prepare haredware to run the demo.
+ * SPI defines
  */
-void prvSetupHardware( void );
+#define XPAR_XSPI_NUM_INSTANCES 1
 
-void external_interrupt_handler( uint32_t cause );
+#define BSP_USE_SPI0 0
+#define XPAR_SPI_0_DEVICE_ID 1
+#define XPAR_SPI_0_BASEADDR (0x62320000ULL)
+#define XPAR_SPI_0_FIFO_EXIST 1
+#define XPAR_SPI_0_SLAVE_ONLY 0
+#define XPAR_SPI_0_NUM_SS_BITS 1
+#define XPAR_SPI_0_NUM_TRANSFER_BITS 8
+#define XPAR_SPI_0_SPI_MODE 0
+#define XPAR_SPI_0_USE_STARTUP 0
 
-// Some xillinx drivers require to sleep for given number of seconds
+/**
+ * GPIO defines
+ */
+#define BSP_USE_GPIO 1
+#define XPAR_GPIO_BASEADDR (0x62330000ULL)
+
+/**
+ * Xilinx Drivers defines
+ * Some xillinx drivers require to sleep for given number of seconds
+ */
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -152,5 +207,3 @@ void external_interrupt_handler( uint32_t cause );
 #define msleep(_MSECS) vTaskDelay(pdMS_TO_TICKS(_MSECS));
 
 #endif /* RISCV_P1_BSP_H */
-
-

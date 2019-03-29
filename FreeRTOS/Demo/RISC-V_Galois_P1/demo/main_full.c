@@ -86,22 +86,22 @@
 #include "StreamBufferInterrupt.h"
 
 /* Priorities for the demo application tasks. */
-#define mainCHECK_TASK_PRIORITY				( configMAX_PRIORITIES - 1 )
-#define mainCREATOR_TASK_PRIORITY			( tskIDLE_PRIORITY + 3UL )
+#define mainCHECK_TASK_PRIORITY (configMAX_PRIORITIES - 1)
+#define mainCREATOR_TASK_PRIORITY (tskIDLE_PRIORITY + 3UL)
 
 /* The period of the check task, in ms, converted to ticks using the
 pdMS_TO_TICKS() macro.  mainNO_ERROR_CHECK_TASK_PERIOD is used if no errors have
 been found, mainERROR_CHECK_TASK_PERIOD is used if an error has been found. */
-#define mainNO_ERROR_CHECK_TASK_PERIOD		pdMS_TO_TICKS( 3000UL )
-#define mainERROR_CHECK_TASK_PERIOD			pdMS_TO_TICKS( 500UL )
+#define mainNO_ERROR_CHECK_TASK_PERIOD pdMS_TO_TICKS(3000UL)
+#define mainERROR_CHECK_TASK_PERIOD pdMS_TO_TICKS(500UL)
 
 /* Parameters that are passed into the register check tasks solely for the
 purpose of ensuring parameters are passed into tasks correctly. */
-#define mainREG_TEST_TASK_1_PARAMETER		( ( void * ) 0x12345678 )
-#define mainREG_TEST_TASK_2_PARAMETER		( ( void * ) 0x87654321 )
+#define mainREG_TEST_TASK_1_PARAMETER ((void *)0x12345678)
+#define mainREG_TEST_TASK_2_PARAMETER ((void *)0x87654321)
 
 /* The base period used by the timer test tasks. */
-#define mainTIMER_TEST_PERIOD				( 50 )
+#define mainTIMER_TEST_PERIOD (50)
 
 /* The size of the stack allocated to the check task (as described in the
 comments at the top of this file.  This is surprisingly large as it calls
@@ -124,24 +124,24 @@ stack. */
 * @note   None.
 *
 ******************************************************************************/
-void vSendString( const char * const pcString );
+void vSendString(const char *const pcString);
 
 /**
  * Called by main() to run the full demo (as opposed to the blinky demo) when
  * mainCREATE_SIMPLE_BLINKY_DEMO_ONLY is set to 0.
  */
-void main_full( void );
+void main_full(void);
 
 /*
  * The check task, as described at the top of this file.
  */
-static void prvCheckTask( void *pvParameters );
+static void prvCheckTask(void *pvParameters);
 
 /*
  * Initialise and start the peripheral timers that are used to exercise external
  * interrupt processing.
  */
-static void prvSetupPeripheralTimers( void );
+static void prvSetupPeripheralTimers(void);
 
 /*
  * Register check tasks as described at the top of this file.  The nature of
@@ -149,16 +149,16 @@ static void prvSetupPeripheralTimers( void );
  * entry points are kept in the C file for the convenience of checking the task
  * parameter.
  */
-static void prvRegTestTaskEntry1( void *pvParameters );
-extern void vRegTest1Implementation( void );
-static void prvRegTestTaskEntry2( void *pvParameters );
-extern void vRegTest2Implementation( void );
+static void prvRegTestTaskEntry1(void *pvParameters);
+extern void vRegTest1Implementation(void);
+static void prvRegTestTaskEntry2(void *pvParameters);
+extern void vRegTest2Implementation(void);
 
 /*
  * Tick hook used by the full demo, which includes code that interacts with
  * some of the tests.
  */
-void vFullDemoTickHook( void );
+void vFullDemoTickHook(void);
 
 /*-----------------------------------------------------------*/
 
@@ -170,7 +170,7 @@ volatile uint32_t ulRegTest1LoopCounter = 0UL, ulRegTest2LoopCounter = 0UL;
 
 /*-----------------------------------------------------------*/
 
-void main_full( void )
+void main_full(void)
 {
 
 	printf("\r\n\r\n>>> Starting main_full\r\n");
@@ -179,37 +179,36 @@ void main_full( void )
 	kernel port. */
 	vStartDynamicPriorityTasks();
 	vCreateBlockTimeTasks();
-	vStartGenericQueueTasks( tskIDLE_PRIORITY );
+	vStartGenericQueueTasks(tskIDLE_PRIORITY);
 	vStartRecursiveMutexTasks();
-	vStartTimerDemoTask( mainTIMER_TEST_PERIOD );
+	vStartTimerDemoTask(mainTIMER_TEST_PERIOD);
 	vStartEventGroupTasks();
 	vStartTaskNotifyTask();
 	vCreateAbortDelayTasks();
 	vStartCountingSemaphoreTasks();
-	vStartMessageBufferTasks( configMINIMAL_STACK_SIZE ); // fails in malloc
+	vStartMessageBufferTasks(configMINIMAL_STACK_SIZE); // fails in malloc
 	vStartStreamBufferTasks();
 	vStartStreamBufferInterruptDemo();
 
 	/* Create the register check tasks, as described at the top of this	file.
 	Use xTaskCreateStatic() to create a task using only statically allocated
 	memory. */
-	xTaskCreate( prvRegTestTaskEntry1, 			/* The function that implements the task. */
-				 "Reg1", 						/* The name of the task. */
-				 mainREG_TEST_STACK_SIZE_WORDS, /* Size of stack to allocate for the task - in words not bytes!. */
-				 mainREG_TEST_TASK_1_PARAMETER, /* Parameter passed into the task. */
-				 tskIDLE_PRIORITY, 				/* Priority of the task. */
-				 NULL );						/* Can be used to pass out a handle to the created task. */
-	xTaskCreate( prvRegTestTaskEntry2, "Reg2", mainREG_TEST_STACK_SIZE_WORDS, mainREG_TEST_TASK_2_PARAMETER, tskIDLE_PRIORITY, NULL ); // Both fail with ebreak
-	
+	xTaskCreate(prvRegTestTaskEntry1,																								 /* The function that implements the task. */
+				"Reg1",																												 /* The name of the task. */
+				mainREG_TEST_STACK_SIZE_WORDS,																						 /* Size of stack to allocate for the task - in words not bytes!. */
+				mainREG_TEST_TASK_1_PARAMETER,																						 /* Parameter passed into the task. */
+				tskIDLE_PRIORITY,																									 /* Priority of the task. */
+				NULL);																												 /* Can be used to pass out a handle to the created task. */
+	xTaskCreate(prvRegTestTaskEntry2, "Reg2", mainREG_TEST_STACK_SIZE_WORDS, mainREG_TEST_TASK_2_PARAMETER, tskIDLE_PRIORITY, NULL); // Both fail with ebreak
 
 	/* Create the task that performs the 'check' functionality,	as described at
 	the top of this file. */
-	xTaskCreate( prvCheckTask, "Check", mainCHECK_TASK_STACK_SIZE_WORDS, NULL, mainCHECK_TASK_PRIORITY, NULL );
+	xTaskCreate(prvCheckTask, "Check", mainCHECK_TASK_STACK_SIZE_WORDS, NULL, mainCHECK_TASK_PRIORITY, NULL);
 
 	/* The set of tasks created by the following function call have to be
 	created last as they keep account of the number of tasks they expect to see
 	running. */
-	vCreateSuicidalTasks( mainCREATOR_TASK_PRIORITY ); // if this and vStartMessageBufferTasks() is enabled, we have malloc problem
+	vCreateSuicidalTasks(mainCREATOR_TASK_PRIORITY); // if this and vStartMessageBufferTasks() is enabled, we have malloc problem
 
 	/* Start the timers that are used to exercise external interrupt handling. */
 	prvSetupPeripheralTimers();
@@ -223,26 +222,27 @@ void main_full( void )
 	timer tasks to be created.  See the memory management section on the
 	FreeRTOS web site for more details on the FreeRTOS heap
 	http://www.freertos.org/a00111.html. */
-	for( ;; );
+	for (;;)
+		;
 }
 /*-----------------------------------------------------------*/
 
-static void prvCheckTask( void *pvParameters )
+static void prvCheckTask(void *pvParameters)
 {
-TickType_t xDelayPeriod = mainNO_ERROR_CHECK_TASK_PERIOD;
-TickType_t xLastExecutionTime;
-uint32_t ulLastRegTest1Value = 0, ulLastRegTest2Value = 0;
-char * const pcPassMessage = ".";
-char * pcStatusMessage = pcPassMessage;
-extern void vSendString( const char * const pcString );
-extern void vToggleLED( void );
+	TickType_t xDelayPeriod = mainNO_ERROR_CHECK_TASK_PERIOD;
+	TickType_t xLastExecutionTime;
+	uint32_t ulLastRegTest1Value = 0, ulLastRegTest2Value = 0;
+	char *const pcPassMessage = ".";
+	char *pcStatusMessage = pcPassMessage;
+	extern void vSendString(const char *const pcString);
+	extern void vToggleLED(void);
 
 	/* Just to stop compiler warnings. */
-	( void ) pvParameters;
+	(void)pvParameters;
 
 	/* Output "pass", then an additional '.' character for each successful
 	loop. */
-	vSendString( "Pass" );
+	vSendString("Pass");
 
 	/* Initialise xLastExecutionTime so the first call to vTaskDelayUntil()
 	works correctly. */
@@ -254,87 +254,87 @@ extern void vToggleLED( void );
 	mainNO_ERROR_CHECK_TASK_PERIOD to mainERROR_CHECK_TASK_PERIOD.  This has the
 	effect of increasing the rate at which the onboard LED toggles, and in so
 	doing gives visual feedback of the system status. */
-	for( ;; )
+	for (;;)
 	{
 		/* Delay until it is time to execute again. */
-		vTaskDelayUntil( &xLastExecutionTime, xDelayPeriod );
+		vTaskDelayUntil(&xLastExecutionTime, xDelayPeriod);
 
 		/* Check all the demo tasks (other than the flash tasks) to ensure
 		that they are all still running, and that none have detected an error. */
-		if( xAreDynamicPriorityTasksStillRunning() == pdFALSE )
+		if (xAreDynamicPriorityTasksStillRunning() == pdFALSE)
 		{
 			pcStatusMessage = "ERROR: Dynamic priority demo/tests.\r\n";
 		}
 
-		if( xAreBlockTimeTestTasksStillRunning() == pdFALSE )
+		if (xAreBlockTimeTestTasksStillRunning() == pdFALSE)
 		{
 			pcStatusMessage = "ERROR: Block time demo/tests.\r\n";
 		}
 
-		if( xAreGenericQueueTasksStillRunning() == pdFALSE )
+		if (xAreGenericQueueTasksStillRunning() == pdFALSE)
 		{
 			pcStatusMessage = "ERROR: Generic queue demo/tests.\r\n";
 		}
 
-		if( xAreRecursiveMutexTasksStillRunning() == pdFALSE )
+		if (xAreRecursiveMutexTasksStillRunning() == pdFALSE)
 		{
 			pcStatusMessage = "ERROR: Recursive mutex demo/tests.\r\n";
 		}
 
-		if( xAreTimerDemoTasksStillRunning( ( TickType_t ) xDelayPeriod ) == pdFALSE )
+		if (xAreTimerDemoTasksStillRunning((TickType_t)xDelayPeriod) == pdFALSE)
 		{
 			pcStatusMessage = "ERROR: Timer demo/tests.\r\n";
 		}
 
-		if( xAreEventGroupTasksStillRunning() == pdFALSE )
+		if (xAreEventGroupTasksStillRunning() == pdFALSE)
 		{
 			pcStatusMessage = "ERROR: Event group demo/tests.\r\n";
 		}
 
-		if( xAreTaskNotificationTasksStillRunning() == pdFALSE )
+		if (xAreTaskNotificationTasksStillRunning() == pdFALSE)
 		{
 			pcStatusMessage = "ERROR: Task notification demo/tests.\r\n";
 		}
 
-		if( xAreAbortDelayTestTasksStillRunning() == pdFALSE )
+		if (xAreAbortDelayTestTasksStillRunning() == pdFALSE)
 		{
 			pcStatusMessage = "ERROR: Abort delay.\r\n";
 		}
 
-		if( xAreCountingSemaphoreTasksStillRunning() == pdFALSE )
+		if (xAreCountingSemaphoreTasksStillRunning() == pdFALSE)
 		{
 			pcStatusMessage = "ERROR: Counting semaphores.\r\n";
 		}
 
-		if( xIsCreateTaskStillRunning() == pdFALSE )
+		if (xIsCreateTaskStillRunning() == pdFALSE)
 		{
 			pcStatusMessage = "ERROR: Suicide tasks.\r\n";
 		}
 
-		if( xAreMessageBufferTasksStillRunning() == pdFALSE )
+		if (xAreMessageBufferTasksStillRunning() == pdFALSE)
 		{
 			pcStatusMessage = "ERROR: Message buffer.\r\n";
 		}
 
-		if( xAreStreamBufferTasksStillRunning() == pdFALSE )
+		if (xAreStreamBufferTasksStillRunning() == pdFALSE)
 		{
 			pcStatusMessage = "ERROR: Stream buffer.\r\n";
 		}
 
-		if( xIsInterruptStreamBufferDemoStillRunning() == pdFALSE )
+		if (xIsInterruptStreamBufferDemoStillRunning() == pdFALSE)
 		{
 			pcStatusMessage = "ERROR: Stream buffer interrupt.\r\n";
 		}
 
 		/* Check that the register test 1 task is still running. */
-		if( ulLastRegTest1Value == ulRegTest1LoopCounter )
+		if (ulLastRegTest1Value == ulRegTest1LoopCounter)
 		{
 			pcStatusMessage = "ERROR: Register test 1.\r\n";
 		}
 		ulLastRegTest1Value = ulRegTest1LoopCounter;
 
 		/* Check that the register test 2 task is still running. */
-		if( ulLastRegTest2Value == ulRegTest2LoopCounter )
+		if (ulLastRegTest2Value == ulRegTest2LoopCounter)
 		{
 			pcStatusMessage = "ERROR: Register test 2.\r\n";
 		}
@@ -342,11 +342,11 @@ extern void vToggleLED( void );
 
 		/* Write the status message to the UART. */
 		vToggleLED();
-		vSendString( pcStatusMessage );
+		vSendString(pcStatusMessage);
 
 		/* If an error has been found then increase the LED toggle rate by
 		increasing the cycle frequency. */
-		if( pcStatusMessage != pcPassMessage )
+		if (pcStatusMessage != pcPassMessage)
 		{
 			xDelayPeriod = mainERROR_CHECK_TASK_PERIOD;
 		}
@@ -354,12 +354,12 @@ extern void vToggleLED( void );
 }
 /*-----------------------------------------------------------*/
 
-static void prvRegTestTaskEntry1( void *pvParameters )
+static void prvRegTestTaskEntry1(void *pvParameters)
 {
 	/* Although the regtest task is written in assembler, its entry point is
 	written in C for convenience of checking the task parameter is being passed
 	in correctly. */
-	if( pvParameters == mainREG_TEST_TASK_1_PARAMETER )
+	if (pvParameters == mainREG_TEST_TASK_1_PARAMETER)
 	{
 		/* Start the part of the test that is written in assembler. */
 		vRegTest1Implementation();
@@ -368,16 +368,16 @@ static void prvRegTestTaskEntry1( void *pvParameters )
 	/* The following line will only execute if the task parameter is found to
 	be incorrect.  The check task will detect that the regtest loop counter is
 	not being incremented and flag an error. */
-	vTaskDelete( NULL );
+	vTaskDelete(NULL);
 }
 /*-----------------------------------------------------------*/
 
-static void prvRegTestTaskEntry2( void *pvParameters )
+static void prvRegTestTaskEntry2(void *pvParameters)
 {
 	/* Although the regtest task is written in assembler, its entry point is
 	written in C for convenience of checking the task parameter is being passed
 	in correctly. */
-	if( pvParameters == mainREG_TEST_TASK_2_PARAMETER )
+	if (pvParameters == mainREG_TEST_TASK_2_PARAMETER)
 	{
 		/* Start the part of the test that is written in assembler. */
 		vRegTest2Implementation();
@@ -386,11 +386,11 @@ static void prvRegTestTaskEntry2( void *pvParameters )
 	/* The following line will only execute if the task parameter is found to
 	be incorrect.  The check task will detect that the regtest loop counter is
 	not being incremented and flag an error. */
-	vTaskDelete( NULL );
+	vTaskDelete(NULL);
 }
 /*-----------------------------------------------------------*/
 
-void vFullDemoTickHook( void )
+void vFullDemoTickHook(void)
 {
 	/* The full demo includes a software timer demo/test that requires
 	prodding periodically from the tick interrupt. */
@@ -415,13 +415,12 @@ void vFullDemoTickHook( void )
 }
 /*-----------------------------------------------------------*/
 
-static void prvSetupPeripheralTimers( void )
+static void prvSetupPeripheralTimers(void)
 {
 }
 /*-----------------------------------------------------------*/
 
-
-void vSendString( const char * const pcString )
+void vSendString(const char *const pcString)
 {
-	printf( pcString );
+	printf(pcString);
 }

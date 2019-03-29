@@ -70,7 +70,7 @@
  * Local MAC address
  */
 // TODO: change accordingly
-char AxiEthernetMAC[6] = { 0x00, 0x0A, 0x35, 0x01, 0x02, 0x03 };
+char AxiEthernetMAC[6] = {0x00, 0x0A, 0x35, 0x01, 0x02, 0x03};
 
 /******************************************************************************/
 /**
@@ -87,12 +87,14 @@ char AxiEthernetMAC[6] = { 0x00, 0x0A, 0x35, 0x01, 0x02, 0x03 };
 ******************************************************************************/
 void AxiEthernetUtilFrameHdrFormatMAC(EthernetFrame *FramePtr, char *DestAddr)
 {
-	char *Frame = (char *) FramePtr;
+	char *Frame = (char *)FramePtr;
 	char *SourceAddress = AxiEthernetMAC;
 	int Index;
 
-	if (Padding) {
-		for (Index = 0; Index < 8; Index++) {
+	if (Padding)
+	{
+		for (Index = 0; Index < 8; Index++)
+		{
 			*Frame++ = 0;
 		}
 	}
@@ -100,14 +102,16 @@ void AxiEthernetUtilFrameHdrFormatMAC(EthernetFrame *FramePtr, char *DestAddr)
 	/*
 	 * Destination address
 	 */
-	for (Index = 0; Index < XAE_MAC_ADDR_SIZE; Index++) {
+	for (Index = 0; Index < XAE_MAC_ADDR_SIZE; Index++)
+	{
 		*Frame++ = *DestAddr++;
 	}
 
 	/*
 	 * Source address
 	 */
-	for (Index = 0; Index < XAE_MAC_ADDR_SIZE; Index++) {
+	for (Index = 0; Index < XAE_MAC_ADDR_SIZE; Index++)
+	{
 		*Frame++ = *SourceAddress++;
 	}
 }
@@ -127,7 +131,7 @@ void AxiEthernetUtilFrameHdrFormatMAC(EthernetFrame *FramePtr, char *DestAddr)
 ******************************************************************************/
 void AxiEthernetUtilFrameHdrFormatType(EthernetFrame *FramePtr, u16 FrameType)
 {
-	char *Frame = (char *) FramePtr;
+	char *Frame = (char *)FramePtr;
 
 	/*
 	 * Increment to type field
@@ -165,7 +169,7 @@ void AxiEthernetUtilFrameHdrFormatType(EthernetFrame *FramePtr, u16 FrameType)
 *
 ******************************************************************************/
 void AxiEthernetUtilFrameSetPayloadData(EthernetFrame *FramePtr,
-							int PayloadSize)
+										int PayloadSize)
 {
 	unsigned BytesLeft = PayloadSize;
 	u8 *Frame;
@@ -174,27 +178,29 @@ void AxiEthernetUtilFrameSetPayloadData(EthernetFrame *FramePtr,
 	/*
 	 * Set the frame pointer to the start of the payload area
 	 */
-	Frame = (u8 *) FramePtr + XAE_HDR_SIZE + Padding;
+	Frame = (u8 *)FramePtr + XAE_HDR_SIZE + Padding;
 
 	/*
 	 * Insert 8 bit incrementing pattern
 	 */
-	while (BytesLeft && (Counter < 256)) {
-		*Frame++ = (u8) Counter++;
+	while (BytesLeft && (Counter < 256))
+	{
+		*Frame++ = (u8)Counter++;
 		BytesLeft--;
 	}
 
 	/*
 	 * Switch to 16 bit incrementing pattern
 	 */
-	while (BytesLeft) {
-		*Frame++ = (u8) (Counter >> 8);	/* high */
+	while (BytesLeft)
+	{
+		*Frame++ = (u8)(Counter >> 8); /* high */
 		BytesLeft--;
 
 		if (!BytesLeft)
 			break;
 
-		*Frame++ = (u8) Counter++;	/* low */
+		*Frame++ = (u8)Counter++; /* low */
 		BytesLeft--;
 	}
 }
@@ -426,15 +432,16 @@ void AxiEthernetUtilFrameSetPayloadData(EthernetFrame *FramePtr,
 * @note		None.
 *
 ******************************************************************************/
-void AxiEthernetUtilFrameMemClear(EthernetFrame * FramePtr)
+void AxiEthernetUtilFrameMemClear(EthernetFrame *FramePtr)
 {
-	u32 *Data32Ptr = (u32 *) FramePtr;
+	u32 *Data32Ptr = (u32 *)FramePtr;
 	u32 WordsLeft = sizeof(EthernetFrame) / sizeof(u32);
 
 	/*
 	 * Frame should be an integral number of words
 	 */
-	while (WordsLeft--) {
+	while (WordsLeft--)
+	{
 		*Data32Ptr++ = 0;
 	}
 }
@@ -460,7 +467,7 @@ void AxiEthernetUtilFrameMemClear(EthernetFrame * FramePtr)
 *
 ******************************************************************************/
 /* Use MII register 1 (MII status register) to detect PHY */
-#define PHY_DETECT_REG  1
+#define PHY_DETECT_REG 1
 
 /* Mask used to verify certain PHY features (or register contents)
  * in the register above:
@@ -470,44 +477,50 @@ void AxiEthernetUtilFrameMemClear(EthernetFrame * FramePtr)
  */
 #define PHY_DETECT_MASK 0x1808
 
-u32 AxiEthernetDetectPHY(XAxiEthernet * AxiEthernetInstancePtr);
+u32 AxiEthernetDetectPHY(XAxiEthernet *AxiEthernetInstancePtr);
 
-
-u32 AxiEthernetDetectPHY(XAxiEthernet * AxiEthernetInstancePtr)
+u32 AxiEthernetDetectPHY(XAxiEthernet *AxiEthernetInstancePtr)
 {
 	u16 PhyReg;
 	u32 PhyAddr;
 
-	for (PhyAddr = 0; PhyAddr <= 31; PhyAddr++) {
+	for (PhyAddr = 0; PhyAddr <= 31; PhyAddr++)
+	{
 		XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
-						PHY_DETECT_REG, &PhyReg);
+							 PHY_DETECT_REG, &PhyReg);
 		if ((PhyReg != 0xFFFF) &&
-		   ((PhyReg & PHY_DETECT_MASK) == PHY_DETECT_MASK)) {
+			((PhyReg & PHY_DETECT_MASK) == PHY_DETECT_MASK))
+		{
 			/* Found a valid PHY address */
-			printf("AxiEthernetDetectPHY found phy addr: %lu\r\n",PhyAddr);
+			printf("AxiEthernetDetectPHY found phy addr: %lu\r\n", PhyAddr);
 			return PhyAddr;
 		}
 	}
 
-	return 0;		/* Default to zero */
+	return 0; /* Default to zero */
 }
 
+void AxiEthernetPrintPhy(XAxiEthernet *AxiEthernetInstancePtr);
 
-void AxiEthernetPrintPhy(XAxiEthernet * AxiEthernetInstancePtr);
-
-void AxiEthernetPrintPhy(XAxiEthernet * AxiEthernetInstancePtr) {
+void AxiEthernetPrintPhy(XAxiEthernet *AxiEthernetInstancePtr)
+{
 	u8 PhyReg;
 	u16 Val = 0xFFFF;
 	u8 PhyAddr;
 
-	for (PhyAddr = 0; PhyAddr <= 31; PhyAddr++) {
-		for (PhyReg = 0; PhyReg <= 16; PhyReg++) {
+	for (PhyAddr = 0; PhyAddr <= 31; PhyAddr++)
+	{
+		for (PhyReg = 0; PhyReg <= 16; PhyReg++)
+		{
 			printf("PhyAddr: %u; PhyReg: %u; Val=0x%x\r\n", PhyAddr, PhyReg, Val);
 			XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
-				PhyReg, &Val);
-			if (Val != 0xFFFF) {
+								 PhyReg, &Val);
+			if (Val != 0xFFFF)
+			{
 				printf("PhyAddr: %u; PhyReg: %u; Val=0x%x\r\n", PhyAddr, PhyReg, Val);
-				__asm volatile( "ebreak" ); for( ;; );
+				__asm volatile("ebreak");
+				for (;;)
+					;
 			}
 		}
 	}
@@ -522,109 +535,109 @@ void AxiEthernetPrintPhy(XAxiEthernet * AxiEthernetInstancePtr) {
 *
 ******************************************************************************/
 /* IEEE PHY Specific definitions */
-#define PHY_R0_CTRL_REG		0
-#define PHY_R3_PHY_IDENT_REG	3
+#define PHY_R0_CTRL_REG 0
+#define PHY_R3_PHY_IDENT_REG 3
 
-#define PHY_R0_RESET         0x8000
-#define PHY_R0_LOOPBACK      0x4000
-#define PHY_R0_ANEG_ENABLE   0x1000
-#define PHY_R0_DFT_SPD_MASK  0x2040
-#define PHY_R0_DFT_SPD_10    0x0000
-#define PHY_R0_DFT_SPD_100   0x2000
-#define PHY_R0_DFT_SPD_1000  0x0040
-#define PHY_R0_DFT_SPD_2500  0x0040
-#define PHY_R0_ISOLATE       0x0400
+#define PHY_R0_RESET 0x8000
+#define PHY_R0_LOOPBACK 0x4000
+#define PHY_R0_ANEG_ENABLE 0x1000
+#define PHY_R0_DFT_SPD_MASK 0x2040
+#define PHY_R0_DFT_SPD_10 0x0000
+#define PHY_R0_DFT_SPD_100 0x2000
+#define PHY_R0_DFT_SPD_1000 0x0040
+#define PHY_R0_DFT_SPD_2500 0x0040
+#define PHY_R0_ISOLATE 0x0400
 
 /* Marvel PHY 88E1111 Specific definitions */
-#define PHY_R20_EXTND_CTRL_REG	20
-#define PHY_R27_EXTND_STS_REG	27
+#define PHY_R20_EXTND_CTRL_REG 20
+#define PHY_R27_EXTND_STS_REG 27
 
-#define PHY_R20_DFT_SPD_10    	0x20
-#define PHY_R20_DFT_SPD_100   	0x50
-#define PHY_R20_DFT_SPD_1000  	0x60
-#define PHY_R20_RX_DLY		0x80
+#define PHY_R20_DFT_SPD_10 0x20
+#define PHY_R20_DFT_SPD_100 0x50
+#define PHY_R20_DFT_SPD_1000 0x60
+#define PHY_R20_RX_DLY 0x80
 
-#define PHY_R27_MAC_CONFIG_GMII      0x000F
-#define PHY_R27_MAC_CONFIG_MII       0x000F
-#define PHY_R27_MAC_CONFIG_RGMII     0x000B
-#define PHY_R27_MAC_CONFIG_SGMII     0x0004
+#define PHY_R27_MAC_CONFIG_GMII 0x000F
+#define PHY_R27_MAC_CONFIG_MII 0x000F
+#define PHY_R27_MAC_CONFIG_RGMII 0x000B
+#define PHY_R27_MAC_CONFIG_SGMII 0x0004
 
 /* Marvel PHY 88E1116R Specific definitions */
-#define PHY_R22_PAGE_ADDR_REG	22
-#define PHY_PG2_R21_CTRL_REG	21
+#define PHY_R22_PAGE_ADDR_REG 22
+#define PHY_PG2_R21_CTRL_REG 21
 
-#define PHY_REG21_10      0x0030
-#define PHY_REG21_100     0x2030
-#define PHY_REG21_1000    0x0070
+#define PHY_REG21_10 0x0030
+#define PHY_REG21_100 0x2030
+#define PHY_REG21_1000 0x0070
 
 /* Marvel PHY flags */
-#define MARVEL_PHY_88E1111_MODEL	0xC0
-#define MARVEL_PHY_88E1116R_MODEL	0x240
-#define PHY_MODEL_NUM_MASK		0x3F0
+#define MARVEL_PHY_88E1111_MODEL 0xC0
+#define MARVEL_PHY_88E1116R_MODEL 0x240
+#define PHY_MODEL_NUM_MASK 0x3F0
 
 /* TI PHY flags */
-#define TI_PHY_IDENTIFIER		0x2000
-#define TI_PHY_MODEL			0x230
-#define TI_PHY_CR			0xD
-#define TI_PHY_PHYCTRL			0x10
-#define TI_PHY_CR_SGMII_EN		0x0800
-#define TI_PHY_ADDDR			0xE
-#define TI_PHY_CFGR2			0x14
-#define TI_PHY_SGMIITYPE		0xD3
-#define TI_PHY_CFGR2_SGMII_AUTONEG_EN	0x0080
-#define TI_PHY_SGMIICLK_EN		0x4000
-#define TI_PHY_CR_DEVAD_EN		0x001F
-#define TI_PHY_CR_DEVAD_DATAEN		0x4000
+#define TI_PHY_IDENTIFIER 0x2000
+#define TI_PHY_MODEL 0x230
+#define TI_PHY_CR 0xD
+#define TI_PHY_PHYCTRL 0x10
+#define TI_PHY_CR_SGMII_EN 0x0800
+#define TI_PHY_ADDDR 0xE
+#define TI_PHY_CFGR2 0x14
+#define TI_PHY_SGMIITYPE 0xD3
+#define TI_PHY_CFGR2_SGMII_AUTONEG_EN 0x0080
+#define TI_PHY_SGMIICLK_EN 0x4000
+#define TI_PHY_CR_DEVAD_EN 0x001F
+#define TI_PHY_CR_DEVAD_DATAEN 0x4000
 
-
-void AxiEthernetPrintAllRegs(XAxiEthernet *AxiEthernetInstancePtr) {
-	(void) AxiEthernetInstancePtr;
+void AxiEthernetPrintAllRegs(XAxiEthernet *AxiEthernetInstancePtr)
+{
+	(void)AxiEthernetInstancePtr;
 	printf("AxiEthernetPrintAllRegs\r\n");
 
 	printf("Ethernet Regs\r\n");
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_RAF_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TPF_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_IFGP_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_IS_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_IP_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_IE_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TTAG_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_RTAG_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_UAWL_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_UAWU_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TPID0_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TPID1_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_PPST_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_RAF_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_TPF_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_IFGP_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_IS_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_IP_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_IE_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_TTAG_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_RTAG_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_UAWL_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_UAWU_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_TPID0_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_TPID1_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_PPST_OFFSET);
 
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_RCW0_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_RCW1_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TC_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_FCC_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_EMMC_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_RXFC_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TXFC_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TX_TIMESTAMP_ADJ_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_PHYC_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_IDREG_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_ARREG_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MDIO_MC_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MDIO_MCR_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MDIO_MWD_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MDIO_MRD_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_RCW0_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_RCW1_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_TC_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_FCC_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_EMMC_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_RXFC_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_TXFC_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_TX_TIMESTAMP_ADJ_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_PHYC_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_IDREG_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_ARREG_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_MDIO_MC_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_MDIO_MCR_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_MDIO_MWD_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_MDIO_MRD_OFFSET);
 
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MDIO_MIS_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MDIO_MIP_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MDIO_MIE_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MDIO_MIC_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_UAW0_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_UAW1_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_FMI_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_AF0_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_AF1_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_TX_VLAN_DATA_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_RX_VLAN_DATA_OFFSET);
-	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_MCAST_TABLE_OFFSET);
-	
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_MDIO_MIS_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_MDIO_MIP_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_MDIO_MIE_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_MDIO_MIC_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_UAW0_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_UAW1_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_FMI_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_AF0_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_AF1_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_TX_VLAN_DATA_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_RX_VLAN_DATA_OFFSET);
+	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR, XAE_MCAST_TABLE_OFFSET);
+
 	/*
 	printf("Statictisc Counters Regs\r\n");
 	XAxiEthernet_ReadReg(XPAR_AXIETHERNET_0_BASEADDR,XAE_RXBL_OFFSET);
@@ -652,16 +665,16 @@ void AxiEthernetPrintAllRegs(XAxiEthernet *AxiEthernetInstancePtr) {
 *
 ******************************************************************************/
 int AxiEthernetUtilEnterLoopback(XAxiEthernet *AxiEthernetInstancePtr,
-								int Speed)
+								 int Speed)
 {
-	printf("AxiEthernetUtilEnterLoopback, speed: %i\r\n",Speed);
+	printf("AxiEthernetUtilEnterLoopback, speed: %i\r\n", Speed);
 	u16 PhyReg0;
 	signed int PhyAddr;
 	u8 PhyType;
 	u16 PhyModel;
-	u16 PhyReg20;	/* Extended PHY specific Register (Reg 20)
+	u16 PhyReg20; /* Extended PHY specific Register (Reg 20)
 			   of Marvell 88E1111 PHY */
-	u16 PhyReg21;	/* Control Register MAC (Reg 21)
+	u16 PhyReg21; /* Control Register MAC (Reg 21)
 			   of Marvell 88E1116R PHY */
 
 	/* Get the Phy Interface */
@@ -670,21 +683,25 @@ int AxiEthernetUtilEnterLoopback(XAxiEthernet *AxiEthernetInstancePtr,
 	//AxiEthernetPrintPhy(AxiEthernetInstancePtr);
 
 	/* Detect the PHY address */
-	if (PhyType != XAE_PHY_TYPE_1000BASE_X) {
+	if (PhyType != XAE_PHY_TYPE_1000BASE_X)
+	{
 		PhyAddr = AxiEthernetDetectPHY(AxiEthernetInstancePtr);
-	} else {
+	}
+	else
+	{
 		PhyAddr = XPAR_AXIETHERNET_0_PHYADDR;
 	}
 
-	printf("PhyAddr = 0x%x\r\n",PhyAddr);
+	printf("PhyAddr = 0x%x\r\n", PhyAddr);
 	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
-				PHY_R3_PHY_IDENT_REG, &PhyModel);
+						 PHY_R3_PHY_IDENT_REG, &PhyModel);
 	PhyModel = PhyModel & PHY_MODEL_NUM_MASK;
 
 	/* Clear the PHY of any existing bits by zeroing this out */
 	PhyReg0 = PhyReg20 = PhyReg21 = 0;
 
-	switch (Speed) {
+	switch (Speed)
+	{
 	case XAE_SPEED_10_MBPS:
 		PhyReg0 |= PHY_R0_DFT_SPD_10;
 		PhyReg20 |= PHY_R20_DFT_SPD_10;
@@ -716,63 +733,73 @@ int AxiEthernetUtilEnterLoopback(XAxiEthernet *AxiEthernetInstancePtr,
 
 	/* RGMII mode Phy specific registers initialization */
 	if ((PhyType == XAE_PHY_TYPE_RGMII_2_0) ||
-		(PhyType == XAE_PHY_TYPE_RGMII_1_3)) {
-		if (PhyModel == MARVEL_PHY_88E1111_MODEL) {
+		(PhyType == XAE_PHY_TYPE_RGMII_1_3))
+	{
+		if (PhyModel == MARVEL_PHY_88E1111_MODEL)
+		{
 			PhyReg20 |= PHY_R20_RX_DLY;
 			/*
 			 * Adding Rx delay. Configuring loopback speed.
 			 */
 			XAxiEthernet_PhyWrite(AxiEthernetInstancePtr,
-						PhyAddr, PHY_R20_EXTND_CTRL_REG,
-						PhyReg20);
-		} else if (PhyModel == MARVEL_PHY_88E1116R_MODEL) {
+								  PhyAddr, PHY_R20_EXTND_CTRL_REG,
+								  PhyReg20);
+		}
+		else if (PhyModel == MARVEL_PHY_88E1116R_MODEL)
+		{
 			/*
 			 * Switching to PAGE2
 			 */
 			XAxiEthernet_PhyWrite(AxiEthernetInstancePtr,
-						PhyAddr,
-						PHY_R22_PAGE_ADDR_REG, 2);
+								  PhyAddr,
+								  PHY_R22_PAGE_ADDR_REG, 2);
 			/*
 			 * Adding Tx and Rx delay. Configuring loopback speed.
 			 */
 			XAxiEthernet_PhyWrite(AxiEthernetInstancePtr,
-						PhyAddr,
-						PHY_PG2_R21_CTRL_REG, PhyReg21);
+								  PhyAddr,
+								  PHY_PG2_R21_CTRL_REG, PhyReg21);
 			/*
 			 * Switching to PAGE0
 			 */
 			XAxiEthernet_PhyWrite(AxiEthernetInstancePtr,
-						PhyAddr,
-						PHY_R22_PAGE_ADDR_REG, 0);
+								  PhyAddr,
+								  PHY_R22_PAGE_ADDR_REG, 0);
 		}
 		PhyReg0 &= (~PHY_R0_ANEG_ENABLE);
 	}
 
 	/* Configure interface modes */
-	if (PhyModel == MARVEL_PHY_88E1111_MODEL) {
+	if (PhyModel == MARVEL_PHY_88E1111_MODEL)
+	{
 		if ((PhyType == XAE_PHY_TYPE_RGMII_2_0) ||
-				(PhyType == XAE_PHY_TYPE_RGMII_1_3))  {
+			(PhyType == XAE_PHY_TYPE_RGMII_1_3))
+		{
 			XAxiEthernet_PhyWrite(AxiEthernetInstancePtr,
-					PhyAddr, PHY_R27_EXTND_STS_REG,
-					PHY_R27_MAC_CONFIG_RGMII);
-		} else if (PhyType == XAE_PHY_TYPE_SGMII) {
+								  PhyAddr, PHY_R27_EXTND_STS_REG,
+								  PHY_R27_MAC_CONFIG_RGMII);
+		}
+		else if (PhyType == XAE_PHY_TYPE_SGMII)
+		{
 			XAxiEthernet_PhyWrite(AxiEthernetInstancePtr,
-					PhyAddr, PHY_R27_EXTND_STS_REG,
-					PHY_R27_MAC_CONFIG_SGMII);
-		} else if ((PhyType == XAE_PHY_TYPE_GMII) ||
-				(PhyType == XAE_PHY_TYPE_MII)) {
+								  PhyAddr, PHY_R27_EXTND_STS_REG,
+								  PHY_R27_MAC_CONFIG_SGMII);
+		}
+		else if ((PhyType == XAE_PHY_TYPE_GMII) ||
+				 (PhyType == XAE_PHY_TYPE_MII))
+		{
 			XAxiEthernet_PhyWrite(AxiEthernetInstancePtr,
-					PhyAddr, PHY_R27_EXTND_STS_REG,
-					PHY_R27_MAC_CONFIG_GMII );
+								  PhyAddr, PHY_R27_EXTND_STS_REG,
+								  PHY_R27_MAC_CONFIG_GMII);
 		}
 	}
 
 	/* Set the speed and put the PHY in reset, then put the PHY in loopback */
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr,
-				PHY_R0_CTRL_REG,
-				PhyReg0 | PHY_R0_RESET);
+						  PHY_R0_CTRL_REG,
+						  PhyReg0 | PHY_R0_RESET);
 	AxiEthernetUtilPhyDelay(AXIETHERNET_PHY_DELAY_SEC);
-/*
+	/*
 	XAxiEthernet_PhyRead(AxiEthernetInstancePtr,PhyAddr,
 				PHY_R0_CTRL_REG, &PhyReg0);
 	if (!ExternalLoopback) {
@@ -839,30 +866,31 @@ void AxiEthernetUtilErrorTrap(char *Message)
 ******************************************************************************/
 void AxiEthernetUtilPhyDelay(unsigned int Seconds)
 {
-#if defined (__MICROBLAZE__) || defined(__PPC__)
+#if defined(__MICROBLAZE__) || defined(__PPC__)
 	static int WarningFlag = 0;
 
 	/* If MB caches are disabled or do not exist, this delay loop could
 	 * take minutes instead of seconds (e.g., 30x longer).  Print a warning
 	 * message for the user (once).  If only MB had a built-in timer!
 	 */
-	if (((mfmsr() & 0x20) == 0) && (!WarningFlag)) {
+	if (((mfmsr() & 0x20) == 0) && (!WarningFlag))
+	{
 		WarningFlag = 1;
 	}
 
-#define ITERS_PER_SEC   (XPAR_CPU_CORE_CLOCK_FREQ_HZ / 6)
-    asm volatile ("\n"
-			"1:               \n\t"
-			"addik r7, r0, %0 \n\t"
-			"2:               \n\t"
-			"addik r7, r7, -1 \n\t"
-			"bneid  r7, 2b    \n\t"
-			"or  r0, r0, r0   \n\t"
-			"bneid %1, 1b     \n\t"
-			"addik %1, %1, -1 \n\t"
-			:: "i"(ITERS_PER_SEC), "d" (Seconds));
+#define ITERS_PER_SEC (XPAR_CPU_CORE_CLOCK_FREQ_HZ / 6)
+	asm volatile("\n"
+				 "1:               \n\t"
+				 "addik r7, r0, %0 \n\t"
+				 "2:               \n\t"
+				 "addik r7, r7, -1 \n\t"
+				 "bneid  r7, 2b    \n\t"
+				 "or  r0, r0, r0   \n\t"
+				 "bneid %1, 1b     \n\t"
+				 "addik %1, %1, -1 \n\t" ::"i"(ITERS_PER_SEC),
+				 "d"(Seconds));
 #else
-    sleep(Seconds);
+	sleep(Seconds);
 #endif
 }
 
@@ -883,9 +911,9 @@ void AxiEthernetUtilPhyDelay(unsigned int Seconds)
 *
 ******************************************************************************/
 int AxiEthernetUtilConfigureInternalPhy(XAxiEthernet *AxiEthernetInstancePtr,
-					int Speed)
+										int Speed)
 {
-	printf("AxiEthernetUtilConfigureInternalPhy: speed %i\r\n",Speed);
+	printf("AxiEthernetUtilConfigureInternalPhy: speed %i\r\n", Speed);
 	u16 PhyReg0;
 	signed int PhyAddr;
 
@@ -894,33 +922,34 @@ int AxiEthernetUtilConfigureInternalPhy(XAxiEthernet *AxiEthernetInstancePtr,
 	/* Clear the PHY of any existing bits by zeroing this out */
 	PhyReg0 = 0;
 	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
-				 PHY_R0_CTRL_REG, &PhyReg0);
+						 PHY_R0_CTRL_REG, &PhyReg0);
 
 	PhyReg0 &= (~PHY_R0_ANEG_ENABLE);
 	PhyReg0 &= (~PHY_R0_ISOLATE);
 
-	switch (Speed) {
-		case XAE_SPEED_10_MBPS:
-			PhyReg0 |= PHY_R0_DFT_SPD_10;
-			break;
-		case XAE_SPEED_100_MBPS:
-			PhyReg0 |= PHY_R0_DFT_SPD_100;
-			break;
-		case XAE_SPEED_1000_MBPS:
-			PhyReg0 |= PHY_R0_DFT_SPD_1000;
-			break;
-		case XAE_SPEED_2500_MBPS:
-			PhyReg0 |= PHY_R0_DFT_SPD_2500;
-			break;
-		default:
-			AxiEthernetUtilErrorTrap(
-				"Intg_LinkSpeed not 10, 100, or 1000 mbps\n\r");
-				return XST_FAILURE;
+	switch (Speed)
+	{
+	case XAE_SPEED_10_MBPS:
+		PhyReg0 |= PHY_R0_DFT_SPD_10;
+		break;
+	case XAE_SPEED_100_MBPS:
+		PhyReg0 |= PHY_R0_DFT_SPD_100;
+		break;
+	case XAE_SPEED_1000_MBPS:
+		PhyReg0 |= PHY_R0_DFT_SPD_1000;
+		break;
+	case XAE_SPEED_2500_MBPS:
+		PhyReg0 |= PHY_R0_DFT_SPD_2500;
+		break;
+	default:
+		AxiEthernetUtilErrorTrap(
+			"Intg_LinkSpeed not 10, 100, or 1000 mbps\n\r");
+		return XST_FAILURE;
 	}
 
 	AxiEthernetUtilPhyDelay(1);
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr,
-				PHY_R0_CTRL_REG, PhyReg0);
+						  PHY_R0_CTRL_REG, PhyReg0);
 	return XST_SUCCESS;
 }
 
@@ -930,23 +959,23 @@ int AxiEtherentConfigureTIPhy(XAxiEthernet *AxiEthernetInstancePtr, u32 PhyAddr)
 
 	/* Enable SGMII Clock */
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
-			      TI_PHY_CR_DEVAD_EN);
+						  TI_PHY_CR_DEVAD_EN);
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
-			      TI_PHY_SGMIITYPE);
+						  TI_PHY_SGMIITYPE);
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
-			      TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+						  TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
-			      TI_PHY_SGMIICLK_EN);
+						  TI_PHY_SGMIICLK_EN);
 
 	/* Enable SGMII */
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_PHYCTRL,
-	                      TI_PHY_CR_SGMII_EN);
+						  TI_PHY_CR_SGMII_EN);
 	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CFGR2,
-			     &PhyReg14);
+						 &PhyReg14);
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CFGR2,
-			      PhyReg14 & (~TI_PHY_CFGR2_SGMII_AUTONEG_EN));
+						  PhyReg14 & (~TI_PHY_CFGR2_SGMII_AUTONEG_EN));
 	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CFGR2,
-			     &PhyReg14);
+						 &PhyReg14);
 
 	return XST_SUCCESS;
 }

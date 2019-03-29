@@ -53,32 +53,29 @@
 #ifndef XAXIETHERNET_EXAMPLE_H
 #define XAXIETHERNET_EXAMPLE_H
 
-
 /***************************** Include Files *********************************/
 
-#include "bsp.h"	/* defines XPAR values */
-#include "xaxiethernet.h"	/* defines Axi Ethernet APIs */
-#include <stdio.h>		/* stdio */
+#include "bsp.h"		  /* defines XPAR values */
+#include "xaxiethernet.h" /* defines Axi Ethernet APIs */
+#include <stdio.h>		  /* stdio */
 
 /************************** Constant Definitions ****************************/
-#define AXIETHERNET_LOOPBACK_SPEED	100	/* 100Mb/s for Mii */
-#define AXIETHERNET_LOOPBACK_SPEED_1G 	1000	/* 1000Mb/s for GMii */
-#define AXIETHERNET_LOOPBACK_SPEED_2p5G 2500	/* 2p5G for 2.5G MAC */
-#define AXIETHERNET_PHY_DELAY_SEC	4	/*
-						 * Amount of time to delay waiting on
-						 * PHY to reset.
-						 */
+#define AXIETHERNET_LOOPBACK_SPEED 100		 /* 100Mb/s for Mii */
+#define AXIETHERNET_LOOPBACK_SPEED_1G 1000   /* 1000Mb/s for GMii */
+#define AXIETHERNET_LOOPBACK_SPEED_2p5G 2500 /* 2p5G for 2.5G MAC */
+#define AXIETHERNET_PHY_DELAY_SEC 4			 /*                                    \
+											  * Amount of time to delay waiting on \
+											  * PHY to reset.                      \
+											  */
 
-#define MAX_MULTICAST_ADDR   (1<<23)	/*
-					 * Maximum number of multicast ethernet
-					 * mac addresses.
-					 */
+#define MAX_MULTICAST_ADDR (1 << 23) /*                                      \
+									  * Maximum number of multicast ethernet \
+									  * mac addresses.                       \
+									  */
 
-#define NUM_PACKETS  1
-
+#define NUM_PACKETS 1
 
 /***************** Macros (Inline Functions) Definitions *********************/
-
 
 /**************************** Type Definitions ******************************/
 
@@ -86,8 +83,7 @@
  * Define an aligned data type for an ethernet frame. This declaration is
  * specific to the GNU compiler
  */
-typedef unsigned char EthernetFrame[NUM_PACKETS * XAE_MAX_JUMBO_FRAME_SIZE] __attribute__ ((aligned(64)));
-
+typedef unsigned char EthernetFrame[NUM_PACKETS * XAE_MAX_JUMBO_FRAME_SIZE] __attribute__((aligned(64)));
 
 /************************** Function Prototypes *****************************/
 
@@ -97,12 +93,12 @@ typedef unsigned char EthernetFrame[NUM_PACKETS * XAE_MAX_JUMBO_FRAME_SIZE] __at
 void AxiEthernetReadAllRegs(XAxiEthernet *AxiEthernetInstancePtr);
 
 void AxiEthernetUtilSetupUart(void);
-void AxiEthernetUtilFrameHdrFormatMAC(EthernetFrame * FramePtr,
-							char *DestAddr);
-void AxiEthernetUtilFrameHdrFormatType(EthernetFrame * FramePtr,
-							u16 FrameType);
-void AxiEthernetUtilFrameSetPayloadData(EthernetFrame * FramePtr,
-							int PayloadSize);
+void AxiEthernetUtilFrameHdrFormatMAC(EthernetFrame *FramePtr,
+									  char *DestAddr);
+void AxiEthernetUtilFrameHdrFormatType(EthernetFrame *FramePtr,
+									   u16 FrameType);
+void AxiEthernetUtilFrameSetPayloadData(EthernetFrame *FramePtr,
+										int PayloadSize);
 // void AxiEthernetUtilFrameHdrVlanFormatVid(EthernetFrame * FramePtr,
 // 						u32 VlanNumber,u32 Vid);
 // void AxiEthernetUtilFrameHdrVlanFormatType(EthernetFrame * FramePtr,
@@ -111,19 +107,19 @@ void AxiEthernetUtilFrameSetPayloadData(EthernetFrame * FramePtr,
 // 					int PayloadSize,u32 VlanNumber);
 // int AxiEthernetUtilFrameVerify(EthernetFrame * CheckFrame,
 // 			 EthernetFrame * ActualFrame);
-void AxiEthernetUtilFrameMemClear(EthernetFrame * FramePtr);
-int AxiEthernetUtilEnterLoopback(XAxiEthernet * AxiEthernetInstancePtr,
-								int Speed);
+void AxiEthernetUtilFrameMemClear(EthernetFrame *FramePtr);
+int AxiEthernetUtilEnterLoopback(XAxiEthernet *AxiEthernetInstancePtr,
+								 int Speed);
 void AxiEthernetUtilErrorTrap(char *Message);
 void AxiEthernetUtilPhyDelay(unsigned int Seconds);
 int AxiEthernetUtilConfigureInternalPhy(XAxiEthernet *AxiEthernetInstancePtr,
-					int Speed);
+										int Speed);
 int AxiEtherentConfigureTIPhy(XAxiEthernet *AxiEthernetInstancePtr,
-			      u32 PhyAddr);
+							  u32 PhyAddr);
 void AxiEthernetPrintAllRegs(XAxiEthernet *AxiEthernetInstancePtr);
 /************************** Variable Definitions ****************************/
 
-extern char AxiEthernetMAC[];		/* Local MAC address */
+extern char AxiEthernetMAC[]; /* Local MAC address */
 extern volatile int Padding;
 extern volatile int ExternalLoopback;
 #endif /* XAXIETHERNET_EXAMPLE_H */

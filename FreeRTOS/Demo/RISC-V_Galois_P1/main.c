@@ -29,7 +29,6 @@
  * This is docs for main
  */
 
-
 /* FreeRTOS kernel includes. */
 #include <FreeRTOS.h>
 #include <task.h>
@@ -41,86 +40,85 @@
  * This project provides test applications for Galois P1 SSITH processor.
  */
 #if mainDEMO_TYPE == 1
-	#pragma message "Demo type 1: Basic Blinky"
-	extern void main_blinky( void );
+#pragma message "Demo type 1: Basic Blinky"
+extern void main_blinky(void);
 #elif mainDEMO_TYPE == 2
-	#pragma message "Demo type 2: Full"
-	extern void main_full( void );
+#pragma message "Demo type 2: Full"
+extern void main_full(void);
 #elif mainDEMO_TYPE == 3
-	#pragma message "Demo type 3: Drivers"
-	extern void main_drivers( void );
+#pragma message "Demo type 3: Drivers"
+extern void main_drivers(void);
 #elif mainDEMO_TYPE == 4
-	#pragma message "Demo type 4: Ping"
-	extern void main_ping( void );
+#pragma message "Demo type 4: GPIO"
+extern void main_gpio(void);
 #elif mainDEMO_TYPE == 5
-	#pragma message "Demo type 5: TCP"
-	extern void main_tcp( void );
+#pragma message "Demo type 5: TCP"
+extern void main_tcp(void);
 #elif mainDEMO_TYPE == 8
-	#pragma message "Demo type 8: UART"
-	extern void main_newuart( void );
+#pragma message "Demo type 8: UART"
+extern void main_newuart(void);
 #else
-	#error "Unsupported demo type"
+#error "Unsupported demo type"
 #endif
 
 /* Prototypes for the standard FreeRTOS callback/hook functions implemented
 within this file.  See https://www.freertos.org/a00016.html */
-void vApplicationMallocFailedHook( void );
-void vApplicationIdleHook( void );
-void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName );
-void vApplicationTickHook( void );
+void vApplicationMallocFailedHook(void);
+void vApplicationIdleHook(void);
+void vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName);
+void vApplicationTickHook(void);
 
-void vToggleLED( void );
+void vToggleLED(void);
 
 /*-----------------------------------------------------------*/
 
-int main( void )
+int main(void)
 {
 	prvSetupHardware();
 
-	/* The mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting is described at the top
+/* The mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting is described at the top
 	of this file. */
-	#if mainDEMO_TYPE == 1
+#if mainDEMO_TYPE == 1
 	{
 		main_blinky();
 	}
-	#elif mainDEMO_TYPE == 2
+#elif mainDEMO_TYPE == 2
 	{
 		main_full();
 	}
-	#elif mainDEMO_TYPE == 3
+#elif mainDEMO_TYPE == 3
 	{
 		main_drivers();
 	}
-	#elif mainDEMO_TYPE == 4
+#elif mainDEMO_TYPE == 4
 	{
-		main_ping();
+		main_gpio();
 	}
-	#elif mainDEMO_TYPE == 5
+#elif mainDEMO_TYPE == 5
 	{
 		main_tcp();
 	}
-	#elif mainDEMO_TYPE == 8
+#elif mainDEMO_TYPE == 8
 	{
 		main_newuart();
 	}
-	#endif
+#endif
 }
 /*-----------------------------------------------------------*/
-
 
 /*-----------------------------------------------------------*/
 
 // TODO: toggle a real LED at some point
-void vToggleLED( void )
+void vToggleLED(void)
 {
 	static uint32_t ulLEDState = 0;
 
-// 	GPIO_set_outputs( &g_gpio_out, ulLEDState );
+	// 	GPIO_set_outputs( &g_gpio_out, ulLEDState );
 	ulLEDState = !ulLEDState;
 }
 // /*-----------------------------------------------------------*/
 
-void vApplicationMallocFailedHook( void )
+void vApplicationMallocFailedHook(void)
 {
 	/* vApplicationMallocFailedHook() will only be called if
 	configUSE_MALLOC_FAILED_HOOK is set to 1 in FreeRTOSConfig.h.  It is a hook
@@ -133,12 +131,13 @@ void vApplicationMallocFailedHook( void )
 	to query the size of free heap space that remains (although it does not
 	provide information on how the remaining heap might be fragmented). */
 	taskDISABLE_INTERRUPTS();
-	__asm volatile( "ebreak" );
-	for( ;; );
+	__asm volatile("ebreak");
+	for (;;)
+		;
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationIdleHook( void )
+void vApplicationIdleHook(void)
 {
 	/* vApplicationIdleHook() will only be called if configUSE_IDLE_HOOK is set
 	to 1 in FreeRTOSConfig.h.  It will be called on each iteration of the idle
@@ -152,26 +151,28 @@ void vApplicationIdleHook( void )
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
+void vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName)
 {
-	( void ) pcTaskName;
-	( void ) pxTask;
+	(void)pcTaskName;
+	(void)pxTask;
 
 	/* Run time stack overflow checking is performed if
 	configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.  This hook
 	function is called if a stack overflow is detected. */
 	taskDISABLE_INTERRUPTS();
-	__asm volatile( "ebreak" );
-	for( ;; );
+	__asm volatile("ebreak");
+	for (;;)
+		;
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationTickHook( void ) {
-	/* The tests in the full demo expect some interaction with interrupts. */
-	#if( mainDEMO_TYPE == 2 )
+void vApplicationTickHook(void)
+{
+/* The tests in the full demo expect some interaction with interrupts. */
+#if (mainDEMO_TYPE == 2)
 	{
-		extern void vFullDemoTickHook( void );
+		extern void vFullDemoTickHook(void);
 		vFullDemoTickHook();
 	}
-	#endif
+#endif
 }

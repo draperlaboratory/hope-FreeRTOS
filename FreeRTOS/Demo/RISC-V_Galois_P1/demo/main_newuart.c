@@ -54,42 +54,41 @@
 #include "bsp.h"
 #include "plic_driver.h"
 
-#define TEST_BUFFER_SIZE	3
-#define INPUT_LENGTH 		10
+#define TEST_BUFFER_SIZE 3
+#define INPUT_LENGTH 10
 
 /*-----------------------------------------------------------*/
 
 /*
  * Called by main when PROG=main_newuart
  */
-void main_newuart( void );
+void main_newuart(void);
 
 /*
  * The tasks as described in the comments at the top of this file.
  */
-static void vUartSelfTest( void *pvParameters );
+static void vUartSelfTest(void *pvParameters);
 
-static void vUartIntrTest( void *pvParameters );
+static void vUartIntrTest(void *pvParameters);
 
-static void vInputTest( void *pvParameters );
+static void vInputTest(void *pvParameters);
 
-static void vTestPrintf( void *pvParameters );
+static void vTestPrintf(void *pvParameters);
 
-static void UartNs550StatusHandler(void *CallBackRef, u32 Event, 
-	unsigned int EventData);
+static void UartNs550StatusHandler(void *CallBackRef, u32 Event,
+								   unsigned int EventData);
 
 static int UartNs550SetupIntrSystem(XUartNs550 *UartPtr);
 
 /*-----------------------------------------------------------*/
 
-void main_newuart( void )
+void main_newuart(void)
 {
 	/* Create UART test */
-	xTaskCreate( vInputTest, "UART Printf Test", 3000, NULL, 0, NULL );
+	xTaskCreate(vInputTest, "UART Printf Test", 3000, NULL, 0, NULL);
 
 	/* Start the kernel.  From here on, only tasks and interrupts will run. */
 	vTaskStartScheduler();
-
 
 	/* If all is well, the scheduler will now be running, and the following
 	line will never be reached.  If the following line does execute, then
@@ -97,26 +96,27 @@ void main_newuart( void )
 	timer tasks to be created.  See the memory management section on the
 	FreeRTOS web site for more details on the FreeRTOS heap
 	http://www.freertos.org/a00111.html. */
-	for( ;; );
+	for (;;)
+		;
 }
 /*-----------------------------------------------------------*/
 
 /* Instance of UART device */
 static XUartNs550 UartNs550;
 
-u8 SendBuffer[TEST_BUFFER_SIZE];	/* Buffer for Transmitting Data */
-u8 RecvBuffer[TEST_BUFFER_SIZE];	/* Buffer for Receiving Data */
+u8 SendBuffer[TEST_BUFFER_SIZE]; /* Buffer for Transmitting Data */
+u8 RecvBuffer[TEST_BUFFER_SIZE]; /* Buffer for Receiving Data */
 
 /* Counters used to determine when buffer has been send and received */
 static volatile int TotalReceivedCount;
 static volatile int TotalSentCount;
 static volatile int TotalErrorCount;
 
-void vUartIntrTest( void *pvParameters )
+void vUartIntrTest(void *pvParameters)
 {
 	/* Test using interrupts with UART1 in loopback mode */
 
-	(void) pvParameters;
+	(void)pvParameters;
 
 	int Status_Init, Status_SetupIntr, Status_SelfTest;
 	u32 Index;
@@ -137,16 +137,17 @@ void vUartIntrTest( void *pvParameters )
 
 	/* Set UART status handler to indicate that XUartNs550StatusHandler
 	should be called when there is an interrupt */
-	XUartNs550_SetHandler(&UartNs550, UartNs550StatusHandler, 
-		&UartNs550);
+	XUartNs550_SetHandler(&UartNs550, UartNs550StatusHandler,
+						  &UartNs550);
 
 	/* Enable interrupts, enable loopback mode, and enable FIFOs */
 	Options = XUN_OPTION_DATA_INTR | XUN_OPTION_LOOPBACK |
-			XUN_OPTION_FIFOS_ENABLE | XUN_FIFO_TX_RESET | XUN_FIFO_RX_RESET;
+			  XUN_OPTION_FIFOS_ENABLE | XUN_FIFO_TX_RESET | XUN_FIFO_RX_RESET;
 	XUartNs550_SetOptions(&UartNs550, Options);
 
 	/* Fill send buffer and zero receive buffer */
-	for (Index = 0; Index < TEST_BUFFER_SIZE; Index++) {
+	for (Index = 0; Index < TEST_BUFFER_SIZE; Index++)
+	{
 		SendBuffer[Index] = Index + 'A';
 		RecvBuffer[Index] = 0;
 	}
@@ -159,17 +160,20 @@ void vUartIntrTest( void *pvParameters )
 
 	/* Wait for the entire buffer to be received */
 	while ((TotalReceivedCount != TEST_BUFFER_SIZE) ||
-		(TotalSentCount != TEST_BUFFER_SIZE));
+		   (TotalSentCount != TEST_BUFFER_SIZE))
+		;
 
 	/* Check that buffer was successfully received */
-	for (Index = 0; Index < TEST_BUFFER_SIZE; Index++) {
-		if (RecvBuffer[Index] != SendBuffer[Index]) {
+	for (Index = 0; Index < TEST_BUFFER_SIZE; Index++)
+	{
+		if (RecvBuffer[Index] != SendBuffer[Index])
+		{
 			BadByteCount++;
 		}
 	}
 
 	/* Check that there were no bytes wrong or missed */
-	configASSERT( BadByteCount == 0 );
+	configASSERT(BadByteCount == 0);
 
 	/* Clear the counters */
 	TotalErrorCount = 0;
@@ -177,13 +181,12 @@ void vUartIntrTest( void *pvParameters )
 	TotalSentCount = 0;
 
 	vTaskDelete(NULL);
-
 }
 
 /*-----------------------------------------------------------*/
-void vTestPrintf( void *pvParameters )
+void vTestPrintf(void *pvParameters)
 {
-	(void) pvParameters;
+	(void)pvParameters;
 
 	int Status_Init, Status_SetupIntr, Status_SelfTest;
 	u32 Index;
@@ -200,12 +203,11 @@ void vTestPrintf( void *pvParameters )
 
 	/* Set UART status handler to indicate that UartNs550StatusHandler
 	should be called when there is an interrupt */
-	XUartNs550_SetHandler(&UartNs550, UartNs550StatusHandler, 
-		&UartNs550);
+	XUartNs550_SetHandler(&UartNs550, UartNs550StatusHandler,
+						  &UartNs550);
 
 	/* Enable interrupts and reset and enable FIFOs */
-	Options = XUN_OPTION_DATA_INTR | XUN_OPTION_FIFOS_ENABLE 
-				| XUN_FIFO_TX_RESET | XUN_FIFO_RX_RESET;
+	Options = XUN_OPTION_DATA_INTR | XUN_OPTION_FIFOS_ENABLE | XUN_FIFO_TX_RESET | XUN_FIFO_RX_RESET;
 	XUartNs550_SetOptions(&UartNs550, Options);
 
 	printf("hi!");
@@ -219,10 +221,10 @@ void vTestPrintf( void *pvParameters )
 }
 /*-----------------------------------------------------------*/
 
-void vInputTest( void *pvParameters )
+void vInputTest(void *pvParameters)
 {
 	/* Test receiving chars using interrupts via UART1 */
-	(void) pvParameters;
+	(void)pvParameters;
 
 	int Status_Init, Status_SetupIntr, Status_SelfTest;
 	u32 Index;
@@ -239,20 +241,20 @@ void vInputTest( void *pvParameters )
 
 	/* Set UART status handler to indicate that UartNs550StatusHandler
 	should be called when there is an interrupt */
-	XUartNs550_SetHandler(&UartNs550, UartNs550StatusHandler, 
-		&UartNs550);
+	XUartNs550_SetHandler(&UartNs550, UartNs550StatusHandler,
+						  &UartNs550);
 
 	/* Enable interrupts and reset and enable FIFOs */
-	Options = XUN_OPTION_DATA_INTR | XUN_OPTION_FIFOS_ENABLE 
-				| XUN_FIFO_TX_RESET | XUN_FIFO_RX_RESET;
+	Options = XUN_OPTION_DATA_INTR | XUN_OPTION_FIFOS_ENABLE | XUN_FIFO_TX_RESET | XUN_FIFO_RX_RESET;
 	XUartNs550_SetOptions(&UartNs550, Options);
 
 	/* Receive data */
 	XUartNs550_Recv(&UartNs550, RecvBuffer, INPUT_LENGTH);
 
 	printf("Waiting\r\n");
-	while( TotalReceivedCount < INPUT_LENGTH );
-	
+	while (TotalReceivedCount < INPUT_LENGTH)
+		;
+
 	printf("Rx: %s \n", RecvBuffer);
 
 	/* Clear the counters */
@@ -264,11 +266,11 @@ void vInputTest( void *pvParameters )
 }
 
 /*-----------------------------------------------------------*/
-void vUartSelfTest( void *pvParameters )
+void vUartSelfTest(void *pvParameters)
 {
 	/* Test UART1's self-test functionality  */
 
-	(void) pvParameters;
+	(void)pvParameters;
 
 	int Status_Init, Status_SelfTest;
 
@@ -281,7 +283,6 @@ void vUartSelfTest( void *pvParameters )
 	configASSERT(Status_SelfTest == XST_SUCCESS);
 
 	vTaskDelete(NULL);
-
 }
 
 /*-----------------------------------------------------------*/
@@ -296,9 +297,10 @@ static int UartNs550SetupIntrSystem(XUartNs550 *UartPtr)
 	* specific interrupt processing for the device
 	*/
 	Status = PLIC_register_interrupt_handler(&Plic, PLIC_SOURCE_UART0,
-			XUartNs550_InterruptHandler, UartPtr);
-	if (Status != PLIC_SOURCE_UART0) {
-    return XST_FAILURE;
+											 XUartNs550_InterruptHandler, UartPtr);
+	if (Status != PLIC_SOURCE_UART0)
+	{
+		return XST_FAILURE;
 	}
 
 	return XST_SUCCESS;
@@ -306,33 +308,36 @@ static int UartNs550SetupIntrSystem(XUartNs550 *UartPtr)
 
 /*-----------------------------------------------------------*/
 
-static void UartNs550StatusHandler(void *CallBackRef, u32 Event, 
-	unsigned int EventData)
+static void UartNs550StatusHandler(void *CallBackRef, u32 Event,
+								   unsigned int EventData)
 {
 	u8 Errors;
 
 	/* All of the data was sent */
-	if (Event == XUN_EVENT_SENT_DATA) {
+	if (Event == XUN_EVENT_SENT_DATA)
+	{
 		TotalSentCount = EventData;
 	}
 
 	/* All of the data was received */
-	if (Event == XUN_EVENT_RECV_DATA) {
+	if (Event == XUN_EVENT_RECV_DATA)
+	{
 		TotalReceivedCount = EventData;
 	}
 
 	/* Data was received, but different than expected number of bytes */
-	if (Event == XUN_EVENT_RECV_TIMEOUT) {
+	if (Event == XUN_EVENT_RECV_TIMEOUT)
+	{
 		TotalReceivedCount = EventData;
 	}
 
 	/* Data was received with an error */
-	if (Event == XUN_EVENT_RECV_ERROR) {
+	if (Event == XUN_EVENT_RECV_ERROR)
+	{
 		TotalReceivedCount = EventData;
 		TotalErrorCount++;
 		Errors = XUartNs550_GetLastErrors(CallBackRef);
 	}
-
 }
 
 /*-----------------------------------------------------------*/
@@ -358,7 +363,7 @@ static void UartNs550StatusHandler(void *CallBackRef, u32 Event,
 
 // 	/* Set UART status handler to indicate that UartNs550StatusHandler
 // 	should be called when there is an interrupt */
-// XUartNs550_SetHandler(&UartNs550, UartNs550StatusHandler, 
+// XUartNs550_SetHandler(&UartNs550, UartNs550StatusHandler,
 // 		&UartNs550);
 
 // 	/* Enable interrupts and enable FIFOs */

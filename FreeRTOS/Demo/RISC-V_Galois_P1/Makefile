@@ -38,6 +38,7 @@ FREERTOS_SRC = \
 	$(FREERTOS_SOURCE_DIR)/tasks.c \
 	$(FREERTOS_SOURCE_DIR)/timers.c \
 	$(FREERTOS_SOURCE_DIR)/event_groups.c \
+	$(FREERTOS_SOURCE_DIR)/stream_buffer.c \
 	$(FREERTOS_SOURCE_DIR)/portable/MemMang/heap_4.c # TODO TEST
 
 APP_SOURCE_DIR	= ../Common/Minimal
@@ -65,6 +66,8 @@ APP_SRC = \
 	bsp/plic_driver.c \
 	bsp/syscalls.c \
 	bsp/uart.c \
+	bsp/iic.c \
+	bsp/gpio.c \
 	bsp/xilinx/uartns550/xuartns550.c \
 	bsp/xilinx/uartns550/xuartns550_g.c \
 	bsp/xilinx/uartns550/xuartns550_sinit.c \
@@ -83,6 +86,13 @@ APP_SRC = \
 	bsp/xilinx/axiethernet/xaxiethernet_control.c \
 	bsp/xilinx/axiethernet/xaxiethernet_g.c \
 	bsp/xilinx/axiethernet/xaxiethernet_sinit.c \
+	bsp/xilinx/iic/xiic.c \
+	bsp/xilinx/iic/xiic_g.c \
+	bsp/xilinx/iic/xiic_sinit.c \
+	bsp/xilinx/iic/xiic_selftest.c \
+	bsp/xilinx/iic/xiic_master.c \
+	bsp/xilinx/iic/xiic_intr.c \
+	bsp/xilinx/iic/xiic_stats.c \
 	bsp/xilinx/common/xbasic_types.c \
 	bsp/xilinx/common/xil_io.c \
 	bsp/xilinx/common/xil_assert.c
@@ -95,6 +105,7 @@ INCLUDES = \
 	-I./bsp/xilinx/axidma \
 	-I./bsp/xilinx/axiethernet \
 	-I./bsp/xilinx/uartns550 \
+	-I./bsp/xilinx/iic \
 	-I$(FREERTOS_SOURCE_DIR)/include \
 	-I../Common/include \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V
@@ -110,7 +121,6 @@ else
 ifeq ($(PROG),main_full)
 	CFLAGS += -DmainDEMO_TYPE=2
 	PORT_ASM += demo/RegTest.S
-	FREERTOS_SRC += $(FREERTOS_SOURCE_DIR)/stream_buffer.c
 	APP_SRC +=  \
 		$(APP_SOURCE_DIR)/AbortDelay.c \
 		$(APP_SOURCE_DIR)/BlockQ.c \
@@ -133,12 +143,13 @@ ifeq ($(PROG),main_full)
 else
 ifeq ($(PROG),main_drivers)
 	CFLAGS += -DmainDEMO_TYPE=3
-	DEMO_SRC += demo/xaxiethernet_example_util.c
+	DEMO_SRC += devices/vcnl4010.c
+	DEMO_SRC += devices/serLcd.c
 	INCLUDES += -I./demo
+	INCLUDES += -I./devices
 else
-ifeq ($(PROG),main_ping)
+ifeq ($(PROG),main_gpio)
 	CFLAGS += -DmainDEMO_TYPE=4
-	DEMO_SRC += demo/xaxiethernet_example_util.c
 	INCLUDES += -I./demo
 else
 ifeq ($(PROG),main_tcp)

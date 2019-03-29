@@ -83,21 +83,21 @@
 #include "TCPEchoClient_SingleTasks.h"
 
 /* Simple UDP client and server task parameters. */
-#define mainSIMPLE_UDP_CLIENT_SERVER_TASK_PRIORITY		( tskIDLE_PRIORITY )
-#define mainSIMPLE_UDP_CLIENT_SERVER_PORT				( 5005UL )
-#define mainSIMPLE_UDP_CLIENT_SERVER_STACK_SIZE			( configMINIMAL_STACK_SIZE * 10 )
+#define mainSIMPLE_UDP_CLIENT_SERVER_TASK_PRIORITY (tskIDLE_PRIORITY)
+#define mainSIMPLE_UDP_CLIENT_SERVER_PORT (5005UL)
+#define mainSIMPLE_UDP_CLIENT_SERVER_STACK_SIZE (configMINIMAL_STACK_SIZE * 10)
 
 /* Echo client task parameters - used for both TCP and UDP echo clients. */
-#define mainECHO_CLIENT_TASK_STACK_SIZE 				( configMINIMAL_STACK_SIZE * 10 )
-#define mainECHO_CLIENT_TASK_PRIORITY					( tskIDLE_PRIORITY + 1 )
+#define mainECHO_CLIENT_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE * 10)
+#define mainECHO_CLIENT_TASK_PRIORITY (tskIDLE_PRIORITY + 1)
 
 /* Echo server task parameters. */
-#define mainECHO_SERVER_TASK_STACK_SIZE					( configMINIMAL_STACK_SIZE * 10 )
-#define mainECHO_SERVER_TASK_PRIORITY					( tskIDLE_PRIORITY + 1 )
+#define mainECHO_SERVER_TASK_STACK_SIZE (configMINIMAL_STACK_SIZE * 10)
+#define mainECHO_SERVER_TASK_PRIORITY (tskIDLE_PRIORITY + 1)
 
 /* Define a name that will be used for LLMNR and NBNS searches. */
-#define mainHOST_NAME				"RTOSDemo"
-#define mainDEVICE_NICK_NAME		"fpga_demo"
+#define mainHOST_NAME "RTOSDemo"
+#define mainDEVICE_NICK_NAME "fpga_demo"
 
 /* Set the following constants to 1 or 0 to define which tasks to include and
 exclude:
@@ -122,35 +122,34 @@ mainCREATE_TCP_ECHO_SERVER_TASK:  When set to 1 a task is created that accepts
 connections on the standard echo port (port 7), then echos back any data
 received on that connection.
 */
-#define mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS	1
-#define mainCREATE_TCP_ECHO_TASKS_SINGLE			1
-#define mainCREATE_TCP_ECHO_SERVER_TASK				0
-
+#define mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS 1
+#define mainCREATE_TCP_ECHO_TASKS_SINGLE 1
+#define mainCREATE_TCP_ECHO_SERVER_TASK 0
 
 /*
  * Just seeds the simple pseudo random number generator.
  */
-static void prvSRand( UBaseType_t ulSeed );
+static void prvSRand(UBaseType_t ulSeed);
 
 /*
  * Miscellaneous initialisation including preparing the logging and seeding the
  * random number generator.
  */
-static void prvMiscInitialisation( void );
+static void prvMiscInitialisation(void);
 
-uint32_t ulApplicationGetNextSequenceNumber( uint32_t ulSourceAddress,
-													uint16_t usSourcePort,
-													uint32_t ulDestinationAddress,
-													uint16_t usDestinationPort );
+uint32_t ulApplicationGetNextSequenceNumber(uint32_t ulSourceAddress,
+											uint16_t usSourcePort,
+											uint32_t ulDestinationAddress,
+											uint16_t usDestinationPort);
 
 /* The default IP and MAC address used by the demo.  The address configuration
 defined here will be used if ipconfigUSE_DHCP is 0, or if ipconfigUSE_DHCP is
 1 but a DHCP server could not be contacted.  See the online documentation for
 more information. */
-static const uint8_t ucIPAddress[ 4 ] = { configIP_ADDR0, configIP_ADDR1, configIP_ADDR2, configIP_ADDR3 };
-static const uint8_t ucNetMask[ 4 ] = { configNET_MASK0, configNET_MASK1, configNET_MASK2, configNET_MASK3 };
-static const uint8_t ucGatewayAddress[ 4 ] = { configGATEWAY_ADDR0, configGATEWAY_ADDR1, configGATEWAY_ADDR2, configGATEWAY_ADDR3 };
-static const uint8_t ucDNSServerAddress[ 4 ] = { configDNS_SERVER_ADDR0, configDNS_SERVER_ADDR1, configDNS_SERVER_ADDR2, configDNS_SERVER_ADDR3 };
+static const uint8_t ucIPAddress[4] = {configIP_ADDR0, configIP_ADDR1, configIP_ADDR2, configIP_ADDR3};
+static const uint8_t ucNetMask[4] = {configNET_MASK0, configNET_MASK1, configNET_MASK2, configNET_MASK3};
+static const uint8_t ucGatewayAddress[4] = {configGATEWAY_ADDR0, configGATEWAY_ADDR1, configGATEWAY_ADDR2, configGATEWAY_ADDR3};
+static const uint8_t ucDNSServerAddress[4] = {configDNS_SERVER_ADDR0, configDNS_SERVER_ADDR1, configDNS_SERVER_ADDR2, configDNS_SERVER_ADDR3};
 
 /* Set the following constant to pdTRUE to log using the method indicated by the
 name of the constant, or pdFALSE to not log using the method indicated by the
@@ -166,17 +165,17 @@ connection that uses this MAC address by accessing the raw Ethernet data
 to and from a real network connection on the host PC.  See the
 configNETWORK_INTERFACE_TO_USE definition for information on how to configure
 the real network connection to use. */
-const uint8_t ucMACAddress[ 6 ] = { configMAC_ADDR0, configMAC_ADDR1, configMAC_ADDR2, configMAC_ADDR3, configMAC_ADDR4, configMAC_ADDR5 };
+const uint8_t ucMACAddress[6] = {configMAC_ADDR0, configMAC_ADDR1, configMAC_ADDR2, configMAC_ADDR3, configMAC_ADDR4, configMAC_ADDR5};
 /*-----------------------------------------------------------*/
 // TODO: the stats are not functional yet
 //char statsBuffer[1024];
 //static void prvStatsTask( void *pvParameters );
 
-void main_tcp( void );
+void main_tcp(void);
 
 /*-----------------------------------------------------------*/
 
-void main_tcp( void )
+void main_tcp(void)
 {
 	/* Miscellaneous initialisation including preparing the logging and seeding
 	the random number generator. */
@@ -188,17 +187,18 @@ void main_tcp( void )
 	vApplicationIPNetworkEventHook() below).  The address values passed in here
 	are used if ipconfigUSE_DHCP is set to 0, or if ipconfigUSE_DHCP is set to 1
 	but a DHCP server cannot be	contacted. */
-	FreeRTOS_debug_printf( ( "FreeRTOS_IPInit\r\n" ) );
-	FreeRTOS_IPInit( ucIPAddress, ucNetMask, ucGatewayAddress, ucDNSServerAddress, ucMACAddress );
+	FreeRTOS_debug_printf(("FreeRTOS_IPInit\r\n"));
+	FreeRTOS_IPInit(ucIPAddress, ucNetMask, ucGatewayAddress, ucDNSServerAddress, ucMACAddress);
 
 	// TODO: the stats are not functional yet
 	//xTaskCreate( prvStatsTask, "prvStatsTask", configMINIMAL_STACK_SIZE*2, NULL, tskIDLE_PRIORITY, NULL );
 
 	/* Start the tasks and timer running. */
-	FreeRTOS_debug_printf( ("vTaskStartScheduler\r\n") );
+	FreeRTOS_debug_printf(("vTaskStartScheduler\r\n"));
 	vTaskStartScheduler();
 
-	for( ;; );
+	for (;;)
+		;
 }
 /*-----------------------------------------------------------*/
 // TODO: the stats are not functional yet
@@ -209,7 +209,7 @@ void main_tcp( void )
 // void port_init_stats(void) {
 //     base_timer_value=port_get_current_mtime();
 // }
- 
+
 // uint64_t port_get_current_mtime(void) {
 //     volatile uint32_t * const pulTimeHigh = ( volatile uint32_t * const ) ( configCLINT_BASE_ADDRESS + 0xBFFC );
 // 	volatile uint32_t * const pulTimeLow = ( volatile uint32_t * const ) ( configCLINT_BASE_ADDRESS + 0xBFF8 );
@@ -236,114 +236,114 @@ void main_tcp( void )
 
 /* Called by FreeRTOS+TCP when the network connects or disconnects.  Disconnect
 events are only received if implemented in the MAC driver. */
-void vApplicationIPNetworkEventHook( eIPCallbackEvent_t eNetworkEvent )
+void vApplicationIPNetworkEventHook(eIPCallbackEvent_t eNetworkEvent)
 {
-uint32_t ulIPAddress, ulNetMask, ulGatewayAddress, ulDNSServerAddress;
-char cBuffer[ 16 ];
-static BaseType_t xTasksAlreadyCreated = pdFALSE;
+	uint32_t ulIPAddress, ulNetMask, ulGatewayAddress, ulDNSServerAddress;
+	char cBuffer[16];
+	static BaseType_t xTasksAlreadyCreated = pdFALSE;
 
 	/* If the network has just come up...*/
-	if( eNetworkEvent == eNetworkUp )
+	if (eNetworkEvent == eNetworkUp)
 	{
 		/* Create the tasks that use the IP stack if they have not already been
 		created. */
-		if( xTasksAlreadyCreated == pdFALSE )
+		if (xTasksAlreadyCreated == pdFALSE)
 		{
-			/* See the comments above the definitions of these pre-processor
+/* See the comments above the definitions of these pre-processor
 			macros at the top of this file for a description of the individual
 			demo tasks. */
-			#if( mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS == 1 )
+#if (mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS == 1)
 			{
-				vStartSimpleUDPClientServerTasks( mainSIMPLE_UDP_CLIENT_SERVER_STACK_SIZE, mainSIMPLE_UDP_CLIENT_SERVER_PORT, mainSIMPLE_UDP_CLIENT_SERVER_TASK_PRIORITY );
+				vStartSimpleUDPClientServerTasks(mainSIMPLE_UDP_CLIENT_SERVER_STACK_SIZE, mainSIMPLE_UDP_CLIENT_SERVER_PORT, mainSIMPLE_UDP_CLIENT_SERVER_TASK_PRIORITY);
 			}
-			#endif /* mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS */
+#endif /* mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS */
 
-			#if( mainCREATE_TCP_ECHO_TASKS_SINGLE == 1 )
+#if (mainCREATE_TCP_ECHO_TASKS_SINGLE == 1)
 			{
-				vStartTCPEchoClientTasks_SingleTasks( mainECHO_CLIENT_TASK_STACK_SIZE, mainECHO_CLIENT_TASK_PRIORITY );
+				vStartTCPEchoClientTasks_SingleTasks(mainECHO_CLIENT_TASK_STACK_SIZE, mainECHO_CLIENT_TASK_PRIORITY);
 			}
-			#endif /* mainCREATE_TCP_ECHO_TASKS_SINGLE */
+#endif /* mainCREATE_TCP_ECHO_TASKS_SINGLE */
 
-			#if( mainCREATE_TCP_ECHO_SERVER_TASK == 1 )
+#if (mainCREATE_TCP_ECHO_SERVER_TASK == 1)
 			{
-				vStartSimpleTCPServerTasks( mainECHO_SERVER_TASK_STACK_SIZE, mainECHO_SERVER_TASK_PRIORITY );
+				vStartSimpleTCPServerTasks(mainECHO_SERVER_TASK_STACK_SIZE, mainECHO_SERVER_TASK_PRIORITY);
 			}
-			#endif
+#endif
 
 			xTasksAlreadyCreated = pdTRUE;
 		}
 
 		/* Print out the network configuration, which may have come from a DHCP
 		server. */
-		FreeRTOS_GetAddressConfiguration( &ulIPAddress, &ulNetMask, &ulGatewayAddress, &ulDNSServerAddress );
-		FreeRTOS_inet_ntoa( ulIPAddress, cBuffer );
-		FreeRTOS_printf( ( "\r\n\r\nIP Address: %s\r\n", cBuffer ) );
+		FreeRTOS_GetAddressConfiguration(&ulIPAddress, &ulNetMask, &ulGatewayAddress, &ulDNSServerAddress);
+		FreeRTOS_inet_ntoa(ulIPAddress, cBuffer);
+		FreeRTOS_printf(("\r\n\r\nIP Address: %s\r\n", cBuffer));
 
-		FreeRTOS_inet_ntoa( ulNetMask, cBuffer );
-		FreeRTOS_printf( ( "Subnet Mask: %s\r\n", cBuffer ) );
+		FreeRTOS_inet_ntoa(ulNetMask, cBuffer);
+		FreeRTOS_printf(("Subnet Mask: %s\r\n", cBuffer));
 
-		FreeRTOS_inet_ntoa( ulGatewayAddress, cBuffer );
-		FreeRTOS_printf( ( "Gateway Address: %s\r\n", cBuffer ) );
+		FreeRTOS_inet_ntoa(ulGatewayAddress, cBuffer);
+		FreeRTOS_printf(("Gateway Address: %s\r\n", cBuffer));
 
-		FreeRTOS_inet_ntoa( ulDNSServerAddress, cBuffer );
-		FreeRTOS_printf( ( "DNS Server Address: %s\r\n\r\n\r\n", cBuffer ) );
+		FreeRTOS_inet_ntoa(ulDNSServerAddress, cBuffer);
+		FreeRTOS_printf(("DNS Server Address: %s\r\n\r\n\r\n", cBuffer));
 	}
 }
 /*-----------------------------------------------------------*/
 
-static void prvSRand( UBaseType_t ulSeed )
+static void prvSRand(UBaseType_t ulSeed)
 {
 	/* Utility function to seed the pseudo random number generator. */
-    ulNextRand = ulSeed;
+	ulNextRand = ulSeed;
 }
 /*-----------------------------------------------------------*/
 
-static void prvMiscInitialisation( void )
+static void prvMiscInitialisation(void)
 {
 	uint32_t seed = 42;
-	FreeRTOS_debug_printf( ( "Seed for randomiser: %lu\r\n", seed ) );
-	prvSRand( ( uint32_t ) seed );
-	FreeRTOS_debug_printf( ( "Random numbers: %08lX %08lX %08lX %08lX\r\n", ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32() ) );
+	FreeRTOS_debug_printf(("Seed for randomiser: %lu\r\n", seed));
+	prvSRand((uint32_t)seed);
+	FreeRTOS_debug_printf(("Random numbers: %08lX %08lX %08lX %08lX\r\n", ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32()));
 }
 /*-----------------------------------------------------------*/
 
-#if( ipconfigUSE_LLMNR != 0 ) || ( ipconfigUSE_NBNS != 0 ) || ( ipconfigDHCP_REGISTER_HOSTNAME == 1 )
+#if (ipconfigUSE_LLMNR != 0) || (ipconfigUSE_NBNS != 0) || (ipconfigDHCP_REGISTER_HOSTNAME == 1)
 
-	const char *pcApplicationHostnameHook( void )
-	{
-		/* Assign the name "FreeRTOS" to this network node.  This function will
+const char *pcApplicationHostnameHook(void)
+{
+	/* Assign the name "FreeRTOS" to this network node.  This function will
 		be called during the DHCP: the machine will be registered with an IP
 		address plus this name. */
-		return mainHOST_NAME;
-	}
+	return mainHOST_NAME;
+}
 
 #endif
 /*-----------------------------------------------------------*/
 
-#if( ipconfigUSE_LLMNR != 0 ) || ( ipconfigUSE_NBNS != 0 )
+#if (ipconfigUSE_LLMNR != 0) || (ipconfigUSE_NBNS != 0)
 
-	BaseType_t xApplicationDNSQueryHook( const char *pcName )
-	{
+BaseType_t xApplicationDNSQueryHook(const char *pcName)
+{
 	BaseType_t xReturn;
 
-		/* Determine if a name lookup is for this node.  Two names are given
+	/* Determine if a name lookup is for this node.  Two names are given
 		to this node: that returned by pcApplicationHostnameHook() and that set
 		by mainDEVICE_NICK_NAME. */
-		if( _stricmp( pcName, pcApplicationHostnameHook() ) == 0 )
-		{
-			xReturn = pdPASS;
-		}
-		else if( _stricmp( pcName, mainDEVICE_NICK_NAME ) == 0 )
-		{
-			xReturn = pdPASS;
-		}
-		else
-		{
-			xReturn = pdFAIL;
-		}
-
-		return xReturn;
+	if (_stricmp(pcName, pcApplicationHostnameHook()) == 0)
+	{
+		xReturn = pdPASS;
 	}
+	else if (_stricmp(pcName, mainDEVICE_NICK_NAME) == 0)
+	{
+		xReturn = pdPASS;
+	}
+	else
+	{
+		xReturn = pdFAIL;
+	}
+
+	return xReturn;
+}
 
 #endif
 
@@ -353,16 +353,15 @@ static void prvMiscInitialisation( void )
  * THAT RETURNS A PSEUDO RANDOM NUMBER SO IS NOT INTENDED FOR USE IN PRODUCTION
  * SYSTEMS.
  */
-uint32_t ulApplicationGetNextSequenceNumber( uint32_t ulSourceAddress,
-													uint16_t usSourcePort,
-													uint32_t ulDestinationAddress,
-													uint16_t usDestinationPort )
+uint32_t ulApplicationGetNextSequenceNumber(uint32_t ulSourceAddress,
+											uint16_t usSourcePort,
+											uint32_t ulDestinationAddress,
+											uint16_t usDestinationPort)
 {
-	( void ) ulSourceAddress;
-	( void ) usSourcePort;
-	( void ) ulDestinationAddress;
-	( void ) usDestinationPort;
+	(void)ulSourceAddress;
+	(void)usSourcePort;
+	(void)ulDestinationAddress;
+	(void)usDestinationPort;
 
 	return uxRand();
 }
-
