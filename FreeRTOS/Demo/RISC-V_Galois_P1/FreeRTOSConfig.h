@@ -86,8 +86,8 @@
 #define configUSE_PREEMPTION 1
 #define configUSE_IDLE_HOOK 1
 #define configUSE_TICK_HOOK 1
-#define configCPU_CLOCK_HZ ((uint32_t)(83000000))
-#define configPERIPH_CLOCK_HZ ((uint32_t)(83000000))
+#define configCPU_CLOCK_HZ ((uint32_t)(50000000))
+#define configPERIPH_CLOCK_HZ ((uint32_t)(50000000))
 #define configTICK_RATE_HZ ((TickType_t)1000)
 #define configMAX_PRIORITIES (5)
 #define configMINIMAL_STACK_SIZE ((uint32_t)512) /* Can be as low as 60 but some of the demo tasks that use this constant require it to be higher. */
@@ -103,6 +103,7 @@
 #define configUSE_MALLOC_FAILED_HOOK 1
 #define configUSE_APPLICATION_TASK_TAG 0
 #define configUSE_COUNTING_SEMAPHORES 1
+
 // TODO: the stats are not functional yet
 #define configGENERATE_RUN_TIME_STATS 0
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
