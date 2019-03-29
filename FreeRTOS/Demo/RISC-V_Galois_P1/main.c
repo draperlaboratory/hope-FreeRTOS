@@ -54,9 +54,6 @@ extern void main_gpio(void);
 #elif mainDEMO_TYPE == 5
 #pragma message "Demo type 5: TCP"
 extern void main_tcp(void);
-#elif mainDEMO_TYPE == 8
-#pragma message "Demo type 8: UART"
-extern void main_newuart(void);
 #else
 #error "Unsupported demo type"
 #endif
@@ -97,10 +94,6 @@ int main(void)
 #elif mainDEMO_TYPE == 5
 	{
 		main_tcp();
-	}
-#elif mainDEMO_TYPE == 8
-	{
-		main_newuart();
 	}
 #endif
 }

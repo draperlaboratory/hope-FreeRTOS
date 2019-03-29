@@ -42,6 +42,10 @@
 #include "vcnl4010.h"
 #include "serLcd.h"
 
+#if !(BSP_USE_IIC0 && BSP_USE_IIC0 && BSP_USE_UART0 && BSP_USE_UART1)
+#error "One or more peripherals are nor present, this test cannot be run"
+#endif 
+
 /*-----------------------------------------------------------*/
 #define PROXIMITY_THRESHOLD 200
 #define LED_PROXIMITY_0_A 0

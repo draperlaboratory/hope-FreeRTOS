@@ -36,9 +36,9 @@ struct IicDriver Iic1;
 /*****************************************************************************/
 
 /**
- * Initialize IIC peripheral.
+ * Initialize IIC peripheral. 
  */
-static void iic_init(struct IicDriver *Iic, uint8_t device_id, uint8_t plic_source_id)
+__attribute__((unused)) static void iic_init(struct IicDriver *Iic, uint8_t device_id, uint8_t plic_source_id)
 {
     // Initialize struct
     Iic->mutex = xSemaphoreCreateMutex();
@@ -65,6 +65,9 @@ static void iic_init(struct IicDriver *Iic, uint8_t device_id, uint8_t plic_sour
 
     /* Initialize the XIic driver so that it's ready to use */
     configASSERT(XIic_Initialize(&Iic->Device, device_id) == XST_SUCCESS);
+
+    /* Perform a self-test to ensure that the hardware was built correctly */
+    configASSERT(XIic_SelfTest(&Iic->Device) == XST_SUCCESS);
 
     /*
 	 * Setup handler to process the asynchronous events which occur,

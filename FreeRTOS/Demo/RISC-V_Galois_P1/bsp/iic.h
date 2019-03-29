@@ -5,7 +5,7 @@
 #include "xiic.h"
 #include "semphr.h"
 
-#if BSP_USE_IIC0 || BSP_USE_IIC1
+
     /* Device driver for IIC peripheral */
     struct IicDriver
     {
@@ -21,7 +21,7 @@
 
     int iic_transmit(struct IicDriver *Iic, uint8_t addr, uint8_t *tx_data, uint8_t tx_len);
     int iic_receive(struct IicDriver *Iic, uint8_t addr, uint8_t *rx_data, uint8_t rx_len);
-#endif
+
 
 #if BSP_USE_IIC0
     extern struct IicDriver Iic0;
