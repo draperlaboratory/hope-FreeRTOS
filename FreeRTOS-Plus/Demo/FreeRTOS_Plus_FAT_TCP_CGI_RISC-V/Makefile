@@ -229,7 +229,7 @@ sim-qemu: $(OUT_ELF)
 	--policy-validator-cfg yaml-cfg=./isp-output/isp-run-FreeRTOS-$(PROJ_NAME).elf-$(POLICY)/validator_cfg.yml $(QEMU_GDB)
 
 gdb-qemu: $(OUT_ELF)
-	$(GDB) -iex "set mem inaccessible-by-default off" -iex "set arch riscv:rv32" -iex "set riscv use-compressed-breakpoint off" -iex "source /opt/isp/gdb-scripts/qemu.gdb" -iex "target remote :1234" $(OUT_ELF)
+	$(GDB) -iex "set mem inaccessible-by-default off" -iex "set arch riscv:rv32" -iex "set riscv use-compressed-breakpoint off" -iex "source /opt/isp/gdb-scripts/qemu.gdb" -ex "target remote :1234" $(OUT_ELF)
 
 
 
