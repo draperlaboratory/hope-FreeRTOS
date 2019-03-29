@@ -94,7 +94,7 @@ BUILD_DIRECTORIES = \
 	$(FREERTOS_FAT_BUILD_DIR) \
 	$(SDK_BUILD_DIR)
 
-.PHONY: debug clean app_compile debug-app frtos_compile print-info frtos_p_util frtos_cli frtos_tcp frtos_fat freedom_sdk out_elf
+.PHONY: debug clean app_compile debug-app frtos_compile print-info frtos_p_util frtos_cli frtos_tcp frtos_fat freedom_sdk out_elf clean-libxil
 all: directories $(OUT_OBJS) $(OUT_ELF)
 directories: $(BUILD_DIRECTORIES)
 app_compile: directories $(APP_OBJS)
@@ -199,6 +199,10 @@ clean:
 	rm -rfv ./isp-output
 	rm -fv status.log
 	rm -fv uart.log
+
+clean-libxil:
+	rm -fv $(CLEAN_OBJS)
+	rm -fv $(LIBXIL_DIR)/$(LIBXIL)
 
 # Policy Variables ___________________________________________
 POLICY_DIR = $(ISP_PREFIX)/kernels
