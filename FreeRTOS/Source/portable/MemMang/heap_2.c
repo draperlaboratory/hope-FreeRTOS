@@ -135,6 +135,10 @@ void* dover_remove_tag(void *);
 void * dover_tag(volatile uintptr_t *, size_t);
 void dover_untag(volatile uintptr_t *, size_t);
 
+int dover_ptr_free_list_head = 0;
+int dover_ptr_free_list_tail = 0;
+static void *volatile dover_ptr_free_list[20];
+
 // Convert bytes to words, rounding up
 size_t btow(size_t bytes){
   uintptr_t words = bytes / sizeof(uintptr_t);
@@ -158,6 +162,12 @@ void* __attribute__ ((noinline)) dover_remove_tag(void *volatile ptr) {
   return res;
 }
 
+static void *volatile dover_ptr_to_free;
+
+void __attribute__((noinline)) dover_free_tag(volatile uintptr_t *ptr) {
+	dover_ptr_to_free = ptr;
+}
+
 
 // Apply tags to a block of heap memory by writing tagged 0's to the memory cells
 //      Needs to be prevented from inlining and word aligned so proper
@@ -170,18 +180,26 @@ void * __attribute__ ((noinline)) dover_tag(volatile uintptr_t *ptr, size_t byte
 
   vTaskSuspendAll();
 
+  if (dover_ptr_free_list_head == dover_ptr_free_list_tail) {
+	// Free list is emply
 #if MAX_COLORS
-  // constrain index to bounds
-  dover_ptr_tag_index++;
-  dover_ptr_tag_index = dover_ptr_tag_index % MAX_COLORS;
-  dover_ptr_tag[dover_ptr_tag_index] = (void*volatile)ptr;
-  p = dover_ptr_tag[dover_ptr_tag_index];
-  res = (void*volatile)p;
+	// constrain index to bounds
+	dover_ptr_tag_index++;
+	dover_ptr_tag_index = dover_ptr_tag_index % MAX_COLORS;
+	dover_ptr_tag[dover_ptr_tag_index] = (void*volatile)ptr;
+	p = dover_ptr_tag[dover_ptr_tag_index];
+	res = (void*volatile)p;
 #else
-  dover_ptr_tag = ptr;
-  p = dover_ptr_tag;
-  res = p;
+	dover_ptr_tag = ptr;
+	p = dover_ptr_tag;
+	res = p;
 #endif
+  } else {
+	dover_ptr_free_list[dover_ptr_free_list_head] = ptr;
+	p = dover_ptr_free_list[dover_ptr_free_list_head];
+	dover_ptr_free_list_head++;
+	res = p;
+  }
   xTaskResumeAll();
 
  uintptr_t zero;
@@ -316,6 +334,11 @@ void *pvReturn = NULL;
 }
 /*-----------------------------------------------------------*/
 
+void __attribute__ ((noinline)) dover_mark_free(volatile uintptr_t *ptr) {
+	dover_ptr_free_list[dover_ptr_free_list_tail] = ptr;
+	dover_ptr_free_list_tail++;
+}
+
 void vPortFree( void *pv )
 {
 uint8_t *puc;
@@ -334,6 +357,7 @@ BlockLink_t *pxLink;
 		pxLink = ( void * ) puc;
 
 		dover_untag(pv, pxLink->orig_req_size);
+		dover_free_tag(pv);
 
 		vTaskSuspendAll();
 		{
