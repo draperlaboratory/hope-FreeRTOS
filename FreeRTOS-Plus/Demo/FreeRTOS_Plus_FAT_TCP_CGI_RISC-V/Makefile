@@ -199,6 +199,8 @@ clean:
 	rm -rfv ./isp-output
 	rm -fv status.log
 	rm -fv uart.log
+	rm -fv $(BSP_DIR)/libxil.a
+	rm -fv $(LIBXIL_OBJS)
 
 clean-libxil:
 	rm -fv $(CLEAN_OBJS)
