@@ -22,7 +22,8 @@ ARCH_FLAGS = -march=rv32ima -mabi=ilp32 -mcmodel=medany
 # Basic ISP_CFLAGS:
 ISP_CFLAGS  = -Wall -Wextra -O0 -g3 -msmall-data-limit=8 -std=gnu11
 ISP_CFLAGS += -ffunction-sections -fdata-sections -fno-builtin-printf
-ISP_CFLAGS += -DDONT_USE_PLIC -DDONT_USE_M_TIME -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
+# ISP_CFLAGS += -DDONT_USE_PLIC -DDONT_USE_M_TIME -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
+ISP_CFLAGS += -DUSE_PLIC -DUSE_M_TIME -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
 ISP_CFLAGS += -include sys/cdefs.h
 ISP_CFLAGS += $(ARCH_FLAGS)
 # These flags are for outputing *.d dependency files for make
