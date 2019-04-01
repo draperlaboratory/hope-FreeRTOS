@@ -9,7 +9,7 @@ set(UNIX 1 CACHE STRING "" FORCE)
 if (DEFINED ENV{ISP_PREFIX})
   set(ISP_PREFIX $ENV{ISP_PREFIX})
  else()
-  set(ISP_PREFIX "/opt/isp/")
+   set(ISP_PREFIX "$ENV{HOME}/.local/isp/")
 endif()
 
 # specify the cross compiler
