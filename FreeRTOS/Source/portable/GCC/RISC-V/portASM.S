@@ -103,7 +103,9 @@ sp_scrogged:
 /*-----------------------------------------------------------*/
 
 .align 8
+#if !defined(__clang__)
 .func
+#endif  
 freertos_risc_v_trap_handler:
 	lw t1, ram_start
 	ble sp, t1, sp_scrogged
@@ -254,11 +256,15 @@ processed_source:
 	addi sp, sp, portCONTEXT_SIZE
 
 	mret
+#if !defined(__clang__)
 	.endfunc
+#endif
 /*-----------------------------------------------------------*/
 
 .align 8
+#if !defined(__clang__)
 .func
+#endif  
 xPortStartFirstTask:
 
 #if( portasmHAS_CLINT != 0 )
@@ -308,7 +314,9 @@ xPortStartFirstTask:
 	lw  x31, 28 * portWORD_SIZE( sp )	/* t6 */
 	addi	sp, sp, portCONTEXT_SIZE
 	ret
+#if !defined(__clang__)
 	.endfunc
+#endif
 /*-----------------------------------------------------------*/
 
 /*
@@ -374,7 +382,9 @@ xPortStartFirstTask:
  * pxCode
  */
 .align 8
+#if !defined(__clang__)  
 .func
+#endif
 pxPortInitialiseStack:
 
 	csrr t0, mstatus					/* Obtain current mstatus value. */
@@ -399,5 +409,7 @@ chip_specific_stack_frame:				/* First add any chip specific registers to the st
 	addi a0, a0, -portWORD_SIZE
 	sw a1, 0(a0)						/* mret value (pxCode parameter) onto the stack. */
 	ret
+#if !defined(__clang__)
 	.endfunc
+#endif
 /*-----------------------------------------------------------*/
