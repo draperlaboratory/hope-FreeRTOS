@@ -35,7 +35,7 @@ ISP_ASMFLAGS += -ffunction-sections -fdata-sections
 ISP_ASMFLAGS += -x assembler-with-cpp
 
 # Linker arguments __________________________________________
-ISP_LDFLAGS :=  -Xlinker --gc-sections -Xlinker --defsym=__stack_size=1K
+ISP_LDFLAGS := -Xlinker --defsym=__stack_size=1K
 ISP_LDFLAGS += -O0 -g3
 ISP_LDFLAGS += -ffunction-sections -fdata-sections --specs=nano.specs
 ISP_LDFLAGS += -nostartfiles
