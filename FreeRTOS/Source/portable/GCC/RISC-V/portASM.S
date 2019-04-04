@@ -210,8 +210,13 @@ handle_access_fault:
 	j test_if_environment_call
 
 is_exception:
-	ebreak
-	j is_exception
+  csrr a0, mcause
+  csrr a1, mepc
+  csrr a2, mstatus
+  jal is_exception_print
+	/*ebreak*/
+is_exception_loop:
+	j is_exception_loop
 
 as_yet_unhandled:
 	ebreak

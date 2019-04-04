@@ -188,7 +188,11 @@ void vPortHandleInterrupt( void )
    /* Not implemented. */
 }
 
+void is_exception_print( uint32_t cause, uint32_t mepc, uint32_t status )
+{
+  printf("In is_exception with cause %lx and mepc %lx and status %lx\n", cause, mepc, status);
 
+}
 
 
 
