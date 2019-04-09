@@ -83,6 +83,15 @@ specific version of freertos_risc_v_chip_specific_extensions.h.  See the notes
 at the top of this file. */
 #define portCONTEXT_SIZE ( 30 * portWORD_SIZE )
 
+#define MC_MSTATUS_OFF 32
+#define MC_MTVEC_OFF 33
+#define MC_MIP_OFF 34
+#define MC_MIE_OFF 35
+#define MC_MEPC_OFF 36
+#define MC_MCAUSE_OFF 37
+#define MC_MTVAL_OFF 38
+#define MC_MISA_OFF 39
+  
 .global xPortStartFirstTask
 .global freertos_risc_v_trap_handler
 .global pxPortInitialiseStack
@@ -95,16 +104,161 @@ at the top of this file. */
 .extern ulTimerIncrementsForOneTick
 .extern xISRStackTop
 
+.extern global_exception_mc
+  
 ram_start: .word 0x80000000
 
 sp_scrogged:
 	j sp_scrogged
 /*-----------------------------------------------------------*/
 
+  .macro STRUCT_SAVE_CONTEXT
+
+	addi sp, sp, -2 * portWORD_SIZE
+  sw a0, 0(sp)
+  sw x5, portWORD_SIZE(sp)
+  
+  la a0, global_exception_mc
+  
+	sw x1, 1 * portWORD_SIZE( a0 )
+
+	addi sp, sp, 2 * portWORD_SIZE
+	sw x2, 2 * portWORD_SIZE( a0 )
+	addi sp, sp, -2 * portWORD_SIZE
+  
+	sw x3, 3 * portWORD_SIZE( a0 )
+	sw x4, 4 * portWORD_SIZE( a0 )
+	sw x5, 5 * portWORD_SIZE( a0 )
+	sw x6, 6 * portWORD_SIZE( a0 )
+	sw x7, 7 * portWORD_SIZE( a0 )
+	sw x8, 8 * portWORD_SIZE( a0 )
+	sw x9, 9 * portWORD_SIZE( a0 )
+
+  //	sw x10, 10 * portWORD_SIZE( a0 )
+  lw x5, 0(sp)
+  sw x5, 10 * portWORD_SIZE( a0 )
+  
+	sw x11, 11 * portWORD_SIZE( a0 )
+	sw x12, 12 * portWORD_SIZE( a0 )
+	sw x13, 13 * portWORD_SIZE( a0 )
+	sw x14, 14 * portWORD_SIZE( a0 )
+	sw x15, 15 * portWORD_SIZE( a0 )
+	sw x16, 16 * portWORD_SIZE( a0 )
+	sw x17, 17 * portWORD_SIZE( a0 )
+	sw x18, 18 * portWORD_SIZE( a0 )
+	sw x19, 19 * portWORD_SIZE( a0 )
+	sw x20, 20 * portWORD_SIZE( a0 )
+	sw x21, 21 * portWORD_SIZE( a0 )
+	sw x22, 22 * portWORD_SIZE( a0 )
+	sw x23, 23 * portWORD_SIZE( a0 )
+	sw x24, 24 * portWORD_SIZE( a0 )
+	sw x25, 25 * portWORD_SIZE( a0 )
+	sw x26, 26 * portWORD_SIZE( a0 )
+	sw x27, 27 * portWORD_SIZE( a0 )
+	sw x28, 28 * portWORD_SIZE( a0 )
+	sw x29, 29 * portWORD_SIZE( a0 )
+	sw x30, 30 * portWORD_SIZE( a0 )
+	sw x31, 31 * portWORD_SIZE( a0 )
+
+  csrr x5, mstatus
+  sw x5, MC_MSTATUS_OFF * portWORD_SIZE( a0 )
+
+  csrr x5, mtvec
+  sw x5, MC_MTVEC_OFF * portWORD_SIZE( a0 )
+
+  csrr x5, mip
+  sw x5, MC_MIP_OFF * portWORD_SIZE( a0 )
+
+  csrr x5, mie
+  sw x5, MC_MIE_OFF * portWORD_SIZE( a0 )
+
+  csrr x5, mepc
+  sw x5, MC_MEPC_OFF * portWORD_SIZE( a0 )
+
+  csrr x5, mcause
+  sw x5, MC_MCAUSE_OFF * portWORD_SIZE( a0 )
+
+  csrr x5, mtval
+  sw x5, MC_MTVAL_OFF * portWORD_SIZE( a0 )
+
+  csrr x5, misa
+  sw x5, MC_MISA_OFF * portWORD_SIZE( a0 )
+  
+  /* restore clobbered a0 and x5 */
+  lw a0, 0(sp)
+  lw x5, portWORD_SIZE(sp)       
+	addi sp, sp, 2 * portWORD_SIZE
+  
+  .endm
+
 .align 8
 .func
 freertos_risc_v_trap_handler:
-	lw t1, ram_start
+
+  /* check for exception */
+    /* save scratch regs */
+	addi sp, sp, -2 * portWORD_SIZE
+  sw t0, 0(sp)
+  sw t1, portWORD_SIZE(sp)
+
+  csrr t1, mcause
+  
+  // 0x0 - instruction addr misaligned
+  li t0, 0x0
+  beq t0, t1, jump_to_is_exception
+  
+  // 0x1 - instruction access fault
+  li t0, 0x1
+  beq t0, t1, jump_to_is_exception
+  
+  // 0x2 - illegal instruction
+  li t0, 0x2
+  beq t0, t1, jump_to_is_exception
+  
+  // 0x4 - load address misaligned
+  li t0, 0x4
+  beq t0, t1, jump_to_is_exception
+  
+  // 0x5 - load access fault
+  li t0, 0x5
+  beq t0, t1, jump_to_is_exception
+  
+  // 0x6 - store/AMO addr misaligned
+  li t0, 0x6
+  beq t0, t1, jump_to_is_exception
+  
+  // 0x7 - store/AMO access fualt
+  li t0, 0x7
+  beq t0, t1, jump_to_is_exception
+  
+  // 0x12 - instruction page fault
+  li t0, 0x12
+  beq t0, t1, jump_to_is_exception
+  
+  // 0x13 - load page fault
+  li t0, 0x13
+  beq t0, t1, jump_to_is_exception
+  
+  // 0x15 - store/AMO page fault
+  li t0, 0x15
+  beq t0, t1, jump_to_is_exception
+
+  j no_exception
+  
+jump_to_is_exception: 
+  /* restore clobbered a0 and x5 */
+  lw t0, 0(sp)
+  lw t1, portWORD_SIZE(sp)       
+	addi sp, sp, 2 * portWORD_SIZE
+  j is_exception
+
+no_exception: 
+  /* restore clobbered a0 and x5 */
+  lw t0, 0(sp)
+  lw t1, portWORD_SIZE(sp)       
+	addi sp, sp, 2 * portWORD_SIZE
+  
+  lw t1, ram_start
 	ble sp, t1, sp_scrogged
 	addi sp, sp, -portCONTEXT_SIZE
 	sw x1, 1 * portWORD_SIZE( sp )
@@ -210,9 +364,9 @@ handle_access_fault:
 	j test_if_environment_call
 
 is_exception:
-  csrr a0, mcause
-  csrr a1, mepc
-  csrr a2, mstatus
+
+  STRUCT_SAVE_CONTEXT
+  
   jal is_exception_print
 	/*ebreak*/
 is_exception_loop:
