@@ -61,7 +61,8 @@ __attribute__((unused)) static void iic_init(struct IicDriver *Iic, uint8_t devi
     };
 
     Iic->task_handle = NULL;
-    Iic->TotalTransactiondCount = 0;
+    Iic->TotalErrorCount = 0;
+    Iic->Errors = 0;
 
     /* Initialize the XIic driver so that it's ready to use */
     configASSERT(XIic_Initialize(&Iic->Device, device_id) == XST_SUCCESS);
@@ -80,7 +81,7 @@ __attribute__((unused)) static void iic_init(struct IicDriver *Iic, uint8_t devi
 
     /* Setup interrupt system */
     configASSERT(PLIC_register_interrupt_handler(&Plic, plic_source_id,
-                                                 (XInterruptHandler)XIic_InterruptHandler, Iic) != 0);
+                                                 (XInterruptHandler)XIic_InterruptHandler, &Iic->Device) != 0);
 
     /*
 	 * Start the IIC driver such that it is ready to send and
@@ -125,7 +126,7 @@ int iic_transmit(struct IicDriver *Iic, uint8_t addr, uint8_t *tx_data, uint8_t 
         else
         {
             /* Transaction succesfull, return number of transmitted bytes */
-            returnval = Iic->TotalTransactiondCount;
+            returnval = Iic->trans_len;
         }
     }
     else
@@ -174,7 +175,7 @@ int iic_receive(struct IicDriver *Iic, uint8_t addr, uint8_t *rx_data, uint8_t r
         else
         {
             /* Transaction succesfull, return number of transmitted bytes */
-            returnval = Iic->TotalTransactiondCount;
+            returnval = Iic->trans_len;
         }
     }
     else

@@ -34,7 +34,7 @@
 #define PLIC_SOURCE_ETH 0x2
 #define PLIC_SOURCE_DMA_MM2S 0x3
 #define PLIC_SOURCE_DMA_S2MM 0x4
-// GFE:s
+// GFE:
 #define PLIC_SOURCE_SPI0 0x5
 #define PLIC_SOURCE_UART1 0x6
 #define PLIC_SOURCE_IIC0 0x7
@@ -70,7 +70,7 @@ void external_interrupt_handler(uint32_t cause);
 #define XPAR_UARTNS550_0_BASEADDR 0x62300000ULL
 #define XPAR_UARTNS550_0_CLOCK_HZ configPERIPH_CLOCK_HZ
 
-#define BSP_USE_UART1 0
+#define BSP_USE_UART1 1
 #define XPAR_UARTNS550_1_DEVICE_ID 1
 #define XPAR_UARTNS550_1_BAUD_RATE XPAR_DEFAULT_BAUD_RATE
 #define XPAR_UARTNS550_1_BASEADDR (0x62340000ULL)
@@ -163,13 +163,13 @@ void external_interrupt_handler(uint32_t cause);
  */
 #define XPAR_XIIC_NUM_INSTANCES 2
 
-#define BSP_USE_IIC0 0
+#define BSP_USE_IIC0 1
 #define XPAR_IIC_0_DEVICE_ID 0
 #define XPAR_IIC_0_BASEADDR (0x62310000ULL)
 #define XPAR_IIC_0_TEN_BIT_ADR 0
 #define XPAR_IIC_0_GPO_WIDTH 32
 
-#define BSP_USE_IIC1 0
+#define BSP_USE_IIC1 1
 #define XPAR_IIC_1_DEVICE_ID 1
 #define XPAR_IIC_1_BASEADDR (0x62350000ULL)
 #define XPAR_IIC_1_TEN_BIT_ADR 0
@@ -178,22 +178,39 @@ void external_interrupt_handler(uint32_t cause);
 /**
  * SPI defines
  */
-#define XPAR_XSPI_NUM_INSTANCES 1
+#define XPAR_XSPI_NUM_INSTANCES 2
+#define XPAR_SPI_USE_POLLING_MODE 0
 
-#define BSP_USE_SPI0 0
-#define XPAR_SPI_0_DEVICE_ID 1
-#define XPAR_SPI_0_BASEADDR (0x62320000ULL)
-#define XPAR_SPI_0_FIFO_EXIST 1
+#define BSP_USE_SPI0 0 /* SPI0 is Flash memory, we don't use it directly */
+#define XPAR_SPI_0_DEVICE_ID 0
+#define XPAR_SPI_0_BASEADDR 0x4000000ULL
+#define XPAR_SPI_0_FIFO_EXIST 0
 #define XPAR_SPI_0_SLAVE_ONLY 0
-#define XPAR_SPI_0_NUM_SS_BITS 1
-#define XPAR_SPI_0_NUM_TRANSFER_BITS 8
+#define XPAR_SPI_0_NUM_SS_BITS 0
+#define XPAR_SPI_0_NUM_TRANSFER_BITS 0
 #define XPAR_SPI_0_SPI_MODE 0
+#define XPAR_SPI_0_AXI_INTERFACE 0
+#define XPAR_SPI_0_AXI_FULL_BASEADDR 0
+#define XPAR_SPI_0_XIP_MODE 0
 #define XPAR_SPI_0_USE_STARTUP 0
+
+#define BSP_USE_SPI1 1 /* SPI1 is used for SD card (polled mode), and can be used for LCD screen (interrupt mode)*/ 
+#define XPAR_SPI_1_DEVICE_ID 1
+#define XPAR_SPI_1_BASEADDR (0x62320000ULL)
+#define XPAR_SPI_1_FIFO_EXIST 1
+#define XPAR_SPI_1_SLAVE_ONLY 0
+#define XPAR_SPI_1_NUM_SS_BITS 1
+#define XPAR_SPI_1_NUM_TRANSFER_BITS 8
+#define XPAR_SPI_1_SPI_MODE 0
+#define XPAR_SPI_1_AXI_INTERFACE 0
+#define XPAR_SPI_1_AXI_FULL_BASEADDR 0
+#define XPAR_SPI_1_XIP_MODE 0
+#define XPAR_SPI_1_USE_STARTUP 0
 
 /**
  * GPIO defines
  */
-#define BSP_USE_GPIO 0
+#define BSP_USE_GPIO 1
 #define XPAR_GPIO_BASEADDR (0x62330000ULL)
 
 /**

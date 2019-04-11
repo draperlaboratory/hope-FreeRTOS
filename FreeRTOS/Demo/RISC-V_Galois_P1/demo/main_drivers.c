@@ -42,12 +42,14 @@
 #include "vcnl4010.h"
 #include "serLcd.h"
 
-#if !(BSP_USE_IIC0 && BSP_USE_IIC0 && BSP_USE_UART0 && BSP_USE_UART1)
+#if !(BSP_USE_IIC0 && BSP_USE_IIC0 && BSP_USE_UART0 && BSP_USE_UART1 && BSP_USE_GPIO && BSP_USE_SPI1)
 #error "One or more peripherals are nor present, this test cannot be run"
 #endif 
 
 /*-----------------------------------------------------------*/
 #define PROXIMITY_THRESHOLD 200
+#define PROXIMITY_DELAY_MS 100
+#define BUFFER_WAIT_TIME_MS 50
 #define LED_PROXIMITY_0_A 0
 #define LED_PROXIMITY_0_B 1
 #define LED_PROXIMITY_0_C 2
@@ -59,6 +61,7 @@
 #define LED_PROXIMITY_1_D 7
 
 #define sbiSTREAM_BUFFER_LENGTH_BYTES ((size_t)100)
+#define sbiSTREAM_BUFFER_TRIGGER_LEVEL_1 ((BaseType_t)1)
 #define sbiSTREAM_BUFFER_TRIGGER_LEVEL_5 ((BaseType_t)5)
 
 void main_drivers(void);
@@ -69,35 +72,81 @@ static void prvUartTxTestTask(void *pvParameters);
 static void prvUartRx0TestTask(void *pvParameters);
 static void prvUartRx1TestTask(void *pvParameters);
 static void prvLcdTestTask(void *pvParameters);
+static void prvMotorControlTask(void *pvParameters);
 
 /* The stream buffer that is used to send data from an interrupt to the task. */
-static StreamBufferHandle_t xStreamBuffer = NULL;
-
+static StreamBufferHandle_t xStreamBufferUartToLcd = NULL;
+static StreamBufferHandle_t xStreamBufferProxyToMotor = NULL;
 /*-----------------------------------------------------------*/
 
 void main_drivers(void)
 {
 	/* Create the stream buffer that sends data from the interrupt to the
 	task, and create the task. */
-	xStreamBuffer = xStreamBufferCreate(/* The buffer length in bytes. */
+	xStreamBufferUartToLcd = xStreamBufferCreate(/* The buffer length in bytes. */
 										sbiSTREAM_BUFFER_LENGTH_BYTES,
 										/* The stream buffer's trigger level. */
 										sbiSTREAM_BUFFER_TRIGGER_LEVEL_5);
+
+	xStreamBufferProxyToMotor = xStreamBufferCreate(/* The buffer length in bytes. */
+										sbiSTREAM_BUFFER_LENGTH_BYTES,
+										/* The stream buffer's trigger level. */
+										sbiSTREAM_BUFFER_TRIGGER_LEVEL_1);
 
 	xTaskCreate(prvIicTestTask0, "prvIicTestTask0", configMINIMAL_STACK_SIZE * 2U, NULL, tskIDLE_PRIORITY + 1, NULL);
 	xTaskCreate(prvIicTestTask1, "prvIicTestTask1", configMINIMAL_STACK_SIZE * 2U, NULL, tskIDLE_PRIORITY + 1, NULL);
 	xTaskCreate(prvUartTxTestTask, "prvUartTxTestTask", configMINIMAL_STACK_SIZE * 2U, NULL, tskIDLE_PRIORITY + 1, NULL);
 	xTaskCreate(prvUartRx0TestTask, "prvUartRx0TestTask", configMINIMAL_STACK_SIZE * 2U, NULL, tskIDLE_PRIORITY + 1, NULL);
 	xTaskCreate(prvUartRx1TestTask, "prvUartRx1TestTask", configMINIMAL_STACK_SIZE * 2U, NULL, tskIDLE_PRIORITY + 1, NULL);
-	xTaskCreate(prvLcdTestTask, "prvLcdTestTask", configMINIMAL_STACK_SIZE * 2U, NULL, tskIDLE_PRIORITY + 1, NULL);
-
-	/* Start the tasks and timer running. */
-	vTaskStartScheduler();
-
-	for (;;)
-		;
+	xTaskCreate(prvLcdTestTask, "prvLcdTestTask", configMINIMAL_STACK_SIZE * 3U, NULL, tskIDLE_PRIORITY + 1, NULL);
+	xTaskCreate(prvMotorControlTask, "prvMotorControlTask", configMINIMAL_STACK_SIZE * 3U, NULL, tskIDLE_PRIORITY + 1, NULL);
 }
 /*-----------------------------------------------------------*/
+
+/**
+ * This tasks controls GPIO and the connected motors
+ */
+static void prvMotorControlTask(void *pvParameters)
+{
+	(void)pvParameters;
+	uint8_t rx_buf[sbiSTREAM_BUFFER_LENGTH_BYTES] = {0};
+	size_t retval = 0;
+
+	printf("Starting prvMotorControlTask\r\n");
+
+	/* Set motors to stop (all GPIOs are cleared) */
+	gpio1_clear(0);
+	gpio1_clear(1);
+	gpio1_clear(2);
+	gpio1_clear(3);
+
+	for (;;) {
+		retval = xStreamBufferReceive(xStreamBufferProxyToMotor,
+									  (void *)rx_buf,
+								 	  sizeof(rx_buf),
+									  pdMS_TO_TICKS(BUFFER_WAIT_TIME_MS));
+
+		if (retval > 0) {
+			/* A message was received */
+			if (rx_buf[0] == 1) {
+				/* Set both motors on */ 
+				gpio1_write(0);
+				//gpio1_write(1);
+				gpio1_write(2);
+				//gpio1_write(3);
+			} else {
+			/* Set motors to stop (all GPIOs are cleared) */
+			gpio1_clear(0);
+			gpio1_clear(1);
+			gpio1_clear(2);
+			gpio1_clear(3);
+			}
+			/* Sleep for a bit */ 
+			vTaskDelay(pdMS_TO_TICKS(100));
+		}
+	}
+
+}
 
 /**
  * This tasks displays data received over StreamBuffer on SerLCD connected
@@ -119,14 +168,14 @@ static void prvLcdTestTask(void *pvParameters)
 		block times are not recommended in production code as they do not allow
 		for error recovery. */
 		retval = xStreamBufferReceive(/* The stream buffer data is being received from. */
-									  xStreamBuffer,
+									  xStreamBufferUartToLcd,
 									  /* Where to place received data. */
 									  (void *)str,
 									  /* The number of bytes to receive. */
 									  sizeof(str) - 1,
 									  /* The time to wait for the next data if the buffer
 							  is empty. */
-									  pdMS_TO_TICKS(3000));
+									  pdMS_TO_TICKS(1000));
 		if (retval == 0)
 		{
 			serLcdPrintf(no_data_msg);
@@ -151,6 +200,9 @@ static void prvIicTestTask1(void *pvParameters)
 	struct Vcnl4010_t sensor1;
 	uint16_t proximity = 0;
 	uint16_t ambient_light = 0;
+
+	uint8_t tx_buf[sbiSTREAM_BUFFER_LENGTH_BYTES] = {0};
+
 	printf("Starting prvIicTestTask1\r\n");
 	configASSERT(vcnl4010_init(&sensor1, &Iic1));
 
@@ -164,6 +216,9 @@ static void prvIicTestTask1(void *pvParameters)
 			gpio2_write(LED_PROXIMITY_1_B);
 			gpio2_write(LED_PROXIMITY_1_C);
 			gpio2_write(LED_PROXIMITY_1_D);
+			
+			tx_buf[0] = 1;
+			xStreamBufferSend(xStreamBufferProxyToMotor,(const void *)tx_buf,1,pdMS_TO_TICKS(BUFFER_WAIT_TIME_MS));
 		}
 		else
 		{
@@ -171,12 +226,15 @@ static void prvIicTestTask1(void *pvParameters)
 			gpio2_clear(LED_PROXIMITY_1_B);
 			gpio2_clear(LED_PROXIMITY_1_C);
 			gpio2_clear(LED_PROXIMITY_1_D);
+
+			tx_buf[0] = 0;
+			xStreamBufferSend(xStreamBufferProxyToMotor,(const void *)tx_buf,1,pdMS_TO_TICKS(BUFFER_WAIT_TIME_MS));
 		}
 
 		ambient_light = vcnl4010_readAmbient(&sensor1);
 		printf("#1 ambient: %u\r\n", ambient_light);
 
-		vTaskDelay(pdMS_TO_TICKS(1000));
+		vTaskDelay(pdMS_TO_TICKS(PROXIMITY_DELAY_MS));
 	}
 }
 
@@ -191,6 +249,7 @@ static void prvIicTestTask0(void *pvParameters)
 	struct Vcnl4010_t sensor0;
 	uint16_t proximity = 0;
 	uint16_t ambient_light = 0;
+
 	printf("Starting prvIicTestTask0\r\n");
 	configASSERT(vcnl4010_init(&sensor0, &Iic0));
 
@@ -216,7 +275,7 @@ static void prvIicTestTask0(void *pvParameters)
 		ambient_light = vcnl4010_readAmbient(&sensor0);
 		printf("#0 ambient: %u\r\n", ambient_light);
 
-		vTaskDelay(pdMS_TO_TICKS(100));
+		vTaskDelay(pdMS_TO_TICKS(PROXIMITY_DELAY_MS));
 	}
 }
 
@@ -240,7 +299,7 @@ static void prvUartTxTestTask(void *pvParameters)
 			printf("Timeout\r\n");
 		}
 		cnt++;
-		vTaskDelay(pdMS_TO_TICKS(100));
+		vTaskDelay(pdMS_TO_TICKS(1000));
 	}
 }
 
@@ -301,7 +360,7 @@ static void prvUartRx1TestTask(void *pvParameters)
 			{
 				/* Send the next four bytes to the stream buffer. */
 				printf("Sending %u bytes\r\n", idx);
-				xStreamBufferSend(xStreamBuffer,
+				xStreamBufferSend(xStreamBufferUartToLcd,
 								  (const void *)msg,
 								  idx,
 								  pdMS_TO_TICKS(1000));

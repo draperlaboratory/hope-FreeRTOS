@@ -59,81 +59,93 @@ static void vTestGPIO(void *pvParameters);
 
 void main_gpio(void)
 {
-  /* Create GPIO test */
-  xTaskCreate(vTestGPIO, "GPIO Test", 1000, NULL, 0, NULL);
-
-  /* Start the kernel.  From here on, only tasks and interrupts will run. */
-  vTaskStartScheduler();
-
-  /* If all is well, the scheduler will now be running, and the following
-	line will never be reached.  If the following line does execute, then
-	there was insufficient FreeRTOS heap memory available for the Idle and/or
-	timer tasks to be created.  See the memory management section on the
-	FreeRTOS web site for more details on the FreeRTOS heap
-	http://www.freertos.org/a00111.html. */
-  for (;;)
-    ;
+    /* Create GPIO test */
+    xTaskCreate(vTestGPIO, "GPIO Test", 1000, NULL, 0, NULL);
 }
 /*-----------------------------------------------------------*/
 
+#define MAIN_GPIO_DELAY_MS 100
 void vTestGPIO(void *pvParameters)
 {
-  /* vTestGPIO() tests the AXI GPIO on the VCU118 by 
+    /* vTestGPIO() tests the AXI GPIO on the VCU118 by 
   testing that the output pins and the LEDs can be written to.
   This should be verified by measuring the pins and looking
   at the LEDs. */
 
-  (void)pvParameters;
+    (void)pvParameters;
 
-  /* GPIO are already set in hardware to be outputs */
-  for (;;)
-  {
-    /***** WRITE TO PINS *****/
-    /* Write to GPIO pin #1 */
-    gpio1_write(1);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    /* GPIO are already set in hardware to be outputs */
+    for (;;)
+    {
+        /***** WRITE TO PINS *****/
+        /* Write to GPIO pin #0 */
+        gpio1_write(0);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
 
-    /* Write to every other LED */
-    gpio2_write(1);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    gpio2_write(3);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    gpio2_write(5);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    gpio2_write(7);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+        /* Write to GPIO pin #1 */
+        gpio1_write(1);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
 
-    /***** CLEAR PINS AND WRITE TO OTHERS PINS *****/
-    /* Clear GPIO pin #1 */
-    gpio1_clear(1);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+        /* Write to GPIO pin #2 */
+        gpio1_write(2);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
 
-    /* Clear those every other LEDs */
-    gpio2_clear(1);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    gpio2_clear(3);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    gpio2_clear(5);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    gpio2_clear(7);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+        /* Write to GPIO pin #3*/
+        gpio1_write(3);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        
+        /* Clear GPIO pin #0 */
+        gpio1_clear(0);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
 
-    /* Write to GPIO pin #0 */
-    gpio1_write(0);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+        /* Clear GPIO pin #1 */
+        gpio1_clear(1);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
 
-    /* Write to every other LED */
-    gpio2_write(0);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    gpio2_write(2);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    gpio2_write(4);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    gpio2_write(6);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-  }
+        /* Clear GPIO pin #2 */
+        gpio1_clear(2);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
 
-  vTaskDelete(NULL);
+        /* Clear GPIO pin #3 */
+        gpio1_clear(3);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+
+        /* Write to every LED */
+        gpio2_write(0);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        gpio2_write(1);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        gpio2_write(2);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        gpio2_write(3);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        gpio2_write(4);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        gpio2_write(5);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        gpio2_write(6);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        gpio2_write(7);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+
+        /* Clear every LED */
+        gpio2_clear(0);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        gpio2_clear(1);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        gpio2_clear(2);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        gpio2_clear(3);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        gpio2_clear(4);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        gpio2_clear(5);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        gpio2_clear(6);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        gpio2_clear(7);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+    }
 }
 
 /*-----------------------------------------------------------*/

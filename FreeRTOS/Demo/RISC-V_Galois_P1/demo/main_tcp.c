@@ -167,9 +167,6 @@ configNETWORK_INTERFACE_TO_USE definition for information on how to configure
 the real network connection to use. */
 const uint8_t ucMACAddress[6] = {configMAC_ADDR0, configMAC_ADDR1, configMAC_ADDR2, configMAC_ADDR3, configMAC_ADDR4, configMAC_ADDR5};
 /*-----------------------------------------------------------*/
-// TODO: the stats are not functional yet
-//char statsBuffer[1024];
-//static void prvStatsTask( void *pvParameters );
 
 void main_tcp(void);
 
@@ -189,50 +186,8 @@ void main_tcp(void)
 	but a DHCP server cannot be	contacted. */
 	FreeRTOS_debug_printf(("FreeRTOS_IPInit\r\n"));
 	FreeRTOS_IPInit(ucIPAddress, ucNetMask, ucGatewayAddress, ucDNSServerAddress, ucMACAddress);
-
-	// TODO: the stats are not functional yet
-	//xTaskCreate( prvStatsTask, "prvStatsTask", configMINIMAL_STACK_SIZE*2, NULL, tskIDLE_PRIORITY, NULL );
-
-	/* Start the tasks and timer running. */
-	FreeRTOS_debug_printf(("vTaskStartScheduler\r\n"));
-	vTaskStartScheduler();
-
-	for (;;)
-		;
 }
 /*-----------------------------------------------------------*/
-// TODO: the stats are not functional yet
-// TODO: these are very rudimentary and might overflow, use only as an example
-// #include <stdint.h>
-// uint64_t base_timer_value = 0;
-
-// void port_init_stats(void) {
-//     base_timer_value=port_get_current_mtime();
-// }
-
-// uint64_t port_get_current_mtime(void) {
-//     volatile uint32_t * const pulTimeHigh = ( volatile uint32_t * const ) ( configCLINT_BASE_ADDRESS + 0xBFFC );
-// 	volatile uint32_t * const pulTimeLow = ( volatile uint32_t * const ) ( configCLINT_BASE_ADDRESS + 0xBFF8 );
-//     uint64_t ullNextTime = 0ULL;
-
-//     ullNextTime = ( uint64_t ) *pulTimeHigh;
-// 	ullNextTime <<= 32ULL;
-// 	ullNextTime |= ( uint64_t ) *pulTimeLow;
-
-//     return ullNextTime;
-// }
-// // TODO: these are very rudimentary and might overflow, use only as an example
-// static void prvStatsTask( void *pvParameters ) {
-// 	(void) pvParameters;
-// 	FreeRTOS_debug_printf( ("prvStatsTask: starting\r\n") );
-// 	for(;;) {
-// 		vTaskDelay(pdMS_TO_TICKS(10000));
-// 		vTaskGetRunTimeStats( (char*)&statsBuffer );
-// 		FreeRTOS_debug_printf( ("prvStatsTask: xPortGetFreeHeapSize() = %u\r\n", xPortGetFreeHeapSize()) );
-// 		FreeRTOS_debug_printf( ("prvStatsTask: Run-time stats\r\nTask\tAbsTime\tpercent_time\r\n") );
-// 		FreeRTOS_debug_printf( ("%s\r\n", statsBuffer) );
-// 	}
-// }
 
 /* Called by FreeRTOS+TCP when the network connects or disconnects.  Disconnect
 events are only received if implemented in the MAC driver. */

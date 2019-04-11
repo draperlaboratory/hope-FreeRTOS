@@ -116,32 +116,18 @@ void main_blinky(void)
 {
 	/* Create the queue. */
 	xQueue = xQueueCreate(mainQUEUE_LENGTH, sizeof(uint32_t));
+	configASSERT(xQueue != NULL);
 
-	if (xQueue != NULL)
-	{
-		/* Start the two tasks as described in the comments at the top of this
+	/* Start the two tasks as described in the comments at the top of this
 		file. */
-		xTaskCreate(prvQueueReceiveTask,			 /* The function that implements the task. */
-					"Rx",							 /* The text name assigned to the task - for debug only as it is not used by the kernel. */
-					configMINIMAL_STACK_SIZE * 2U,   /* The size of the stack to allocate to the task. */
-					NULL,							 /* The parameter passed to the task - not used in this case. */
-					mainQUEUE_RECEIVE_TASK_PRIORITY, /* The priority assigned to the task. */
-					NULL);							 /* The task handle is not required, so NULL is passed. */
+	xTaskCreate(prvQueueReceiveTask,			 /* The function that implements the task. */
+				"Rx",							 /* The text name assigned to the task - for debug only as it is not used by the kernel. */
+				configMINIMAL_STACK_SIZE * 2U,   /* The size of the stack to allocate to the task. */
+				NULL,							 /* The parameter passed to the task - not used in this case. */
+				mainQUEUE_RECEIVE_TASK_PRIORITY, /* The priority assigned to the task. */
+				NULL);							 /* The task handle is not required, so NULL is passed. */
 
-		xTaskCreate(prvQueueSendTask, "TX", configMINIMAL_STACK_SIZE * 2U, NULL, mainQUEUE_SEND_TASK_PRIORITY, NULL);
-
-		/* Start the tasks and timer running. */
-		vTaskStartScheduler();
-	}
-
-	/* If all is well, the scheduler will now be running, and the following
-	line will never be reached.  If the following line does execute, then
-	there was insufficient FreeRTOS heap memory available for the Idle and/or
-	timer tasks to be created.  See the memory management section on the
-	FreeRTOS web site for more details on the FreeRTOS heap
-	http://www.freertos.org/a00111.html. */
-	for (;;)
-		;
+	xTaskCreate(prvQueueSendTask, "TX", configMINIMAL_STACK_SIZE * 2U, NULL, mainQUEUE_SEND_TASK_PRIORITY, NULL);
 }
 /*-----------------------------------------------------------*/
 
@@ -184,7 +170,6 @@ static void prvQueueReceiveTask(void *pvParameters)
 {
 	unsigned long ulReceivedValue;
 	const unsigned long ulExpectedValue = 100UL;
-	extern void vToggleLED(void);
 
 	unsigned int cnt = 0;
 
@@ -208,8 +193,6 @@ static void prvQueueReceiveTask(void *pvParameters)
 		if (ulReceivedValue == ulExpectedValue)
 		{
 			printf("Blink !!!\r\n");
-			// TODO: blink a real LED at some point
-			vToggleLED();
 			ulReceivedValue = 0U;
 		}
 		else

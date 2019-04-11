@@ -90,8 +90,8 @@
 #define configPERIPH_CLOCK_HZ ((uint32_t)(50000000))
 #define configTICK_RATE_HZ ((TickType_t)1000)
 #define configMAX_PRIORITIES (5)
-#define configMINIMAL_STACK_SIZE ((uint32_t)512) /* Can be as low as 60 but some of the demo tasks that use this constant require it to be higher. */
-#define configTOTAL_HEAP_SIZE ((size_t)(500 * 1024))
+#define configMINIMAL_STACK_SIZE ((uint32_t)1024) /* Can be as low as 60 but some of the demo tasks that use this constant require it to be higher. */
+#define configTOTAL_HEAP_SIZE ((size_t)(1000 * 1024))
 #define configMAX_TASK_NAME_LEN (16)
 #define configUSE_TRACE_FACILITY 1
 #define configUSE_16_BIT_TICKS 0
@@ -104,19 +104,16 @@
 #define configUSE_APPLICATION_TASK_TAG 0
 #define configUSE_COUNTING_SEMAPHORES 1
 
-// TODO: the stats are not functional yet
+// TODO: use only for debugging
 #define configGENERATE_RUN_TIME_STATS 0
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 
 /* Runtime stats definitions */
-// TODO: the stats are not functional yet
-// TODO: these are very rudimentary and might overflow, use only as an example
-// #define configUSE_STATS_FORMATTING_FUNCTIONS 1
-// extern uint64_t base_timer_value;
-// extern uint64_t port_get_current_mtime(void);
-// extern void port_init_stats(void);
-// #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() port_init_stats()
-// #define portGET_RUN_TIME_COUNTER_VALUE() (uint32_t)(port_get_current_mtime()-base_timer_value)
+// TODO: use only for debugging
+#define configUSE_STATS_FORMATTING_FUNCTIONS 1
+extern uint32_t port_get_current_mtime(void);
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()
+#define portGET_RUN_TIME_COUNTER_VALUE() port_get_current_mtime()
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 0

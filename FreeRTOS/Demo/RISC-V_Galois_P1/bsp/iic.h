@@ -11,7 +11,6 @@
     {
         XIic Device; /* Xilinx IIC driver */
         /* Counters used to determine when buffer has been send and received */
-        volatile int TotalTransactiondCount;
         volatile int TotalErrorCount;
         volatile int Errors;
         int trans_len;            /* Length of the transaction */

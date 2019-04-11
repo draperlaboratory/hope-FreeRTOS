@@ -212,18 +212,6 @@ void main_full(void)
 
 	/* Start the timers that are used to exercise external interrupt handling. */
 	prvSetupPeripheralTimers();
-
-	/* Start the scheduler. */
-	vTaskStartScheduler();
-
-	/* If all is well, the scheduler will now be running, and the following
-	line will never be reached.  If the following line does execute, then
-	there was insufficient FreeRTOS heap memory available for the Idle and/or
-	timer tasks to be created.  See the memory management section on the
-	FreeRTOS web site for more details on the FreeRTOS heap
-	http://www.freertos.org/a00111.html. */
-	for (;;)
-		;
 }
 /*-----------------------------------------------------------*/
 

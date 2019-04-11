@@ -1,6 +1,7 @@
 #include "bsp.h"
 #include "uart.h"
 #include "iic.h"
+#include "spi.h"
 #include "plic_driver.h"
 
 // to communicate with the debugger in spike
@@ -48,6 +49,11 @@ void prvSetupHardware(void)
 #if BSP_USE_SPI0
     PLIC_set_priority(&Plic, PLIC_SOURCE_SPI0, PLIC_PRIORITY_SPI0);
     spi0_init();
+#endif
+
+#if BSP_USE_SPI1
+    PLIC_set_priority(&Plic, PLIC_SOURCE_SPI1, PLIC_PRIORITY_SPI1);
+    spi1_init();
 #endif
 }
 
