@@ -189,12 +189,10 @@ void vPortHandleInterrupt( void )
 }
 
 /* exception debugging */
-
-void is_exception_print( uint32_t cause, uint32_t mepc, uint32_t status )
-{
+void is_exception_print( uint32_t cause, uint32_t mepc, uint32_t status ) {
 
   const char *pls[] = {"User", "Supervisor", "Reserved", "Machine"};
-  
+
   uint32_t *sp;
 
   int i;
@@ -202,7 +200,7 @@ void is_exception_print( uint32_t cause, uint32_t mepc, uint32_t status )
   printf("\nEXCEPTION DETECTED\n");
   printf("  Type: ");
   switch( global_exception_mc.mcause ) {
-  
+
   case 0x0:
     printf("instruction addr misaligned\n");
     break;
@@ -243,20 +241,20 @@ void is_exception_print( uint32_t cause, uint32_t mepc, uint32_t status )
 
   printf("  Status: 0x%x\n", global_exception_mc.mstatus);
   printf("    Previous priv mode: %s\n", pls[((0x3 << 11) & global_exception_mc.mstatus) >> 11]);
-  
+
+# if 0
   printf("  Stack dump:\n");
-  //  printf("    (base pointer = 0x%x)\n", global_exception_mc.x8);
   printf("    (stack pointer = 0x%x)\n", global_exception_mc.x2);
   sp = (uint32_t*)global_exception_mc.x2;
   for ( i = 0; i < 20; i++, sp++ ) {
     printf(    "    @ 0x%x: 0x%x", sp, *sp);
     if ( !i )
       printf(" (sp)");
-    //    if ( (uint32_t)sp == global_exception_mc.x8 )
-    //      printf(" (bp)");
     printf("\n");
   }
+#endif 
 
+#if 0
   printf("  Register file:\n");
   printf("    ra (x1): 0x%x\n", global_exception_mc.x1);
   printf("    sp (x2): 0x%x\n", global_exception_mc.x2);
@@ -289,9 +287,7 @@ void is_exception_print( uint32_t cause, uint32_t mepc, uint32_t status )
   printf("    a5 (x15): 0x%x\n", global_exception_mc.x15);
   printf("    a6 (x16): 0x%x\n", global_exception_mc.x16);
   printf("    a7 (x17): 0x%x\n", global_exception_mc.x17);	 
-  
+#endif
+
   return;
 }
-
-
-

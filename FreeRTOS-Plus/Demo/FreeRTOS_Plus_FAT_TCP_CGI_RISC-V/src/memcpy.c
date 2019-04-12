@@ -6,11 +6,11 @@
 #include <stdint.h>
 
 #ifndef SIMPLE_MEMCPY
-	#define SIMPLE_MEMCPY	( 0 )
+	#define SIMPLE_MEMCPY	( 1 )
 #endif
 
 #ifndef SIMPLE_MEMSET
-	#define SIMPLE_MEMSET	( 0 )
+	#define SIMPLE_MEMSET	( 1 )
 #endif
 
 #if( SIMPLE_MEMCPY != 0 )

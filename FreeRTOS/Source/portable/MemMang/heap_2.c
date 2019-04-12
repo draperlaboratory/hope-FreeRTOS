@@ -187,12 +187,12 @@ void * __attribute__ ((noinline)) dover_tag(volatile uintptr_t *ptr, size_t byte
 
  uintptr_t zero;
 
- zero = (uintptr_t)dover_ptr_zero;
+ // zero = (uintptr_t)dover_ptr_zero;
   count = 0;
   //printk("do_tag %x\n", dover_remove_tag(p));
   while(count < words) {
     //printk("do_tag(%d) %d\n", count, p);
-    *p = zero; // Tag the word
+    *p = dover_ptr_zero; // Tag the word
     p++;
     count++;
   }

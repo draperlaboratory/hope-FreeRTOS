@@ -1142,7 +1142,7 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB )
 		if( pxCurrentTCB->uxPriority < pxNewTCB->uxPriority )
 		{
       printf("taskYIELD_IF_USING_PREEMPTION is happening\n");
-			/* taskYIELD_IF_USING_PREEMPTION(); */
+			taskYIELD_IF_USING_PREEMPTION(); 
       printf("taskYIELD_IF_USING_PREEMPTION happened lol\n");
 		}
 		else

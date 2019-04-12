@@ -112,54 +112,58 @@ sp_scrogged:
 	j sp_scrogged
 /*-----------------------------------------------------------*/
 
-  .macro STRUCT_SAVE_CONTEXT
+/* save cpu context to structure */	
+.macro STRUCT_SAVE_CONTEXT
 
-	addi sp, sp, -2 * portWORD_SIZE
+  // store a0 and x5 for use
+  addi sp, sp, -2 * portWORD_SIZE
   sw a0, 0(sp)
   sw x5, portWORD_SIZE(sp)
   
   la a0, global_exception_mc
   
-	sw x1, 1 * portWORD_SIZE( a0 )
+  sw x1, 1 * portWORD_SIZE( a0 )
 
-	addi sp, sp, 2 * portWORD_SIZE
-	sw x2, 2 * portWORD_SIZE( a0 )
-	addi sp, sp, -2 * portWORD_SIZE
+  // x2 is sp, get regular sp back to save
+  addi sp, sp, 2 * portWORD_SIZE
+  sw x2, 2 * portWORD_SIZE( a0 )
+  addi sp, sp, -2 * portWORD_SIZE
   
-	sw x3, 3 * portWORD_SIZE( a0 )
-	sw x4, 4 * portWORD_SIZE( a0 )
-	sw x5, 5 * portWORD_SIZE( a0 )
-	sw x6, 6 * portWORD_SIZE( a0 )
-	sw x7, 7 * portWORD_SIZE( a0 )
-	sw x8, 8 * portWORD_SIZE( a0 )
-	sw x9, 9 * portWORD_SIZE( a0 )
+  sw x3, 3 * portWORD_SIZE( a0 )
+  sw x4, 4 * portWORD_SIZE( a0 )
+  sw x5, 5 * portWORD_SIZE( a0 )
+  sw x6, 6 * portWORD_SIZE( a0 )
+  sw x7, 7 * portWORD_SIZE( a0 )
+  sw x8, 8 * portWORD_SIZE( a0 )
+  sw x9, 9 * portWORD_SIZE( a0 )
 
-  //	sw x10, 10 * portWORD_SIZE( a0 )
+  // instead of	sw x10, 10 * portWORD_SIZE( a0 )
   lw x5, 0(sp)
   sw x5, 10 * portWORD_SIZE( a0 )
   
-	sw x11, 11 * portWORD_SIZE( a0 )
-	sw x12, 12 * portWORD_SIZE( a0 )
-	sw x13, 13 * portWORD_SIZE( a0 )
-	sw x14, 14 * portWORD_SIZE( a0 )
-	sw x15, 15 * portWORD_SIZE( a0 )
-	sw x16, 16 * portWORD_SIZE( a0 )
-	sw x17, 17 * portWORD_SIZE( a0 )
-	sw x18, 18 * portWORD_SIZE( a0 )
-	sw x19, 19 * portWORD_SIZE( a0 )
-	sw x20, 20 * portWORD_SIZE( a0 )
-	sw x21, 21 * portWORD_SIZE( a0 )
-	sw x22, 22 * portWORD_SIZE( a0 )
-	sw x23, 23 * portWORD_SIZE( a0 )
-	sw x24, 24 * portWORD_SIZE( a0 )
-	sw x25, 25 * portWORD_SIZE( a0 )
-	sw x26, 26 * portWORD_SIZE( a0 )
-	sw x27, 27 * portWORD_SIZE( a0 )
-	sw x28, 28 * portWORD_SIZE( a0 )
-	sw x29, 29 * portWORD_SIZE( a0 )
-	sw x30, 30 * portWORD_SIZE( a0 )
-	sw x31, 31 * portWORD_SIZE( a0 )
+  sw x11, 11 * portWORD_SIZE( a0 )
+  sw x12, 12 * portWORD_SIZE( a0 )
+  sw x13, 13 * portWORD_SIZE( a0 )
+  sw x14, 14 * portWORD_SIZE( a0 )
+  sw x15, 15 * portWORD_SIZE( a0 )
+  sw x16, 16 * portWORD_SIZE( a0 )
+  sw x17, 17 * portWORD_SIZE( a0 )
+  sw x18, 18 * portWORD_SIZE( a0 )
+  sw x19, 19 * portWORD_SIZE( a0 )
+  sw x20, 20 * portWORD_SIZE( a0 )
+  sw x21, 21 * portWORD_SIZE( a0 )
+  sw x22, 22 * portWORD_SIZE( a0 )
+  sw x23, 23 * portWORD_SIZE( a0 )
+  sw x24, 24 * portWORD_SIZE( a0 )
+  sw x25, 25 * portWORD_SIZE( a0 )
+  sw x26, 26 * portWORD_SIZE( a0 )
+  sw x27, 27 * portWORD_SIZE( a0 )
+  sw x28, 28 * portWORD_SIZE( a0 )
+  sw x29, 29 * portWORD_SIZE( a0 )
+  sw x30, 30 * portWORD_SIZE( a0 )
+  sw x31, 31 * portWORD_SIZE( a0 )
 
+	// save CSRs
   csrr x5, mstatus
   sw x5, MC_MSTATUS_OFF * portWORD_SIZE( a0 )
 
@@ -187,16 +191,16 @@ sp_scrogged:
   /* restore clobbered a0 and x5 */
   lw a0, 0(sp)
   lw x5, portWORD_SIZE(sp)       
-	addi sp, sp, 2 * portWORD_SIZE
+  addi sp, sp, 2 * portWORD_SIZE
   
-  .endm
+.endm
 
 .align 8
 .func
 freertos_risc_v_trap_handler:
 
   /* check for exception */
-    /* save scratch regs */
+  /* save scratch regs */
 	addi sp, sp, -2 * portWORD_SIZE
   sw t0, 0(sp)
   sw t1, portWORD_SIZE(sp)
@@ -249,73 +253,76 @@ jump_to_is_exception:
   /* restore clobbered a0 and x5 */
   lw t0, 0(sp)
   lw t1, portWORD_SIZE(sp)       
-	addi sp, sp, 2 * portWORD_SIZE
+  addi sp, sp, 2 * portWORD_SIZE
+
   j is_exception
 
 no_exception: 
-  /* restore clobbered a0 and x5 */
+
+	/* restore clobbered a0 and x5 */
   lw t0, 0(sp)
   lw t1, portWORD_SIZE(sp)       
-	addi sp, sp, 2 * portWORD_SIZE
-  
+  addi sp, sp, 2 * portWORD_SIZE
+
+	/* beginning of regular trap handler. */
   lw t1, ram_start
-	ble sp, t1, sp_scrogged
-	addi sp, sp, -portCONTEXT_SIZE
-	sw x1, 1 * portWORD_SIZE( sp )
-	sw x5, 2 * portWORD_SIZE( sp )
-	sw x6, 3 * portWORD_SIZE( sp )
-	sw x7, 4 * portWORD_SIZE( sp )
-	sw x8, 5 * portWORD_SIZE( sp )
-	sw x9, 6 * portWORD_SIZE( sp )
-	sw x10, 7 * portWORD_SIZE( sp )
-	sw x11, 8 * portWORD_SIZE( sp )
-	sw x12, 9 * portWORD_SIZE( sp )
-	sw x13, 10 * portWORD_SIZE( sp )
-	sw x14, 11 * portWORD_SIZE( sp )
-	sw x15, 12 * portWORD_SIZE( sp )
-	sw x16, 13 * portWORD_SIZE( sp )
-	sw x17, 14 * portWORD_SIZE( sp )
-	sw x18, 15 * portWORD_SIZE( sp )
-	sw x19, 16 * portWORD_SIZE( sp )
-	sw x20, 17 * portWORD_SIZE( sp )
-	sw x21, 18 * portWORD_SIZE( sp )
-	sw x22, 19 * portWORD_SIZE( sp )
-	sw x23, 20 * portWORD_SIZE( sp )
-	sw x24, 21 * portWORD_SIZE( sp )
-	sw x25, 22 * portWORD_SIZE( sp )
-	sw x26, 23 * portWORD_SIZE( sp )
-	sw x27, 24 * portWORD_SIZE( sp )
-	sw x28, 25 * portWORD_SIZE( sp )
-	sw x29, 26 * portWORD_SIZE( sp )
-	sw x30, 27 * portWORD_SIZE( sp )
-	sw x31, 28 * portWORD_SIZE( sp )
+  ble sp, t1, sp_scrogged
+  addi sp, sp, -portCONTEXT_SIZE
+  sw x1, 1 * portWORD_SIZE( sp )
+  sw x5, 2 * portWORD_SIZE( sp )
+  sw x6, 3 * portWORD_SIZE( sp )
+  sw x7, 4 * portWORD_SIZE( sp )
+  sw x8, 5 * portWORD_SIZE( sp )
+  sw x9, 6 * portWORD_SIZE( sp )
+  sw x10, 7 * portWORD_SIZE( sp )
+  sw x11, 8 * portWORD_SIZE( sp )
+  sw x12, 9 * portWORD_SIZE( sp )
+  sw x13, 10 * portWORD_SIZE( sp )
+  sw x14, 11 * portWORD_SIZE( sp )
+  sw x15, 12 * portWORD_SIZE( sp )
+  sw x16, 13 * portWORD_SIZE( sp )
+  sw x17, 14 * portWORD_SIZE( sp )
+  sw x18, 15 * portWORD_SIZE( sp )
+  sw x19, 16 * portWORD_SIZE( sp )
+  sw x20, 17 * portWORD_SIZE( sp )
+  sw x21, 18 * portWORD_SIZE( sp )
+  sw x22, 19 * portWORD_SIZE( sp )
+  sw x23, 20 * portWORD_SIZE( sp )
+  sw x24, 21 * portWORD_SIZE( sp )
+  sw x25, 22 * portWORD_SIZE( sp )
+  sw x26, 23 * portWORD_SIZE( sp )
+  sw x27, 24 * portWORD_SIZE( sp )
+  sw x28, 25 * portWORD_SIZE( sp )
+  sw x29, 26 * portWORD_SIZE( sp )
+  sw x30, 27 * portWORD_SIZE( sp )
+  sw x31, 28 * portWORD_SIZE( sp )
 
-	csrr t0, mstatus					/* Required for MPIE bit. */
-	sw t0, 29 * portWORD_SIZE( sp )
+  csrr t0, mstatus					/* Required for MPIE bit. */
+  sw t0, 29 * portWORD_SIZE( sp )
 
-	portasmSAVE_ADDITIONAL_REGISTERS	/* Defined in freertos_risc_v_chip_specific_extensions.h to save any registers unique to the RISC-V implementation. */
+  portasmSAVE_ADDITIONAL_REGISTERS	/* Defined in freertos_risc_v_chip_specific_extensions.h to save any registers unique to the RISC-V implementation. */
 
-	lw  t0, pxCurrentTCB				/* Load pxCurrentTCB. */
-	sw  sp, 0( t0 )				 		/* Write sp to first TCB member. */
+  lw  t0, pxCurrentTCB				/* Load pxCurrentTCB. */
+  sw  sp, 0( t0 )				 		/* Write sp to first TCB member. */
 
-	csrr a0, mcause
-	csrr a1, mepc
+  csrr a0, mcause
+  csrr a1, mepc
 
 test_if_asynchronous:
-	srli a2, a0, 0x1f					/* MSB of mcause is 1 if handing an asynchronous interrupt - shift to LSB to clear other bits. */
-	beq a2, x0, handle_synchronous		/* Branch past interrupt handing if not asynchronous. */
-	sw a1, 0( sp )						/* Asynch so save unmodified exception return address. */
+  srli a2, a0, 0x1f					/* MSB of mcause is 1 if handing an asynchronous interrupt - shift to LSB to clear other bits. */
+  beq a2, x0, handle_synchronous		/* Branch past interrupt handing if not asynchronous. */
+  sw a1, 0( sp )						/* Asynch so save unmodified exception return address. */
 
 handle_asynchronous:
 
 #if( portasmHAS_CLINT != 0 )
 
-	test_if_mtimer:							/* If there is a CLINT then the mtimer is used to generate the tick interrupt. */
-		lui t0, 0x80000
-		addi t1, t0, 7						/* 0x80000007 == machine timer interrupt. */
-		bne a0, t1, test_if_external_interrupt
+test_if_mtimer:							/* If there is a CLINT then the mtimer is used to generate the tick interrupt. */
+  lui t0, 0x80000
+  addi t1, t0, 7						/* 0x80000007 == machine timer interrupt. */
+  bne a0, t1, test_if_external_interrupt
 
-		lw t0, pullMachineTimerCompareRegister	/* Load address of compare register into t0. */
+  lw t0, pullMachineTimerCompareRegister	/* Load address of compare register into t0. */
 		lw t1, pullNextTime					/* Load the address of ullNextTime into t1. */
 		lw t2, 0(t1)						/* Load the low word of ullNextTime into t2. */
 		lw t3, 4(t1)						/* Load the high word of ullNextTime into t3. */
@@ -365,10 +372,12 @@ handle_access_fault:
 
 is_exception:
 
+	// save cpu context for exception printing
   STRUCT_SAVE_CONTEXT
   
   jal is_exception_print
-	/*ebreak*/
+	
+	ebreak
 is_exception_loop:
 	j is_exception_loop
 
@@ -378,7 +387,7 @@ as_yet_unhandled:
 
 processed_source:
 	lw  sp, pxCurrentTCB				/* Load pxCurrentTCB. */
-	lw  sp, 0( sp )				 		/* Read sp from first TCB member. */
+	lw  sp, 0( sp )				  		/* Read sp from first TCB member. */
 
 	/* Load mret with the address of the next instruction in the task to run next. */
 	lw t0, 0( sp )
