@@ -178,7 +178,8 @@ See http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/TCP_Echo_Server.html
 
 /* The number and size of sectors that will make up the RAM disk. */
 #define mainRAM_DISK_SECTOR_SIZE		512UL /* Currently fixed! */
-#define mainRAM_DISK_SECTORS			( ( 5UL * 1024UL * 1024UL ) / mainRAM_DISK_SECTOR_SIZE ) /* 5M bytes. */
+/* #define mainRAM_DISK_SECTORS			( ( 5UL * 1024UL * 1024UL ) / mainRAM_DISK_SECTOR_SIZE ) #<{(| 5M bytes. |)}># */
+#define mainRAM_DISK_SECTORS			( ( 64UL * 1024UL ) / mainRAM_DISK_SECTOR_SIZE ) /* 5M bytes. */
 #define mainIO_MANAGER_CACHE_SIZE		( 15UL * mainRAM_DISK_SECTOR_SIZE )
 
 /* Where the SD and RAM disks are mounted.  As set here the SD card disk is the
@@ -218,7 +219,6 @@ static void prvCreateDiskAndExampleFiles( void );
  */
 static void prvServerWorkTask( void *pvParameters );
 
-/*
 /*
  * Register commands that can be used with FreeRTOS+CLI through the UDP socket.
  * The commands are defined in CLI-commands.c and File-related-CLI-commands.c
@@ -332,7 +332,7 @@ int main( void )
 	FreeRTOS_printf( ( "FreeRTOS_IPInit\n" ) );
 	FreeRTOS_IPInit( ucIPAddress, ucNetMask, ucGatewayAddress, ucDNSServerAddress, ucMACAddress );
 
-   printf("Server time.\n");
+  printf("Server time.\n");
 
 	/* Create the task that handles the FTP and HTTP servers.  This will
 	initialise the file system then wait for a notification from the network
@@ -344,7 +344,7 @@ int main( void )
 	/* Start the RTOS scheduler. */
 	FreeRTOS_debug_printf( ("vTaskStartScheduler\n") );
 
-   printf("Everything Running.\n");
+  printf("Everything Running.\n");
 	vTaskStartScheduler();
 
 	/* If all is well, the scheduler will now be running, and the following
@@ -383,26 +383,28 @@ extern void vMultiTaskStdioWithCWDTest( const char *const pcMountPath, uint16_t 
 
 static void prvServerWorkTask( void *pvParameters )
 {
-/* A structure that defines the servers to be created. */
-static const struct xSERVER_CONFIG xServerConfiguration[] =
-{
-	#if( mainCREATE_HTTP_SERVER == 1 )
-		/* Server type,		port number,	backlog, 	root dir. */
-		{ eSERVER_HTTP, 	80, 			12, 		configHTTP_ROOT },
-	#endif /* mainCREATE_HTTP_SERVER */
+  /* A structure that defines the servers to be created. */
+  static const struct xSERVER_CONFIG xServerConfiguration[] =
+  {
+    #if( mainCREATE_HTTP_SERVER == 1 )
+      /* Server type,		port number,	backlog, 	root dir. */
+      { eSERVER_HTTP, 	80, 			12, 		configHTTP_ROOT },
+    #endif /* mainCREATE_HTTP_SERVER */
 
-	#if( mainCREATE_FTP_SERVER == 1 )
-		/* Server type,		port number,	backlog, 	root dir. */
-		{ eSERVER_FTP,  	21, 			12, 		"" }
-	#endif /* mainCREATE_FTP_SERVER */
-};
+    #if( mainCREATE_FTP_SERVER == 1 )
+      /* Server type,		port number,	backlog, 	root dir. */
+      { eSERVER_FTP,  	21, 			12, 		"" }
+    #endif /* mainCREATE_FTP_SERVER */
+  };
 
 	/* Remove compiler warning about unused parameter. */
 	( void ) pvParameters;
 	( void ) xServerConfiguration;
 
 	/* Create the RAM disk used by the FTP and HTTP servers. */
+  printf("Creating ramdisk...\n");
 	prvCreateDiskAndExampleFiles();
+  printf("Ramdisk created\n");
 
 	/* The priority of this task can be raised now the disk has been
 	initialised. */
@@ -414,7 +416,9 @@ static const struct xSERVER_CONFIG xServerConfiguration[] =
 	TCPServer_t *pxTCPServer = NULL;
 
 		/* Setup CGI functions */
+    printf("Starting CGI setup...\n");
 		CgiSetup();
+    printf("CGI setup complete\n");
 
 		/* Wait until the network is up before creating the servers.  The
 		notification is given from the network event hook. */

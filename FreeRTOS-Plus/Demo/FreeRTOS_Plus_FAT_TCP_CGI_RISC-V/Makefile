@@ -20,21 +20,32 @@ VPATH += $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)
 
 # Set up application source, include, and object files for compilation: ______________________
 APP_SRC_DIR = ./src
+CGI_SRC_DIR = $(APP_SRC_DIR)/cgi-app
+MED_COMMON_DIR = $(APP_SRC_DIR)/med-common
+
 APP_SRC = \
 	$(APP_SRC_DIR)/cgi.c \
+	$(APP_SRC_DIR)/cgi-args.c \
+	$(APP_SRC_DIR)/cgi-util.c \
 	$(APP_SRC_DIR)/sleep.c \
-	$(APP_SRC_DIR)/cgi_leakage.c \
-	$(APP_SRC_DIR)/cgi_overflow.c \
-	$(APP_SRC_DIR)/cgi_permissions.c \
 	$(APP_SRC_DIR)/hr_gettime.c \
 	$(APP_SRC_DIR)/main.c \
 	$(APP_SRC_DIR)/memcpy.c \
 	$(APP_SRC_DIR)/platform.c \
-	$(APP_SRC_DIR)/uncached_memory.c
-
+	$(APP_SRC_DIR)/uncached_memory.c \
+	$(APP_SRC_DIR)/dashboard.c \
+	$(APP_SRC_DIR)/login.c \
+	$(APP_SRC_DIR)/register.c \
+	$(APP_SRC_DIR)/auth.c \
+	$(APP_SRC_DIR)/database.c \
+	$(APP_SRC_DIR)/hashtable.c \
+	$(APP_SRC_DIR)/medical.c \
+	$(APP_SRC_DIR)/sha1.c \
+	$(APP_SRC_DIR)/user.c
 
 APP_INCLUDES = \
 	-I ./include \
+	-I ./include/med-common \
 	-I $(FREERTOS_INC) \
 	-I $(BSP_INC) \
 	-I $(BSP_INC)/devices \

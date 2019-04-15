@@ -40,8 +40,13 @@
 #include "FreeRTOS_HTTP_cgi.h"
 
 /* Local defines */
-#define CGI_XML_START "<?xml version=\"1.0\" encoding=\"utf-8\"?><responseText>"
-#define CGI_XML_END   "</responseText>"
+#define CGI_XML_START "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+#define CGI_RESPONSE_TEXT_START "<responseText>"
+#define CGI_RESPONSE_TEXT_END   "</responseText>"
+#define CGI_HEADER_FIELDS_START "<headerFields>"
+#define CGI_HEADER_FIELDS_END   "</headerFields>"
+#define CGI_EXIT_STATUS_START "<exitstatus>"
+#define CGI_EXIT_STATUS_END   "</exitstatus>"
 #define MAX_REST_DATA_LEN 2048
 
 /* Local function declarations */
@@ -142,11 +147,13 @@ char pcRestDataFixed[MAX_REST_DATA_LEN] = { 0 };
 }
 /*-----------------------------------------------------------*/
 
-BaseType_t FreeRTOS_CGIExec( const char *const pcUrl, char *pcWriteBuffer, size_t xWriteBufferLen,
+BaseType_t FreeRTOS_CGIExec( const char *const pcUrl, char *pcResponse, size_t xResponseLen,
                              const char *pcCgiArgs )
 {
 BaseType_t xRc = 0;
 CGI_Registry_Entry_t *pxCgi = NULL;
+char pcHeaderFields[CGI_HEADER_LEN_MAX];
+int currIndex;
 
     xRc = prvCgiLookup( pcUrl, &pxCgi );
 
@@ -154,16 +161,26 @@ CGI_Registry_Entry_t *pxCgi = NULL;
     {
         DEBUG_PRINTF( "CGI lookup found for url: %s", pcUrl );
         /* Basic HTML start */
-        int written = snprintf( pcWriteBuffer, xWriteBufferLen, CGI_XML_START );
+        currIndex = snprintf( pcResponse, xResponseLen, CGI_XML_START );
+
+        currIndex += snprintf(&pcResponse[currIndex], xResponseLen - currIndex, CGI_RESPONSE_TEXT_START);
 
         /* Exec the CGI */
-        int availableLen = xWriteBufferLen - written - strlen( CGI_XML_END ) - 1;
-        xRc = pxCgi->pxCgiFunc( &pcWriteBuffer[written], availableLen, pcCgiArgs );
+        xRc = pxCgi->pxCgiFunc( &pcResponse[currIndex], xResponseLen - currIndex, pcHeaderFields, CGI_HEADER_LEN_MAX, pcCgiArgs );
 
         /* Basic HTML end */
-        int currIndex = strnlen( pcWriteBuffer, xWriteBufferLen );
-        snprintf( &pcWriteBuffer[currIndex], xWriteBufferLen - currIndex, CGI_XML_END );
-        DEBUG_PRINTF( "CGI return text: \n\t%s", pcWriteBuffer );
+        currIndex = strnlen( pcResponse, xResponseLen );
+
+
+        currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, CGI_HEADER_FIELDS_START );
+        currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, pcHeaderFields );
+        currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, CGI_HEADER_FIELDS_END );
+
+        currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, CGI_EXIT_STATUS_START );
+        currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, "%d", xRc );
+        currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, CGI_EXIT_STATUS_END );
+
+        DEBUG_PRINTF( "CGI return text: \n\t%s", pcResponse );
     }
     else
     {
