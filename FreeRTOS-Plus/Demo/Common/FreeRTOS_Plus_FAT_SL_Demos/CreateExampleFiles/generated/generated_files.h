@@ -3,17 +3,13 @@
 #ifndef GENERATED_FILES
 #define GENERATED_FILES
 
-#include "index_html.h"
-#include "network_security_logo_small_png.h"
-#include "dornerworks_logo_png.h"
-#include "draper_logo_png.h"
-#include "inria_logo_png.h"
-#include "upenn_logo_png.h"
-#include "network_security_logo_smaller_png.h"
-#include "network_security_logo_large_png.h"
-#include "network_security_logo_png.h"
-#include "dover_logo_png.h"
-#include "mit_csail_logo_png.h"
-#include "psu_logo_png.h"
+#include "search_results_html.h"
+#include "login_html.h"
+#include "add_record_html.h"
+#include "update_user_html.h"
+#include "register_html.h"
+#include "dashboard_html.h"
+#include "user_details_html.h"
+#include "search_html.h"
 
 #endif /* GENERATED_FILES */
