@@ -87,14 +87,13 @@ typedef struct FILE_TO_COPY
 
 const xFileToCopy_t xHTTPFilesToCopy[] =
 {
-	{ "index.html", sizeof( index_html ), index_html },
-	{ "dornerworks-logo.png", sizeof( dornerworks_logo_png ), dornerworks_logo_png },
-	{ "dover-logo.png", sizeof( dover_logo_png ), dover_logo_png },
-	{ "draper-logo.png", sizeof( draper_logo_png ), draper_logo_png },
-	{ "inria-logo.png", sizeof( inria_logo_png ), inria_logo_png },
-	{ "mit-csail-logo.png", sizeof( mit_csail_logo_png ), mit_csail_logo_png },
-	{ "network-security-logo.png", sizeof( network_security_logo_png ), network_security_logo_png },
-	{ "psu-logo.png", sizeof( psu_logo_png ), psu_logo_png },
-	{ "upenn-logo.png", sizeof( upenn_logo_png ), upenn_logo_png },
+	{ "add_record.html", sizeof( add_record_html ), add_record_html },
+	{ "dashboard.html", sizeof( dashboard_html ), dashboard_html },
+	{ "login.html", sizeof( login_html ), login_html },
+	{ "register.html", sizeof( register_html ), register_html },
+	{ "search.html", sizeof( search_html ), search_html },
+	{ "search_results.html", sizeof( search_results_html ), search_results_html },
+	{ "update_user.html", sizeof( update_user_html ), update_user_html },
+	{ "user_details.html", sizeof( user_details_html ), user_details_html },
 };
 

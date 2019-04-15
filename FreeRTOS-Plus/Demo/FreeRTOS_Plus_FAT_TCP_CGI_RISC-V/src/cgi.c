@@ -35,19 +35,26 @@
 #include "cgi.h"
 
 /* Function declarations */
-extern BaseType_t CgiOverflow( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCgiArgs );
-extern BaseType_t CgiPermissions( char *pcWriteBuffer, size_t xWriteBufferLen,
-                                  const char *pcCgiArgs );
-extern BaseType_t CgiLeakage( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCgiArgs );
+
+extern BaseType_t CgiDashboard( char *pcWriteBuffer, size_t xWriteBufferLen,
+                    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+                    const char *pcCgiArgs );
+extern BaseType_t CgiLogin( char *pcWriteBuffer, size_t xWriteBufferLen,
+                    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+                    const char *pcCgiArgs );
+extern BaseType_t CgiRegister( char *pcWriteBuffer, size_t xWriteBufferLen,
+                    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+                    const char *pcCgiArgs );
 
 static void CgiRegisterSingle( const char *pcUrl, pdCGI_CALLBACK pxFunc );
 
 /* Function definitions */
 void CgiSetup( void )
 {
-    CgiRegisterSingle( "/cgi-bin/overflow.cgi", CgiOverflow );
-    CgiRegisterSingle( "/cgi-bin/permissions.cgi", CgiPermissions );
-    CgiRegisterSingle( "/cgi-bin/leakage.cgi", CgiLeakage );
+    printf("Setting up CGI...\n");
+    CgiRegisterSingle( "/cgi-bin/dashboard.cgi", CgiDashboard );
+    CgiRegisterSingle( "/cgi-bin/login.cgi", CgiLogin );
+    CgiRegisterSingle( "/cgi-bin/register.cgi", CgiRegister );
 }
 
 static void CgiRegisterSingle( const char *pcUrl, pdCGI_CALLBACK pxFunc )
