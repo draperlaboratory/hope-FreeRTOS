@@ -178,8 +178,7 @@ See http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/TCP_Echo_Server.html
 
 /* The number and size of sectors that will make up the RAM disk. */
 #define mainRAM_DISK_SECTOR_SIZE		512UL /* Currently fixed! */
-/* #define mainRAM_DISK_SECTORS			( ( 5UL * 1024UL * 1024UL ) / mainRAM_DISK_SECTOR_SIZE ) #<{(| 5M bytes. |)}># */
-#define mainRAM_DISK_SECTORS			( ( 64UL * 1024UL ) / mainRAM_DISK_SECTOR_SIZE ) /* 5M bytes. */
+#define mainRAM_DISK_SECTORS			( ( 5UL * 1024UL * 1024UL ) / mainRAM_DISK_SECTOR_SIZE ) /* 5M bytes. */
 #define mainIO_MANAGER_CACHE_SIZE		( 15UL * mainRAM_DISK_SECTOR_SIZE )
 
 /* Where the SD and RAM disks are mounted.  As set here the SD card disk is the
