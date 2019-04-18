@@ -16,9 +16,13 @@
 #if( SIMPLE_MEMCPY != 0 )
 void *memcpy( void *pvDest, const void *pvSource, size_t ulBytes )
 {
-unsigned char *pcDest = ( unsigned char * ) pvDest, *pcSource = ( unsigned char * ) pvSource;
+uint32_t *pcDest = ( uint32_t * ) pvDest, *pcSource = ( uint32_t * ) pvSource;
 size_t x;
 
+ if ( ulBytes % sizeof(uint32_t) )
+   ulBytes += sizeof(uint32_t);
+ ulBytes /= sizeof(uint32_t);
+ 
 	for( x = 0; x < ulBytes; x++ )
 	{
 		*pcDest = *pcSource;
