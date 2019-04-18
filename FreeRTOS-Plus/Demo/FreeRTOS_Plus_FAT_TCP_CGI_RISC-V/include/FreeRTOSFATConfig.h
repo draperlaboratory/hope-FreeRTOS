@@ -181,7 +181,7 @@ If time support is used, the following function must be supplied:
 	time_t FreeRTOS_time( time_t *pxTime );
 
 FreeRTOS_time has the same semantics as the standard time() function. */
-#define	ffconfigTIME_SUPPORT 1
+#define	ffconfigTIME_SUPPORT 0
 
 /* Set to 1 if the media is removable (such as a memory card).
 
@@ -301,7 +301,8 @@ number of clusters on a disk to determine the FAT type.
 
 Set to 0 to only look at the number of clusters on a disk to determine the
 FAT type. */
-#define	ffconfigFAT_CHECK 1
+// #define	ffconfigFAT_CHECK 1
+#define	ffconfigFAT_CHECK 0
 
 /* Sets the maximum length for file names, including the path.
 Note that the value of this define is directly related to the maximum stack

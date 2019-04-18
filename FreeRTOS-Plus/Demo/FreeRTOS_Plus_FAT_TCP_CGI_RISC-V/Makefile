@@ -18,6 +18,8 @@ PORT_OBJS += $(patsubst %.S,$(FREERTOS_BUILD_DIR)/%.o,$(notdir $(ARCH_PORTABLE_A
 FREERTOS_OBJS += $(PORT_OBJS)
 VPATH += $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)
 
+GDB_PORT ?= 3333
+
 # Set up application source, include, and object files for compilation: ______________________
 APP_SRC_DIR = ./src
 CGI_SRC_DIR = $(APP_SRC_DIR)/cgi-app
@@ -105,7 +107,7 @@ BUILD_DIRECTORIES = \
 	$(FREERTOS_FAT_BUILD_DIR) \
 	$(SDK_BUILD_DIR)
 
-.PHONY: debug clean app_compile debug-app frtos_compile print-info frtos_p_util frtos_cli frtos_tcp frtos_fat freedom_sdk out_elf clean-libxil
+.PHONY: debug clean app_compile debug-app frtos_compile print-info frtos_p_util frtos_cli frtos_tcp frtos_fat freedom_sdk out_elf clean-libxil sim-qemu sim-qemu-debug sim-gdb
 all: directories $(OUT_OBJS) $(OUT_ELF)
 directories: $(BUILD_DIRECTORIES)
 app_compile: directories $(APP_OBJS)
@@ -237,18 +239,15 @@ gen-tags: $(OUT_ELF)
 	--tag-only
 
 sim-qemu: $(OUT_ELF)
-	LD_LIBRARY_PATH=$(POLICY_DIR)/osv.$(POLICY_RUNTIME).main.$(POLICY) \
-	qemu-system-riscv32 -kernel $< \
-	-serial $(QEMU_SERIAL) -nographic \
-	-machine sifive_e \
-	-D status.log -d nochain \
-	-singlestep \
-	--policy-validator-cfg yaml-cfg=./isp-output/isp-run-FreeRTOS-$(PROJ_NAME).elf-$(POLICY)/validator_cfg.yml $(QEMU_GDB)
+	sudo env PATH=$(PATH) ISP_PREFIX=$(ISP_PREFIX) isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos \
+		-e "-net nic -net tap,ifname=tap0,script=no,downscript=no"
 
-gdb-qemu: $(OUT_ELF)
-	$(GDB) -iex "set mem inaccessible-by-default off" -iex "set arch riscv:rv32" -iex "set riscv use-compressed-breakpoint off" -iex "source /opt/isp/gdb-scripts/qemu.gdb" -ex "target remote :1234" $(OUT_ELF)
+sim-qemu-debug: $(OUT_ELF)
+	sudo env PATH=$(PATH) ISP_PREFIX=$(ISP_PREFIX) isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos \
+		-e "-net nic -net tap,ifname=tap0,script=no,downscript=no" -g $(GDB_PORT)
 
-
+sim-gdb: $(OUT_ELF)
+	isp_debug $(OUT_ELF) $(GDB_PORT)
 
 debug:
 	@echo "Application Objects: ___________________________"

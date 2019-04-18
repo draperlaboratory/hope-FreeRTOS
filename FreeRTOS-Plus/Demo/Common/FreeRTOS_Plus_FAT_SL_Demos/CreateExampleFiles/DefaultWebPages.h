@@ -90,6 +90,7 @@ const xFileToCopy_t xHTTPFilesToCopy[] =
 	{ "add_record.html", sizeof( add_record_html ), add_record_html },
 	{ "dashboard.html", sizeof( dashboard_html ), dashboard_html },
 	{ "login.html", sizeof( login_html ), login_html },
+	{ "index.html", sizeof( index_html ), index_html },
 	{ "register.html", sizeof( register_html ), register_html },
 	{ "search.html", sizeof( search_html ), search_html },
 	{ "search_results.html", sizeof( search_results_html ), search_results_html },

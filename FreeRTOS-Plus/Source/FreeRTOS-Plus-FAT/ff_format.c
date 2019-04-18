@@ -361,7 +361,6 @@ FF_IOManager_t *pxIOManager = pxDisk->pxIOManager;
 		FF_putChar( pucSectorBuffer, OFS_BPB_SecPerClus_8, ( uint32_t ) ulSectorsPerCluster ); /*  0x00D / Only 1, 2, 4, 8, 16, 32, 64, 128 */
 		FF_PRINTF("FF_Format: SecCluster %lu DatSec %lu DataClus %lu ulClusterBeginLBA %lu\n",
 			ulSectorsPerCluster, ulUsableDataSectors, ulUsableDataClusters, ulClusterBeginLBA );
-
 		/* This field is the new 32-bit total count of sectors on the volume. */
 		/* This count includes the count of all sectors in all four regions of the volume */
 		FF_putShort( pucSectorBuffer, OFS_BPB_TotSec16_16, 0 );        /* 0x013 / xxx (FAT12/16) or 0 (FAT32) */
