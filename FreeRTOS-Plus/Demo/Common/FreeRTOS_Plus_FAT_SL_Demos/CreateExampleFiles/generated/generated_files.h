@@ -5,6 +5,7 @@
 
 #include "search_results_html.h"
 #include "login_html.h"
+#include "index_html.h"
 #include "add_record_html.h"
 #include "update_user_html.h"
 #include "register_html.h"

@@ -134,7 +134,16 @@ FF_CreationParameters_t xParameters;
 		memset( pxDisk, '\0', sizeof( FF_Disk_t ) );
 
 		/* Clear the entire space. */
-		memset( pucDataBuffer, '\0', ulSectorCount * ramSECTOR_SIZE );
+		/* memset( pucDataBuffer, '\0', ulSectorCount * ramSECTOR_SIZE ); */
+    vTaskSuspendAll();
+    for (size_t i = 0; i < ((ulSectorCount * ramSECTOR_SIZE) / 4); i++) {
+      uint32_t *p = (uint32_t *)pucDataBuffer;
+      if (i % 0x10000 == 0) {
+        printf("%u of %u bytes\n", i*4, (ulSectorCount * ramSECTOR_SIZE));
+      }
+      p[i] = 0;
+    }
+    xTaskResumeAll();
 
 		/* The pvTag member of the FF_Disk_t structure allows the structure to be
 		extended to also include media specific parameters.  The only media
@@ -187,6 +196,7 @@ FF_CreationParameters_t xParameters;
 				pxDisk->xStatus.bPartitionNumber = ramPARTITION_NUMBER;
 
 				/* Mount the partition. */
+        printf("Mounting partition\n");
 				xError = FF_Mount( pxDisk, ramPARTITION_NUMBER );
 				FF_PRINTF( "FF_RAMDiskInit: FF_Mount: %s\n", ( const char * ) FF_GetErrMessage( xError ) );
 			}
@@ -196,6 +206,7 @@ FF_CreationParameters_t xParameters;
 				/* The partition mounted successfully, add it to the virtual
 				file system - where it will appear as a directory off the file
 				system's root directory. */
+        printf("Adding disk to virtual filesystem\n");
 				FF_FS_Add( pcName, pxDisk );
 			}
 		}
@@ -357,12 +368,14 @@ FF_Error_t xError;
 	xPartition.eSizeType = eSizeIsQuota;
 
 	/* Partition the disk */
+  printf("Paritioning disk\n");
 	xError = FF_Partition( pxDisk, &xPartition );
 	FF_PRINTF( "FF_Partition: %s\n", ( const char * ) FF_GetErrMessage( xError ) );
 
 	if( FF_isERR( xError ) == pdFALSE )
 	{
 		/* Format the partition. */
+    printf("Formatting disk\n");
 		xError = FF_Format( pxDisk, ramPARTITION_NUMBER, pdTRUE, pdTRUE );
 		FF_PRINTF( "FF_RAMDiskInit: FF_Format: %s\n", ( const char * ) FF_GetErrMessage( xError ) );
 	}
