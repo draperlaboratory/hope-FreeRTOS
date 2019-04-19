@@ -96,5 +96,6 @@ const xFileToCopy_t xHTTPFilesToCopy[] =
 	{ "search_results.html", sizeof( search_results_html ), search_results_html },
 	{ "update_user.html", sizeof( update_user_html ), update_user_html },
 	{ "user_details.html", sizeof( user_details_html ), user_details_html },
+	{ "helpers.js", sizeof( helpers_js ), helpers_js },
 };
 
