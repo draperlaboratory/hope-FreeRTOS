@@ -38,44 +38,48 @@
 #include "sample.h"
 #include "FreeRTOS.h"
 
-CGI_FUNCTION(CommonDashboard, user_t *user);
-CGI_FUNCTION(PatientDashboard, patient_t *patient);
-CGI_FUNCTION(DoctorDashboard, doctor_t *doctor);
-CGI_FUNCTION(AdminDashboard);
+CGI_FUNCTION(void, CommonDashboard, user_t *user);
+CGI_FUNCTION(void, PatientDashboard, patient_t *patient);
+CGI_FUNCTION(void, DoctorDashboard, doctor_t *doctor);
+CGI_FUNCTION(void, AdminDashboard);
 
 BaseType_t CgiDashboard( char *pcWriteBuffer, size_t xWriteBufferLen,
-                    char *pcHeaderBuffer, size_t xHeaderBufferLen,
-                    const char *pcCgiArgs )
+    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+    const char *pcCgiArgs )
 {
-    user_t *user;
-    char session_id[KEY_SIZE_MAX] = { 0 };
+  user_t *user;
+  char session_id[AUTH_SESSION_ID_SIZE];
 
-    CgiArgValue( session_id, sizeof(session_id), "session_id", pcCgiArgs );
+  CgiArgValue( session_id, sizeof(session_id), "sessionId", pcCgiArgs );
 
-    user = AuthCheckSessionId(session_id);
-    if (user == NULL) {
-      return HTTP_SEE_OTHER;
-    }
+  /* user = AuthCheckSessionId(session_id); */
+  /* if (user == NULL) { */
+  /*   return HTTP_UNAUTHORIZED; */
+  /* } */
 
-    CGI_CALL(CommonDashboard, user);
-  
-    return HTTP_OK;
+  user = UserCreate("user1", "password", "John", "Doe", "123 hello world");
+  if(user == NULL) {
+    return HTTP_INTERNAL_SERVER_ERROR;
+  }
+
+  CGI_IMPL_CALL(CommonDashboard, user);
+
+  return HTTP_OK;
 }
 
-CGI_FUNCTION(CommonDashboard, user_t *user)
+CGI_FUNCTION(void, CommonDashboard, user_t *user)
 {
   char *user_full_name;
 
-	CGI_PRINTF("<p>\n");
-	CGI_PRINTF("Welcome, ");
+  CGI_PRINTF("<p>Welcome, ");
 
   CGI_CALL(HtmlEscape, user->first_name);
   CGI_PRINTF("!</p>\n");
+  CGI_CALL(Whitespace, 1);
 
-  LinkButton(pcWriteBuffer, xWriteBufferLen, "Find a Doctor", "search.cgi");
-  LinkButton(pcWriteBuffer, xWriteBufferLen, "Logout", "login.cgi");
-  LinkButton(pcWriteBuffer, xWriteBufferLen, "Update Info", "update-user.cgi");
-
+  CGI_CALL(LinkButton, "Find a Doctor", "search.html");
+  CGI_CALL(LinkButton, "Logout", "logout.html");
+  CGI_CALL(LinkButton, "Update Info", "update-user.html");
   CGI_CALL(Whitespace, 1);
 
   CGI_PRINTF("<table style=\"width:100%%\" align=\"left\">\n");
@@ -110,12 +114,13 @@ CGI_FUNCTION(CommonDashboard, user_t *user)
       break;
     case USER_ADMINISTRATOR:
       CGI_CALL(AdminDashboard);
+      break;
     default:
       break;
   }
 }
 
-CGI_FUNCTION(PatientDashboard, patient_t *patient)
+CGI_FUNCTION(void, PatientDashboard, patient_t *patient)
 {
   size_t i, j;
   char *doctor_name;
@@ -130,7 +135,7 @@ CGI_FUNCTION(PatientDashboard, patient_t *patient)
   CGI_PRINTF("<th>Prescriptions</th>\n");
   CGI_PRINTF("<th>Notes</th>\n");
   CGI_PRINTF("</tr>\n");
-  
+
   for(i = 0; i < patient->record_count; i++) {
     CGI_PRINTF("<tr>\n");
 
@@ -155,7 +160,7 @@ CGI_FUNCTION(PatientDashboard, patient_t *patient)
 
       CGI_CALL(HtmlEscape, patient->records[i].treatments[j].name);
       CGI_PRINTF(", %.2f %s", patient->records[i].treatments[j].dose,
-                                   patient->records[i].treatments[j].unit);
+          patient->records[i].treatments[j].unit);
     }
     CGI_PRINTF("</td>\n");
 
@@ -169,8 +174,7 @@ CGI_FUNCTION(PatientDashboard, patient_t *patient)
   CGI_PRINTF("</table>\n");
 }
 
-void
-DoctorDashboard(char *pcWriteBuffer, size_t xWriteBufferLen, doctor_t *doctor)
+CGI_FUNCTION(void, DoctorDashboard, doctor_t *doctor)
 {
   size_t i;
   char *user_full_name;
@@ -191,7 +195,7 @@ DoctorDashboard(char *pcWriteBuffer, size_t xWriteBufferLen, doctor_t *doctor)
     CGI_CALL(HtmlEscape, doctor->certs[i].condition);
     CGI_PRINTF("</td>\n");
 
-    CGI_PRINTF("<td>%u</td>\n", doctor->certs[i].year_received);
+    CGI_PRINTF("<td>%lu</td>\n", doctor->certs[i].year_received);
     CGI_PRINTF("</tr>\n");
   }
 
@@ -236,8 +240,7 @@ DoctorDashboard(char *pcWriteBuffer, size_t xWriteBufferLen, doctor_t *doctor)
   CGI_PRINTF("</table>\n");
 }
 
-void
-AdminDashboard(char *pcWriteBuffer, size_t xWriteBufferLen)
+CGI_FUNCTION(void, AdminDashboard)
 {
   CGI_CALL(Whitespace, 2);
   CGI_PRINTF("<p>Congrats, you're an admin now!\n");

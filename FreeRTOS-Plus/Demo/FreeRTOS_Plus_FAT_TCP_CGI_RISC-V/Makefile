@@ -37,6 +37,7 @@ APP_SRC = \
 	$(APP_SRC_DIR)/uncached_memory.c \
 	$(APP_SRC_DIR)/dashboard.c \
 	$(APP_SRC_DIR)/login.c \
+	$(APP_SRC_DIR)/logout.c \
 	$(APP_SRC_DIR)/register.c \
 	$(APP_SRC_DIR)/auth.c \
 	$(APP_SRC_DIR)/database.c \

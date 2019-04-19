@@ -26,21 +26,32 @@
  */
 
 #include <stdarg.h>
-#include <stdio.h>
 #include "cgi-util.h"
 
-CGI_HEADER_FUNCTION(SimpleCookie, char *name, char *value)
+#define CGI_HEADER_LEN_MAX 256
+
+CGI_HEADER_FUNCTION(void, SetCookie, char *name, char *value)
 {
-    snprintf(pcHeaderBuffer, xHeaderBufferLen,
-             "%sSet-Cookie: %s=%s;\r\n", pcHeaderBuffer, name, value);
+    snprintf(*pcHeaderBuffer, *xHeaderBufferLen,
+             "%s=%s;\r\n", name, value);
 }
 
-CGI_FUNCTION(Whitespace, size_t size)
+CGI_HEADER_FUNCTION(void, DeleteCookie, char *name)
 {
-  CGI_PRINTF("<p>&nbsp;\n");
+    snprintf(*pcHeaderBuffer, *xHeaderBufferLen,
+             "%s=;expires=Thu, 01 Jan 1970 00:00:00 UTC;\r\n", name);
 }
 
-CGI_FUNCTION(FormStart, form_type_t form_type, const char *destination)
+CGI_FUNCTION(void, Whitespace, size_t size)
+{
+  size_t i;
+
+  for(i = 0; i < size; i++) {
+    CGI_PRINTF("<p>&#160;</p>\n");
+  }
+}
+
+CGI_FUNCTION(void, FormStart, form_type_t form_type, const char *destination)
 {
   switch(form_type) {
     case CGI_FORM_GET:
@@ -54,12 +65,12 @@ CGI_FUNCTION(FormStart, form_type_t form_type, const char *destination)
   }
 }
 
-CGI_FUNCTION(FormEnd)
+CGI_FUNCTION(void, FormEnd)
 {
 	CGI_PRINTF("</form>\n");
 }
 
-CGI_FUNCTION(LinkButton, char *text, char *destination, ...)
+CGI_FUNCTION(void, LinkButton, char *text, char *destination, ...)
 {
   char buffer[0x1000];
   va_list args;
@@ -69,35 +80,29 @@ CGI_FUNCTION(LinkButton, char *text, char *destination, ...)
   va_end(args);
   
   CGI_PRINTF("<form method=\"GET\" action=\"%s\">\n", buffer);
-	CGI_PRINTF("<input type=\"submit\" value=\"%s\"><\form>\n", text);
+	CGI_PRINTF("<input type=\"submit\" value=\"%s\"></input></form>\n", text);
 }
 
-CGI_FUNCTION(HtmlEscape, char *text)
+CGI_FUNCTION(void, HtmlEscape, char *text)
 {
-  char *p;
   size_t len;
   size_t i;
 
   len = strlen(text);
-  p = pcWriteBuffer;
 
   for(i = 0; i < len; i++) {
     switch(text[i]) {
       case '<':
-        snprintf(p, xWriteBufferLen, "&lt;");
-        p += 4;
+        CGI_PRINTF("&lt;");
         break;
       case '&':
-        snprintf(p, xWriteBufferLen, "&amp;");
-        p += 5;
+        CGI_PRINTF("&amp;");
         break;
       case '>':
-        snprintf(p, xWriteBufferLen, "&gt;");
-        p += 4;
+        CGI_PRINTF("&gt;");
         break;
       default:
-        *p = text[i];
-        p++;
+        CGI_PRINTF("%c", text[i]);
     }
   }
 }
