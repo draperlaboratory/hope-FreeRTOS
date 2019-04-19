@@ -6,7 +6,7 @@
 #include "hashtable.h"
 #include "database.h"
 
-#define AUTH_TABLE_CAPACITY 0x1000
+#define AUTH_TABLE_CAPACITY 0x10
 
 static hash_table_t active_session_table;
 

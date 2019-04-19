@@ -107,6 +107,8 @@
 //#include "TCPEchoClient_SingleTasks.h"
 //#include "SimpleTCPEchoServer.h"
 #include "cgi.h"
+#include "database.h"
+#include "auth.h"
 
 /* Xilinx includes. */
 //#include "xil_cache.h"
@@ -342,6 +344,10 @@ int main( void )
 
 	/* Start the RTOS scheduler. */
 	FreeRTOS_debug_printf( ("vTaskStartScheduler\n") );
+
+  printf("App time.\n");
+  DatabaseInit();
+  AuthInit();
 
   printf("Everything Running.\n");
 	vTaskStartScheduler();

@@ -7,7 +7,7 @@
 #include "medical.h"
 
 #define DATABASE_KEY_LENGTH USER_NAME_LENGTH
-#define DATABASE_CAPACITY 0x1000
+#define DATABASE_CAPACITY 0x10
 
 static hash_table_t database_table;
 
