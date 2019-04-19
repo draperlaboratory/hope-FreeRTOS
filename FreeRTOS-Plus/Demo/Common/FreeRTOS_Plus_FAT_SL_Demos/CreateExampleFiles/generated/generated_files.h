@@ -12,5 +12,6 @@
 #include "dashboard_html.h"
 #include "user_details_html.h"
 #include "search_html.h"
+#include "helpers_js.h"
 
 #endif /* GENERATED_FILES */
