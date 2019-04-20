@@ -194,6 +194,11 @@ root directory, and the RAM disk appears as a directory off the root. */
 that run the tests continuously. */
 #define mainRUN_STDIO_TESTS_IN_MULTIPLE_TASK 0
 
+#define NEGATIVE_TEST_DEBUG
+#ifdef NEGATIVE_TEST_DEBUG
+#include "negative_tests.h"
+#endif
+
 /*-----------------------------------------------------------*/
 
 /*
@@ -419,6 +424,10 @@ static void prvServerWorkTask( void *pvParameters )
 		CgiSetup();
     printf("CGI setup complete\n");
 
+    #ifdef NEGATIVE_TEST_DEBUG
+    negative_test();
+    #endif
+    
 		/* Wait until the network is up before creating the servers.  The
 		notification is given from the network event hook. */
 		ulTaskNotifyTake( pdTRUE, portMAX_DELAY );

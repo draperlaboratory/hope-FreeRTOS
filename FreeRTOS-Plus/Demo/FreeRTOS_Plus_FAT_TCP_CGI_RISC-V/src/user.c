@@ -6,6 +6,18 @@
 
 #define USER_FULL_NAME_LENGTH (USER_NAME_LENGTH * 2 + 3)
 
+int isp_tag_password_char = 0xa;
+
+void __attribute__ ((noinline)) 
+UserTagPass(user_t *user) {
+
+  int i;
+  for ( i = 0; i < USER_PASSWORD_LENGTH/(sizeof(int)); i+=4 )
+    *(int*)(&(user->password[i])) = isp_tag_password_char;
+
+  return;
+}
+
 user_t *
 UserCreate(char *username, char *password, char *first_name, char *last_name,
            char *address)
@@ -18,7 +30,9 @@ UserCreate(char *username, char *password, char *first_name, char *last_name,
   }
   memset(user, 0, sizeof(user_t));
 
-  UserSetType(user, USER_UNKNOWN);
+  UserTagPass(user);
+  
+  user->type = USER_UNKNOWN;
   user->data = NULL;
 
   snprintf(user->username, sizeof(user->username) + 1, "%s", username);
@@ -44,10 +58,13 @@ UserDestroy(user_t *user)
   free(user);
 }
 
-void
+volatile user_type_t _temp_user_type_assigner;
+
+void __attribute__((noinline))
 UserSetType(user_t *user, user_type_t type)
 {
-  user->type = type;
+  _temp_user_type_assigner = type;
+  user->type = _temp_user_type_assigner;
 }
 
 char *
