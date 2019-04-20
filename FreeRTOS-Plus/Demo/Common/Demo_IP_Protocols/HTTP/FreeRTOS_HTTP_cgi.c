@@ -41,6 +41,8 @@
 
 /* Local defines */
 #define CGI_XML_START "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+#define CGI_OUTPUT_START "<cgiOutput>"
+#define CGI_OUTPUT_END "</cgiOutput>"
 #define CGI_RESPONSE_TEXT_START "<responseText>"
 #define CGI_RESPONSE_TEXT_END   "</responseText>"
 #define CGI_HEADER_FIELDS_START "<headerFields>"
@@ -151,6 +153,7 @@ BaseType_t FreeRTOS_CGIExec( const char *const pcUrl, char *pcResponse, size_t x
                              const char *pcCgiArgs )
 {
 BaseType_t xRc = 0;
+BaseType_t xHTTPResponseCode;
 CGI_Registry_Entry_t *pxCgi = NULL;
 char pcHeaderFields[CGI_HEADER_LEN_MAX];
 int currIndex;
@@ -159,32 +162,39 @@ int currIndex;
 
     if( 0 == xRc )
     {
-        DEBUG_PRINTF( "CGI lookup found for url: %s", pcUrl );
+        printf( "CGI lookup found for url: %s", pcUrl );
         /* Basic HTML start */
         currIndex = snprintf( pcResponse, xResponseLen, CGI_XML_START );
+        currIndex += snprintf(&pcResponse[currIndex], xResponseLen - currIndex, CGI_OUTPUT_START);
 
         currIndex += snprintf(&pcResponse[currIndex], xResponseLen - currIndex, CGI_RESPONSE_TEXT_START);
-
         /* Exec the CGI */
-        xRc = pxCgi->pxCgiFunc( &pcResponse[currIndex], xResponseLen - currIndex, pcHeaderFields, CGI_HEADER_LEN_MAX, pcCgiArgs );
+        xHTTPResponseCode = pxCgi->pxCgiFunc( &pcResponse[currIndex], xResponseLen - currIndex, pcHeaderFields, CGI_HEADER_LEN_MAX, pcCgiArgs );
+
+        if (xHTTPResponseCode == WEB_INTERNAL_SERVER_ERROR) {
+          xRc = xHTTPResponseCode;
+        }
 
         /* Basic HTML end */
         currIndex = strnlen( pcResponse, xResponseLen );
 
+        currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, CGI_RESPONSE_TEXT_END );
 
         currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, CGI_HEADER_FIELDS_START );
         currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, pcHeaderFields );
         currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, CGI_HEADER_FIELDS_END );
 
         currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, CGI_EXIT_STATUS_START );
-        currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, "%d", xRc );
+        currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, "%d", xHTTPResponseCode );
         currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, CGI_EXIT_STATUS_END );
 
-        DEBUG_PRINTF( "CGI return text: \n\t%s", pcResponse );
+        currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, CGI_OUTPUT_END );
+
+        printf( "CGI return text: \n\t%s", pcResponse );
     }
     else
     {
-        DEBUG_PRINTF( "CGI lookup not found for url: %s", pcUrl );
+        printf( "CGI lookup not found for url: %s", pcUrl );
         xRc = WEB_NOT_FOUND;
     }
 

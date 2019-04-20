@@ -52,10 +52,10 @@ BaseType_t CgiDashboard( char *pcWriteBuffer, size_t xWriteBufferLen,
 
   CgiArgValue( session_id, sizeof(session_id), "sessionId", pcCgiArgs );
 
-  /* user = AuthCheckSessionId(session_id); */
-  /* if (user == NULL) { */
-  /*   return HTTP_UNAUTHORIZED; */
-  /* } */
+  user = AuthCheckSessionId(session_id);
+  if (user == NULL) {
+    return HTTP_UNAUTHORIZED;
+  }
 
   user = UserCreate("user1", "password", "John", "Doe", "123 hello world");
   if(user == NULL) {
