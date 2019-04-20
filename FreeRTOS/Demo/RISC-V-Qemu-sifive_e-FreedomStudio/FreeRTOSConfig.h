@@ -118,6 +118,12 @@
 #define configGENERATE_RUN_TIME_STATS	0
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 
+/* SSITH-HOPE: Use separate ISR stack.  Without this setting, FreeRTOS reuse's
+   main's stack for interrupts once the scheduler has started (because main
+   won't continue running after that point).  But that causes problems with our
+   stack frame metadata. */
+#define configISR_STACK_SIZE_WORDS ( 500 )
+
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 			0
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
