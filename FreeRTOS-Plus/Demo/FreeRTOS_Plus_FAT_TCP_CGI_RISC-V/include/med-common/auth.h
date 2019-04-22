@@ -25,6 +25,6 @@ bool AuthEndSession(char *session_id);
 
 // Hooks for tagging the current user
 void AuthClearCurrentUserType(void);
-user_type_t AuthSetCurrentUserType(user_type_t user_type);
+void AuthSetCurrentUserType(user_t *user);
 
 #endif // AUTHENTICATION_H

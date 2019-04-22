@@ -6,14 +6,16 @@
 
 #define USER_FULL_NAME_LENGTH (USER_NAME_LENGTH * 2 + 3)
 
-int isp_tag_password_char = 0xa;
+uintptr_t isp_tag_password_char = 0xa;
 
-void __attribute__ ((noinline)) 
-UserTagPass(user_t *user) {
+static void __attribute__ ((noinline)) 
+UserTagPassword(user_t *user)
+{
+  size_t i;
 
-  int i;
-  for ( i = 0; i < USER_PASSWORD_LENGTH/(sizeof(int)); i+=4 )
-    *(int*)(&(user->password[i])) = isp_tag_password_char;
+  for (i = 0; i < USER_PASSWORD_LENGTH/(sizeof(uintptr_t)); i+=sizeof(uintptr_t)) {
+    *(uintptr_t*)(&(user->password[i])) = isp_tag_password_char;
+  }
 
   return;
 }
@@ -29,10 +31,10 @@ UserCreate(char *username, char *password, char *first_name, char *last_name,
     return NULL;
   }
   memset(user, 0, sizeof(user_t));
-
-  UserTagPass(user);
   
-  user->type = USER_UNKNOWN;
+  user->password[0] = 'h';
+  UserTagPassword(user);
+
   user->data = NULL;
 
   snprintf(user->username, sizeof(user->username) + 1, "%s", username);
@@ -58,9 +60,9 @@ UserDestroy(user_t *user)
   free(user);
 }
 
-volatile user_type_t _temp_user_type_assigner;
+user_type_t _temp_user_type_assigner;
 
-void __attribute__((noinline))
+void __attribute__ ((noinline))
 UserSetType(user_t *user, user_type_t type)
 {
   _temp_user_type_assigner = type;
@@ -71,10 +73,13 @@ char *
 UserFullName(user_t *user)
 {
   char *result;
-  char buffer[USER_FULL_NAME_LENGTH];
 
-  snprintf(buffer, sizeof(buffer), "%s, %s", user->last_name, user->first_name);
-  result = strdup(buffer);
+  result = malloc(USER_FULL_NAME_LENGTH + 1);
+  if(result == NULL) {
+    return NULL;
+  }
+
+  snprintf(result, USER_FULL_NAME_LENGTH, "%s, %s", user->last_name, user->first_name);
 
   return result;
 }
@@ -83,4 +88,10 @@ void
 UserUpdateAddress(user_t *user, char *address)
 {
   snprintf(user->address, sizeof(user->address) + 1, "%s", address);
+}
+
+void __attribute__ ((noinline))
+UserSetAdmin(user_t *user)
+{
+  UserSetType(user, USER_ADMINISTRATOR);
 }

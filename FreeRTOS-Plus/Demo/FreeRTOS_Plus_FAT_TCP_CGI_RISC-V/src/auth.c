@@ -6,19 +6,27 @@
 #include "hashtable.h"
 #include "database.h"
 
-#define AUTH_TABLE_CAPACITY 0x1000
+#define AUTH_TABLE_CAPACITY 0x10
 
 static hash_table_t active_session_table;
 
-void
+volatile int current_auth_user_type;
+volatile int current_auth_patient_data;
+
+void __attribute__ ((noinline))
 AuthClearCurrentUserType(void)
 {
+  current_auth_user_type = 0;
+  current_auth_patient_data = 0;
 }
 
-user_type_t
-AuthSetCurrentUserType(user_type_t user_type)
+void __attribute__ ((noinline))
+AuthSetCurrentUserType(user_t *user)
 {
-  return user_type;
+  printf("in auth set current type user is 0x%x\n", user);
+  AuthClearCurrentUserType();
+  current_auth_user_type = user->type;
+  current_auth_patient_data = (int)user->data;
 }
 
 static char *

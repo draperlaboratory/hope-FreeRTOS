@@ -314,6 +314,11 @@ int main( void )
    write( STDOUT_FILENO, pcPassMessage, strlen( pcPassMessage ) );
    write( STDOUT_FILENO, pcPassMessage, strlen( pcPassMessage ) );
 
+    #ifdef NEGATIVE_TEST_DEBUG
+    negative_test();
+    #endif
+    
+   
    printf("Init time.\n");
 	/* Miscellaneous initialisation including preparing the logging and seeding
 	the random number generator. */
@@ -424,10 +429,6 @@ static void prvServerWorkTask( void *pvParameters )
 		CgiSetup();
     printf("CGI setup complete\n");
 
-    #ifdef NEGATIVE_TEST_DEBUG
-    negative_test();
-    #endif
-    
 		/* Wait until the network is up before creating the servers.  The
 		notification is given from the network event hook. */
 		ulTaskNotifyTake( pdTRUE, portMAX_DELAY );
