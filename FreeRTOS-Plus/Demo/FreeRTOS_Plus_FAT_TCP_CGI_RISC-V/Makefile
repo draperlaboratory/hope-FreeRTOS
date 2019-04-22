@@ -205,7 +205,7 @@ include $(BSP_DIR)/libxil/libxil.mk
 $(OUT_ELF): $(OUT_OBJS) $(LINKER_SCRIPT) $(LINK_DEPS)
 	@echo 'Building target: $@'
 	@echo '_______________________________'
-	$(GCC) -o $@ $(OUT_OBJS) $(LDFLAGS) $(LDOPTS) -L$(BSP_DIR)/libxil/
+	$(GCC) $(CFLAGS) $(INCLUDES) $(OUT_OBJS) -o $@ $(LDFLAGS) $(LDOPTS) -L$(BSP_DIR)/libxil/
 	@echo 'Finished building target: $@'
 	@echo ' '
 

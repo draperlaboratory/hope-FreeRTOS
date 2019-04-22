@@ -73,10 +73,13 @@ char *
 UserFullName(user_t *user)
 {
   char *result;
-  char buffer[USER_FULL_NAME_LENGTH];
 
-  snprintf(buffer, sizeof(buffer), "%s, %s", user->last_name, user->first_name);
-  result = strdup(buffer);
+  result = malloc(USER_FULL_NAME_LENGTH + 1);
+  if(result == NULL) {
+    return NULL;
+  }
+
+  snprintf(result, USER_FULL_NAME_LENGTH, "%s, %s", user->last_name, user->first_name);
 
   return result;
 }
