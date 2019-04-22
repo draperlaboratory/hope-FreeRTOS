@@ -48,6 +48,9 @@ extern BaseType_t CgiLogout( char *pcWriteBuffer, size_t xWriteBufferLen,
 extern BaseType_t CgiRegister( char *pcWriteBuffer, size_t xWriteBufferLen,
                     char *pcHeaderBuffer, size_t xHeaderBufferLen,
                     const char *pcCgiArgs );
+extern BaseType_t CgiUpdateUser( char *pcWriteBuffer, size_t xWriteBufferLen,
+                    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+                    const char *pcCgiArgs );
 
 static void CgiRegisterSingle( const char *pcUrl, pdCGI_CALLBACK pxFunc );
 
@@ -59,6 +62,7 @@ void CgiSetup( void )
     CgiRegisterSingle( "/cgi-bin/login.cgi", CgiLogin );
     CgiRegisterSingle( "/cgi-bin/logout.cgi", CgiLogout );
     CgiRegisterSingle( "/cgi-bin/register.cgi", CgiRegister );
+    CgiRegisterSingle( "/cgi-bin/update-user.cgi", CgiUpdateUser );
 }
 
 static void CgiRegisterSingle( const char *pcUrl, pdCGI_CALLBACK pxFunc )

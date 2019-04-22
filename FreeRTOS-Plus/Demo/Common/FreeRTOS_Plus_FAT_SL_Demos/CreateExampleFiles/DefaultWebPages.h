@@ -87,15 +87,15 @@ typedef struct FILE_TO_COPY
 
 const xFileToCopy_t xHTTPFilesToCopy[] =
 {
-	{ "add_record.html", sizeof( add_record_html ), add_record_html },
+	{ "add-record.html", sizeof( add_record_html ), add_record_html },
 	{ "dashboard.html", sizeof( dashboard_html ), dashboard_html },
 	{ "login.html", sizeof( login_html ), login_html },
 	{ "logout.html", sizeof( logout_html ), logout_html },
 	{ "index.html", sizeof( index_html ), index_html },
 	{ "register.html", sizeof( register_html ), register_html },
 	{ "search.html", sizeof( search_html ), search_html },
-	{ "search_results.html", sizeof( search_results_html ), search_results_html },
-	{ "update_user.html", sizeof( update_user_html ), update_user_html },
-	{ "user_details.html", sizeof( user_details_html ), user_details_html },
+	{ "search-results.html", sizeof( search_results_html ), search_results_html },
+	{ "update-user.html", sizeof( update_user_html ), update_user_html },
+	{ "user-details.html", sizeof( user_details_html ), user_details_html },
 };
 
