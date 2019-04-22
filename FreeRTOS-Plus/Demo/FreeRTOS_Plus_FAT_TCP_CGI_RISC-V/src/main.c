@@ -194,7 +194,7 @@ root directory, and the RAM disk appears as a directory off the root. */
 that run the tests continuously. */
 #define mainRUN_STDIO_TESTS_IN_MULTIPLE_TASK 0
 
-#define NEGATIVE_TEST_DEBUG
+//#define NEGATIVE_TEST_DEBUG
 #ifdef NEGATIVE_TEST_DEBUG
 #include "negative_tests.h"
 #endif
