@@ -42,6 +42,31 @@ void user_type_test(void)
   printf("WARNING: NO VIOLATION. OPERATION SUCCEEDED. \n");
 }
 
+void user_type_overwrite_test(void)
+{
+  user_t *user;
+  char payload[0x80]; 
+
+  printf("user type overwrite test!\n");
+  printf("  about to create user \n");
+  user = UserCreate("user", "toor", "User", "Two", "123 Main St.");
+  printf("  user created!\n");
+  printf("    addr = 0x%x\n", user);
+  printf("    addr @ type = 0x%x\n", &user->type);
+  printf("  about to set type\n");
+  MedicalSetPatient(user);
+  printf("  type set!\n");
+  if(user == NULL) {
+    printf("TEST ERROR: Failed to create user\n");
+  }
+
+  // illegal attempt tp escalate privilege
+  printf("ABOUT TO TRY TO OVERWRITE USER TYPE. SHOULD VIOLATE USER TYPE POLICY\n");
+  memset(payload, 'a', sizeof(payload));
+  UserUpdateAddress(user, payload);
+  printf("WARNING: NO VIOLATION. OPERATION SUCCEEDED. \n");
+}
+
 void unauth_doctor_routine(void)
 {
   user_t *patient_user;
