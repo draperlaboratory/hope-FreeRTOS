@@ -84,8 +84,8 @@ AuthInit()
 
   result = HashTableSetup(&active_session_table,
                           AUTH_SESSION_ID_SIZE,
-                          AUTH_TABLE_CAPACITY,
-                          sizeof(user_t));       
+                          sizeof(user_t),
+                          AUTH_TABLE_CAPACITY);
 
   if(result == HASH_TABLE_ERROR) {
     return false;

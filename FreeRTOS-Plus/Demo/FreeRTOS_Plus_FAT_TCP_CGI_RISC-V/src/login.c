@@ -35,71 +35,63 @@
 #include "auth.h"
 #include "sample.h"
 
-auth_result_t Login(char *username, char *password, char *pcHeaderBuffer, size_t xHeaderBufferLen);
+CGI_HEADER_FUNCTION(auth_result_t, Login, char *username, char *password);
+CGI_FUNCTION(BaseType_t, CheckLoginResult, auth_result_t login_result);
 
 BaseType_t CgiLogin( char *pcWriteBuffer, size_t xWriteBufferLen,
                     char *pcHeaderBuffer, size_t xHeaderBufferLen,
                     const char *pcCgiArgs )
 {
     BaseType_t rv = HTTP_OK;
+    char username[KEY_SIZE_MAX] = { 0 }; 
+    char password[KEY_SIZE_MAX] = { 0 };
+    auth_result_t login_result;
 
-    /* if( SampleConfiguration() == false ) */
-    /* { */
-    /*     CGI_PRINTF("CGI script error" ); */
-    /*     return HTTP_INTERNAL_SERVER_ERROR; */
+    /* if( SampleConfiguration() == false ) { */
+    /*   return HTTP_INTERNAL_SERVER_ERROR; */
     /* } */
 
-    char username[KEY_SIZE_MAX] = { 0 };
-    char password[KEY_SIZE_MAX] = { 0 };
     CgiArgValue( username, sizeof(username), "username", pcCgiArgs );
     CgiArgValue( password, sizeof(password), "password", pcCgiArgs );
 
-    auth_result_t login_result = Login( username, password, pcHeaderBuffer, xHeaderBufferLen );
-
-    switch( login_result )
-    {
-       case AUTH_SUCCESS:
-           CGI_PRINTF("dashboard.html" );
-           rv =  HTTP_SEE_OTHER;
-           break;
-       case AUTH_USER_NOT_FOUND:
-           CGI_PRINTF("User not found in database" );
-           rv =  HTTP_BAD_REQUEST;
-           break;
-       case AUTH_INVALID_CREDENTIALS:
-           CGI_PRINTF("Invalid password" );
-           rv =  HTTP_BAD_REQUEST;
-           break;
-       case AUTH_NOT_LOGGED_IN:
-           CGI_PRINTF("One or more empty fields" );
-           rv =  HTTP_BAD_REQUEST;
-           break;
-       default:
-           break;
-    }
+    login_result = CGI_IMPL_HEADER_CALL(Login, username, password);
+    rv = CGI_IMPL_CALL(CheckLoginResult, login_result);
 
     return rv;
 }
 
-auth_result_t Login(char *username, char *password, char *pcHeaderBuffer, size_t xHeaderBufferLen)
+CGI_FUNCTION(BaseType_t, CheckLoginResult, auth_result_t login_result)
+{
+    switch(login_result)
+    {
+       case AUTH_SUCCESS:
+           CGI_PRINTF("dashboard.html" );
+           return HTTP_OK;
+       case AUTH_USER_NOT_FOUND:
+           CGI_PRINTF("User not found in database" );
+           return HTTP_BAD_REQUEST;
+       case AUTH_INVALID_CREDENTIALS:
+           CGI_PRINTF("Invalid password" );
+           return HTTP_BAD_REQUEST;
+       case AUTH_NOT_LOGGED_IN:
+           CGI_PRINTF("One or more empty fields" );
+           return HTTP_BAD_REQUEST;
+       case AUTH_FAILURE:
+           return HTTP_SEE_OTHER;
+       default:
+           return HTTP_OK;
+    }
+}
+
+CGI_HEADER_FUNCTION(auth_result_t, Login, char *username, char *password)
 {
     auth_result_t auth_result;
     char session_id[CGI_SESSION_COOKIE_SIZE + 1];
 
-    if( (strlen( username ) == 0) || (strlen( password ) == 0) )
-    {
-        return AUTH_NOT_LOGGED_IN;
-    }
-
     auth_result = AuthStartSession( username, password, session_id );
 
-    switch( auth_result )
-    {
-       case AUTH_SUCCESS:
-           CGI_HEADER_CALL(SimpleCookie, "sessionId", session_id);
-           break;
-       default:
-           break;
+    if(auth_result == AUTH_SUCCESS) {
+      CGI_HEADER_CALL(SetCookie, "sessionId", session_id);
     }
 
     return auth_result;

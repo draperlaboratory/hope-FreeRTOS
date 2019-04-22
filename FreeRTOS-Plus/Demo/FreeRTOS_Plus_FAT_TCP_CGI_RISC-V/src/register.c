@@ -39,6 +39,8 @@
 #define CGI_RESPONSE_LEN_MAX 2048
 #define CGI_HEADER_LEN_MAX 256
 
+CGI_FUNCTION(bool, RegisterNewUser, char *username, char *password, char *first_name, char *last_name, char *address);
+
 BaseType_t CgiRegister( char *pcWriteBuffer, size_t xWriteBufferLen,
                     char *pcHeaderBuffer, size_t xHeaderBufferLen,
                     const char *pcCgiArgs )
@@ -48,24 +50,40 @@ BaseType_t CgiRegister( char *pcWriteBuffer, size_t xWriteBufferLen,
     char first_name[KEY_SIZE_MAX] = { 0 };
     char last_name[KEY_SIZE_MAX] = { 0 };
     char address[KEY_SIZE_MAX] = { 0 };
-    user_t *user;
 
     CgiArgValue( username, sizeof(username), "username", pcCgiArgs );
     CgiArgValue( password, sizeof(password), "password", pcCgiArgs );
     CgiArgValue( first_name, sizeof(first_name), "first_name", pcCgiArgs );
     CgiArgValue( last_name, sizeof(last_name), "last_name", pcCgiArgs );
     CgiArgValue( address, sizeof(address), "address", pcCgiArgs );
+    
+    if(DatabaseInit() == false) {
+      return HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    if(CGI_IMPL_CALL(RegisterNewUser, username, password, first_name, last_name, address) == false) {
+      return HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    return HTTP_OK;
+}
+
+CGI_FUNCTION(bool, RegisterNewUser, char *username, char *password, char *first_name, char *last_name, char *address)
+{
+    user_t *user;
 
     user = UserCreate(username, password, first_name, last_name, address);   
     if(user == NULL) {
-      return HTTP_INTERNAL_SERVER_ERROR;
+      CGI_PRINTF("Failed to create user");
+      return false;
     }
 
     if(DatabaseAddUser(user) == false) {
-      return HTTP_INTERNAL_SERVER_ERROR;
+      CGI_PRINTF("Failed to add user to database");
+      return false;
     }
 
-    snprintf(pcWriteBuffer, xWriteBufferLen, "login.html");
-
-    return HTTP_OK;
+    // redirect after form processing
+    CGI_PRINTF("login.html");
+    return true;
 }

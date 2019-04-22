@@ -1,10 +1,10 @@
 #ifndef MEDICAL_H
 #define MEDICAL_H
 
-#define MEDICAL_MAX_RECORDS 0x4
-#define MEDICAL_MAX_PATIENTS 0x4
-#define MEDICAL_MAX_CERTS 0x4
-#define MEDICAL_MAX_TREATMENTS 0x4
+#define MEDICAL_MAX_RECORDS 0x10
+#define MEDICAL_MAX_PATIENTS 0x10
+#define MEDICAL_MAX_CERTS 0x10
+#define MEDICAL_MAX_TREATMENTS 0x10
 
 #define MEDICAL_NAME_LENGTH 0x20
 #define MEDICAL_UNIT_NAME_LENGTH 0x4
@@ -59,7 +59,7 @@ bool MedicalSetDoctor(user_t *user);
 doctor_t *MedicalGetDoctor(user_t *user);
 
 medical_result_t MedicalAddRecord(user_t *doctor_user, user_t *patient_user,
-                                  char *condition, char *notes);
+                                  char *condition, char *notes, medical_record_t **out);
 medical_result_t MedicalRemoveRecord(user_t *doctor_user, user_t *patient_user, char *condition);
 
 medical_result_t MedicalAddTreatment(user_t *doctor_user, medical_record_t *record,

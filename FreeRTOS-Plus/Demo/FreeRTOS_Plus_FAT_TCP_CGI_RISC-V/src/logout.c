@@ -1,8 +1,8 @@
 /*
- * File: cgiArgs.c
+ * File: login.c
  *
  * Description:
- *   Implement CGI args handling backend.
+ *   Process the login form for the Draper medical demo.
  *
  * Copyright DornerWorks 2018
  *
@@ -25,49 +25,47 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <string.h>
 #include <stdio.h>
-
+#include <string.h>
+#include <stdint.h>
+#include "http_statuses.h"
+#include "FreeRTOS.h"
 #include "cgi-args.h"
+#include "cgi-util.h"
+#include "auth.h"
+#include "sample.h"
 
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
+CGI_FUNCTION(bool, Logout, char *session_id);
 
-/* Public */
-bool CgiArgPresent(const char *argName, const char *cgiStr) {
-  bool rv = false;
+BaseType_t CgiLogout( char *pcWriteBuffer, size_t xWriteBufferLen,
+    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+    const char *pcCgiArgs )
+{
+  char session_id[AUTH_SESSION_ID_SIZE] = { 0 };
 
-  if (NULL != cgiStr) {
-    char argSeparator[KEY_SIZE_MAX] = { 0 };
-    snprintf(",%s:", KEY_SIZE_MAX, argSeparator, argName);
-    /* NOTE: assumes fields are pre-sanitized! */
-    rv = (NULL != strstr(cgiStr, argSeparator));
+  /* if( SampleConfiguration() == false ) { */
+  /*  */
+  /*   return HTTP_INTERNAL_SERVER_ERROR; */
+  /* } */
+
+  CgiArgValue(session_id, AUTH_SESSION_ID_SIZE, "sessionId", pcCgiArgs);
+
+  CGI_IMPL_HEADER_CALL(DeleteCookie, "sessionId");
+
+  if(CGI_IMPL_CALL(Logout, session_id) == false) {
+    return HTTP_INTERNAL_SERVER_ERROR;
   }
 
-  return rv;
+  return HTTP_OK;
 }
 
-void CgiArgValue(char *argValue, size_t valueLen, const char *argName, const char *cgiStr) {
-  bool found = false;
-  if (NULL != cgiStr) {
-    char argSeparator[KEY_SIZE_MAX] = { 0 };
-    int keyLen = snprintf(argSeparator, KEY_SIZE_MAX, ",%s:", argName);
-    /* NOTE: assumes fields are pre-sanitized! */
-    char *key = strstr(cgiStr, argSeparator);
-    if (NULL != key) {
-      char *commaLoc = strstr(&key[keyLen], ",");
-      if (NULL != commaLoc) {
-        int actualValueLen = commaLoc - &key[keyLen];
-        strncpy(argValue, &key[keyLen], MIN(valueLen, actualValueLen));
-        found = true;
-      }
-    }
+CGI_FUNCTION(bool, Logout, char *session_id)
+{
+  if(AuthEndSession(session_id) == false) {
+    CGI_PRINTF("Failed to end session\n");
+    return false;
   }
-
-  if (!found) {
-    strncpy(argValue, "", valueLen);
-  }
+  
+  CGI_PRINTF("login.html");
+  return true;
 }
-
-
-/* Private */
-

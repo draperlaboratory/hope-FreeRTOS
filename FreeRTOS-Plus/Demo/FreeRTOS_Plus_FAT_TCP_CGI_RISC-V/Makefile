@@ -30,6 +30,9 @@ APP_SRC = \
 	$(APP_SRC_DIR)/cgi-args.c \
 	$(APP_SRC_DIR)/cgi-util.c \
 	$(APP_SRC_DIR)/sleep.c \
+	$(APP_SRC_DIR)/cgi_leakage.c \
+	$(APP_SRC_DIR)/cgi_overflow.c \
+	$(APP_SRC_DIR)/cgi_permissions.c \
 	$(APP_SRC_DIR)/hr_gettime.c \
 	$(APP_SRC_DIR)/main.c \
 	$(APP_SRC_DIR)/memcpy.c \
@@ -37,14 +40,15 @@ APP_SRC = \
 	$(APP_SRC_DIR)/uncached_memory.c \
 	$(APP_SRC_DIR)/dashboard.c \
 	$(APP_SRC_DIR)/login.c \
+	$(APP_SRC_DIR)/logout.c \
 	$(APP_SRC_DIR)/register.c \
 	$(APP_SRC_DIR)/auth.c \
 	$(APP_SRC_DIR)/database.c \
 	$(APP_SRC_DIR)/hashtable.c \
 	$(APP_SRC_DIR)/medical.c \
 	$(APP_SRC_DIR)/sha1.c \
-	$(APP_SRC_DIR)/negative_tests.c \
-	$(APP_SRC_DIR)/user.c
+	$(APP_SRC_DIR)/user.c \
+	$(APP_SRC_DIR)/negative_tests.c
 
 APP_INCLUDES = \
 	-I ./include \
@@ -201,7 +205,7 @@ include $(BSP_DIR)/libxil/libxil.mk
 $(OUT_ELF): $(OUT_OBJS) $(LINKER_SCRIPT) $(LINK_DEPS)
 	@echo 'Building target: $@'
 	@echo '_______________________________'
-	$(GCC) $(CFLAGS) $(INCLUDES) $(OUT_OBJS) -o $@ $(LDFLAGS) $(LDOPTS) -L$(BSP_DIR)/libxil/
+	$(GCC) -o $@ $(OUT_OBJS) $(LDFLAGS) $(LDOPTS) -L$(BSP_DIR)/libxil/
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -240,11 +244,11 @@ gen-tags: $(OUT_ELF)
 	--tag-only
 
 sim-qemu: $(OUT_ELF)
-	sudo env PATH=$(PATH) ISP_PREFIX=$(ISP_PREFIX) isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos \
+	sudo env PATH=$(PATH) ISP_PREFIX=$(ISP_PREFIX) isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos -o $(BUILD_DIR) \
 		-e "-net nic -net tap,ifname=tap0,script=no,downscript=no"
 
 sim-qemu-debug: $(OUT_ELF)
-	sudo env PATH=$(PATH) ISP_PREFIX=$(ISP_PREFIX) isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos \
+	sudo env PATH=$(PATH) ISP_PREFIX=$(ISP_PREFIX) isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos -o $(BUILD_DIR) \
 		-e "-net nic -net tap,ifname=tap0,script=no,downscript=no" -g $(GDB_PORT)
 
 sim-gdb: $(OUT_ELF)

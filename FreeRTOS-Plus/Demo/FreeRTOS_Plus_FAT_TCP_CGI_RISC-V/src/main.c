@@ -107,6 +107,8 @@
 //#include "TCPEchoClient_SingleTasks.h"
 //#include "SimpleTCPEchoServer.h"
 #include "cgi.h"
+#include "database.h"
+#include "auth.h"
 
 /* Xilinx includes. */
 //#include "xil_cache.h"
@@ -194,7 +196,7 @@ root directory, and the RAM disk appears as a directory off the root. */
 that run the tests continuously. */
 #define mainRUN_STDIO_TESTS_IN_MULTIPLE_TASK 0
 
-//#define NEGATIVE_TEST_DEBUG
+#define NEGATIVE_TEST_DEBUG
 #ifdef NEGATIVE_TEST_DEBUG
 #include "negative_tests.h"
 #endif
@@ -341,7 +343,7 @@ int main( void )
 	FreeRTOS_printf( ( "FreeRTOS_IPInit\n" ) );
 	FreeRTOS_IPInit( ucIPAddress, ucNetMask, ucGatewayAddress, ucDNSServerAddress, ucMACAddress );
 
-  printf("Server time.\n");
+   printf("Server time.\n");
 
 	/* Create the task that handles the FTP and HTTP servers.  This will
 	initialise the file system then wait for a notification from the network
@@ -352,6 +354,10 @@ int main( void )
 
 	/* Start the RTOS scheduler. */
 	FreeRTOS_debug_printf( ("vTaskStartScheduler\n") );
+
+  printf("App time.\n");
+  DatabaseInit();
+  AuthInit();
 
   printf("Everything Running.\n");
 	vTaskStartScheduler();
@@ -392,19 +398,19 @@ extern void vMultiTaskStdioWithCWDTest( const char *const pcMountPath, uint16_t 
 
 static void prvServerWorkTask( void *pvParameters )
 {
-  /* A structure that defines the servers to be created. */
-  static const struct xSERVER_CONFIG xServerConfiguration[] =
-  {
-    #if( mainCREATE_HTTP_SERVER == 1 )
-      /* Server type,		port number,	backlog, 	root dir. */
-      { eSERVER_HTTP, 	80, 			12, 		configHTTP_ROOT },
-    #endif /* mainCREATE_HTTP_SERVER */
+/* A structure that defines the servers to be created. */
+static const struct xSERVER_CONFIG xServerConfiguration[] =
+{
+	#if( mainCREATE_HTTP_SERVER == 1 )
+		/* Server type,		port number,	backlog, 	root dir. */
+		{ eSERVER_HTTP, 	80, 			12, 		configHTTP_ROOT },
+	#endif /* mainCREATE_HTTP_SERVER */
 
-    #if( mainCREATE_FTP_SERVER == 1 )
-      /* Server type,		port number,	backlog, 	root dir. */
-      { eSERVER_FTP,  	21, 			12, 		"" }
-    #endif /* mainCREATE_FTP_SERVER */
-  };
+	#if( mainCREATE_FTP_SERVER == 1 )
+		/* Server type,		port number,	backlog, 	root dir. */
+		{ eSERVER_FTP,  	21, 			12, 		"" }
+	#endif /* mainCREATE_FTP_SERVER */
+};
 
 	/* Remove compiler warning about unused parameter. */
 	( void ) pvParameters;

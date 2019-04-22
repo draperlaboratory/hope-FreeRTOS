@@ -422,14 +422,14 @@ BaseType_t xRc = 0;
 
 	if( 0 == xRc )
 	{
-		DEBUG_PRINTF( "CGI exec successful" );
+		printf( "CGI exec successful" );
 		/* Send the response text */
 		pcResponse[CGI_RESPONSE_LEN_MAX - 1] = '\0';
 		xRc = prvSendText( pxClient, pcResponse );
 	}
 	else
 	{
-		DEBUG_PRINTF( "CGI exec FAILURE, code %d", (int)xRc );
+		printf( "CGI exec FAILURE, code %d", (int)xRc );
 		xRc = prvSendReplyAndClose( pxClient, xRc );
 	}
 

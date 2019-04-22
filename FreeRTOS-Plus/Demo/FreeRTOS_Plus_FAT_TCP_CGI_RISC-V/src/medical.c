@@ -72,18 +72,72 @@ MedicalGetDoctor(user_t *user)
   return (doctor_t *)user->data;
 }
 
-medical_result_t
-MedicalAddRecord(user_t *doctor_user, user_t *patient_user,
-                 char *condition, char *notes)
+static medical_result_t
+MedicalModifyRecord(user_t *doctor_user, user_t *patient_user, size_t record_index, char *notes)
 {
   doctor_t *doctor;
   patient_t *patient;
+  medical_record_t *record;
 
   doctor = MedicalGetDoctor(doctor_user);
   patient = MedicalGetPatient(patient_user);
-
   if(patient == NULL || doctor == NULL) {
     return MEDICAL_INVALID_USER;
+  }
+
+  record = &patient->records[record_index];
+
+  record->doctor_user = doctor_user;
+
+  if(doctor->patient_count == MEDICAL_MAX_PATIENTS) {
+    return MEDICAL_FIELD_FULL;
+  }
+  doctor->patient_users[doctor->patient_count] = patient_user;
+  doctor->patient_count++;
+
+  patient->records[patient->record_count].notes = strdup(notes);
+  if(patient->records[patient->record_count].notes == NULL) {
+    return MEDICAL_FAILURE;
+  }
+
+  return MEDICAL_SUCCESS;
+}
+
+medical_result_t
+MedicalAddRecord(user_t *doctor_user, user_t *patient_user,
+                 char *condition, char *notes, medical_record_t **out)
+{
+  doctor_t *doctor;
+  patient_t *patient;
+  size_t i;
+  medical_result_t result;
+
+  if(out != NULL) {
+    *out = NULL;
+  }
+
+  doctor = MedicalGetDoctor(doctor_user);
+  patient = MedicalGetPatient(patient_user);
+  if(patient == NULL || doctor == NULL) {
+    return MEDICAL_INVALID_USER;
+  }
+
+  if(MedicalDoctorCertified(doctor, condition) == false) {
+    return MEDICAL_NOT_CERTIFIED;
+  }
+
+  for(i = 0; i < patient->record_count; i++) {
+    if(strcmp(patient->records[i].condition, condition) == 0) {
+      MedicalRecordFree(&patient->records[i]);
+      result = MedicalModifyRecord(doctor_user, patient_user, i, notes);
+      if(result != MEDICAL_SUCCESS) {
+        return result;
+      }
+      if(out != NULL) {
+        *out = &patient->records[i];
+      }
+      return MEDICAL_SUCCESS;
+    }
   }
 
   if(patient->record_count == MEDICAL_MAX_RECORDS) {
@@ -93,15 +147,14 @@ MedicalAddRecord(user_t *doctor_user, user_t *patient_user,
   snprintf(patient->records[patient->record_count].condition,
            MEDICAL_NAME_LENGTH, "%s", condition);
 
-  patient->records[patient->record_count].doctor_user = doctor_user;
-
-  patient->records[patient->record_count].notes = malloc(strlen(notes) + 1);
-  snprintf(patient->records[patient->record_count].notes, strlen(notes), "%s", notes);
-
-  if(patient->records[patient->record_count].notes == NULL) {
-    return MEDICAL_FAILURE;
+  result = MedicalModifyRecord(doctor_user, patient_user, patient->record_count, notes);
+  if(result != MEDICAL_SUCCESS) {
+    return result;
   }
 
+  if(out != NULL) {
+    *out = &patient->records[patient->record_count];
+  }
   patient->record_count++;
   return MEDICAL_SUCCESS;
 }

@@ -73,8 +73,8 @@ DatabaseInit(void)
 
   result = HashTableSetup(&database_table,
                           DATABASE_KEY_LENGTH,
-                          DATABASE_CAPACITY,
-                          sizeof(user_t));
+                          sizeof(user_t),
+                          DATABASE_CAPACITY);
 
   if(result == HASH_TABLE_ERROR) {
     return false;
@@ -117,6 +117,7 @@ DatabaseGetUser(char *username)
   snprintf(key, USER_NAME_LENGTH, "%s", username);
 
   result = (user_t *)HashTableLookup(&database_table, key);
+
 
   return result;
 }
