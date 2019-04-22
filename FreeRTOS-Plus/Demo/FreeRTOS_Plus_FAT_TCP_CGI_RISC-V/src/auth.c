@@ -60,7 +60,7 @@ AuthGenerateSessionId(user_t *user)
   char *session_id;
 
   Sha1Init(&context);
-  Sha1Update(&context, (uint8_t *)user, sizeof(user_t));
+  Sha1Update(&context, (uint8_t *)user->username, sizeof(user->username));
   Sha1Final(&context, digest);
 
   session_id = AuthDigestToSessionId(digest);
