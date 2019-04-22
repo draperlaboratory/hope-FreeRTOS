@@ -54,7 +54,7 @@ BaseType_t CgiLogin( char *pcWriteBuffer, size_t xWriteBufferLen,
     CgiArgValue( username, sizeof(username), "username", pcCgiArgs );
     CgiArgValue( password, sizeof(password), "password", pcCgiArgs );
 
-    login_result = CGI_IMPL_CALL(Login, username, password);
+    login_result = CGI_IMPL_HEADER_CALL(Login, username, password);
     rv = CGI_IMPL_CALL(CheckLoginResult, login_result);
 
     return rv;
