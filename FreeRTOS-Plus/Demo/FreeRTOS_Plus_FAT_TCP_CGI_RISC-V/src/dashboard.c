@@ -243,5 +243,5 @@ CGI_FUNCTION(void, DoctorDashboard, doctor_t *doctor)
 CGI_FUNCTION(void, AdminDashboard)
 {
   CGI_CALL(Whitespace, 2);
-  CGI_PRINTF("<p>Congrats, you're an admin now!\n");
+  CGI_PRINTF("<p>Congrats, you're an admin now!</p>\n");
 }
