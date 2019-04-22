@@ -57,11 +57,6 @@ BaseType_t CgiDashboard( char *pcWriteBuffer, size_t xWriteBufferLen,
     return HTTP_UNAUTHORIZED;
   }
 
-  user = UserCreate("user1", "password", "John", "Doe", "123 hello world");
-  if(user == NULL) {
-    return HTTP_INTERNAL_SERVER_ERROR;
-  }
-
   CGI_IMPL_CALL(CommonDashboard, user);
 
   return HTTP_OK;
