@@ -45,8 +45,8 @@
 #define CGI_OUTPUT_END "</cgiOutput>"
 #define CGI_RESPONSE_TEXT_START "<responseText>"
 #define CGI_RESPONSE_TEXT_END   "</responseText>"
-#define CGI_HEADER_FIELDS_START "<headerFields>"
-#define CGI_HEADER_FIELDS_END   "</headerFields>"
+#define CGI_HEADER_FIELDS_START "<headerfields>"
+#define CGI_HEADER_FIELDS_END   "</headerfields>"
 #define CGI_EXIT_STATUS_START "<exitstatus>"
 #define CGI_EXIT_STATUS_END   "</exitstatus>"
 #define MAX_REST_DATA_LEN 2048
