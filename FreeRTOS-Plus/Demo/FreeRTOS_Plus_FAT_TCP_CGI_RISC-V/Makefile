@@ -240,11 +240,11 @@ gen-tags: $(OUT_ELF)
 	--tag-only
 
 sim-qemu: $(OUT_ELF)
-	sudo env PATH=$(PATH) ISP_PREFIX=$(ISP_PREFIX) isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos \
+	sudo env PATH=$(PATH) ISP_PREFIX=$(ISP_PREFIX) isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos -o $(BUILD_DIR) \
 		-e "-net nic -net tap,ifname=tap0,script=no,downscript=no"
 
 sim-qemu-debug: $(OUT_ELF)
-	sudo env PATH=$(PATH) ISP_PREFIX=$(ISP_PREFIX) isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos \
+	sudo env PATH=$(PATH) ISP_PREFIX=$(ISP_PREFIX) isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos -o $(BUILD_DIR) \
 		-e "-net nic -net tap,ifname=tap0,script=no,downscript=no" -g $(GDB_PORT)
 
 sim-gdb: $(OUT_ELF)

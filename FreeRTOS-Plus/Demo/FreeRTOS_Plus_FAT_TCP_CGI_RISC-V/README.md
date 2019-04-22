@@ -12,6 +12,6 @@
 #### Running the webserver
 1. `make`
 2. `make sim-qemu POLICY=<policy>`
-3. To view UART output from qemu, run `tail -f isp-run-FreeRTOS-web-server.elf-<policy>`.
+3. To view UART output from qemu, run `tail -f build/isp-run-FreeRTOS-web-server.elf-<policy>`.
 4. Wait until the line `CGI Setup complete` appears in the UART output. This indicates that the webserver is fully initialized.
 5. Open a browser and navigate to `http://172.25.218.200/login.html`.
