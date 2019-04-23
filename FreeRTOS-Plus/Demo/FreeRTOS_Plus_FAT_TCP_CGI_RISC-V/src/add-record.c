@@ -25,8 +25,6 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-/* FREERTOS EMULATING WRAPPER -- DO NOT EDIT */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,45 +32,18 @@
 #include <stdbool.h>
 #include "http_statuses.h"
 #include "database.h"
-
-#define CGI_RESPONSE_LEN_MAX 2048
-#define CGI_HEADER_LEN_MAX 256
-
-typedef uint32_t BaseType_t;
-typedef BaseType_t ( *pdCGI_CALLBACK)( char *pcWriteBuffer, size_t xWriteBufferLen,
-    char *pcHeaderBuffer, size_t xHeaderBufferLen,
-    const char *pcCgiArgs );
-
-static BaseType_t CgiImpl( char *pcWriteBuffer, size_t xWriteBufferLen,
-    char *pcHeaderBuffer, size_t xHeaderBufferLen,
-    const char *pcCgiArgs );
-
-int main( int argc, char **argv )
-{
-  char response[CGI_RESPONSE_LEN_MAX] = { 0 };
-  char headerFields[CGI_HEADER_LEN_MAX] = { 0 };
-  BaseType_t rv = CgiImpl( response, CGI_RESPONSE_LEN_MAX, headerFields, CGI_HEADER_LEN_MAX, argv[1] );
-  printf( "%d", rv );
-  printf( "DELIM" );
-  printf( "%s", headerFields );
-  printf( "DELIM" );
-  printf( "%s", response );
-
-  return (rv == HTTP_OK) ? 0 : 1;
-}
-/* END FREERTOS EMULATING WRAPPER */
-
-#include "cgiArgs.h"
+#include "cgi-args.h"
 #include "cgi-util.h"
 #include "auth.h"
 #include "user.h"
 #include "medical.h"
+#include "FreeRTOS.h"
 
 CGI_FUNCTION(BaseType_t, UpdateRecord, char *doctor_name, char *patient_name,
     char *condition, char *notes, char *treatment, 
     char *treatment_unit, double dose);
 
-BaseType_t CgiImpl( char *pcWriteBuffer, size_t xWriteBufferLen,
+BaseType_t CgiAddRecord( char *pcWriteBuffer, size_t xWriteBufferLen,
     char *pcHeaderBuffer, size_t xHeaderBufferLen,
     const char *pcCgiArgs )
 {
@@ -82,7 +53,7 @@ BaseType_t CgiImpl( char *pcWriteBuffer, size_t xWriteBufferLen,
   char doctor_name[USER_NAME_LENGTH + 1] = { 0 };
   char patient_name[USER_NAME_LENGTH + 1] = { 0 };
   char condition[MEDICAL_NAME_LENGTH + 1] = { 0 };
-  char notes[0x1000] = { 0 };
+  char notes[0x100] = { 0 };
   char treatment[MEDICAL_NAME_LENGTH + 1] = { 0 };
   char treatment_unit[MEDICAL_UNIT_NAME_LENGTH + 1] = { 0 };
   char dose_string[0x10] = { 0 };
@@ -154,7 +125,8 @@ CGI_FUNCTION(BaseType_t, UpdateRecord, char *doctor_name, char *patient_name,
     return HTTP_BAD_REQUEST;
   }
 
-  result = MedicalAddRecord(doctor_user, patient_user, condition, notes, &record);
+  /* result = MedicalAddRecord(doctor_user, patient_user, condition, notes, &record); */
+  result = MedicalAddRecord(doctor_user, patient_user, condition, notes);
   switch(result) {
     case MEDICAL_SUCCESS:
       break;

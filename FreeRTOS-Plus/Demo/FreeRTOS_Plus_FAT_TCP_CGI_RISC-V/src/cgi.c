@@ -36,6 +36,9 @@
 
 /* Function declarations */
 
+extern BaseType_t CgiAddRecord( char *pcWriteBuffer, size_t xWriteBufferLen,
+                    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+                    const char *pcCgiArgs );
 extern BaseType_t CgiDashboard( char *pcWriteBuffer, size_t xWriteBufferLen,
                     char *pcHeaderBuffer, size_t xHeaderBufferLen,
                     const char *pcCgiArgs );
@@ -48,7 +51,13 @@ extern BaseType_t CgiLogout( char *pcWriteBuffer, size_t xWriteBufferLen,
 extern BaseType_t CgiRegister( char *pcWriteBuffer, size_t xWriteBufferLen,
                     char *pcHeaderBuffer, size_t xHeaderBufferLen,
                     const char *pcCgiArgs );
+extern BaseType_t CgiSearchResults( char *pcWriteBuffer, size_t xWriteBufferLen,
+                    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+                    const char *pcCgiArgs );
 extern BaseType_t CgiUpdateUser( char *pcWriteBuffer, size_t xWriteBufferLen,
+                    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+                    const char *pcCgiArgs );
+extern BaseType_t CgiUserDetails( char *pcWriteBuffer, size_t xWriteBufferLen,
                     char *pcHeaderBuffer, size_t xHeaderBufferLen,
                     const char *pcCgiArgs );
 
@@ -58,11 +67,14 @@ static void CgiRegisterSingle( const char *pcUrl, pdCGI_CALLBACK pxFunc );
 void CgiSetup( void )
 {
     printf("Setting up CGI...\n");
+    CgiRegisterSingle( "/cgi-bin/add-record.cgi", CgiAddRecord );
     CgiRegisterSingle( "/cgi-bin/dashboard.cgi", CgiDashboard );
     CgiRegisterSingle( "/cgi-bin/login.cgi", CgiLogin );
     CgiRegisterSingle( "/cgi-bin/logout.cgi", CgiLogout );
     CgiRegisterSingle( "/cgi-bin/register.cgi", CgiRegister );
+    CgiRegisterSingle( "/cgi-bin/search-results.cgi", CgiSearchResults );
     CgiRegisterSingle( "/cgi-bin/update-user.cgi", CgiUpdateUser );
+    CgiRegisterSingle( "/cgi-bin/user-details.cgi", CgiUserDetails );
 }
 
 static void CgiRegisterSingle( const char *pcUrl, pdCGI_CALLBACK pxFunc )

@@ -38,17 +38,20 @@ APP_SRC = \
 	$(APP_SRC_DIR)/memcpy.c \
 	$(APP_SRC_DIR)/platform.c \
 	$(APP_SRC_DIR)/uncached_memory.c \
+	$(APP_SRC_DIR)/add-record.c \
 	$(APP_SRC_DIR)/dashboard.c \
 	$(APP_SRC_DIR)/login.c \
 	$(APP_SRC_DIR)/logout.c \
 	$(APP_SRC_DIR)/register.c \
+	$(APP_SRC_DIR)/search-results.c \
+	$(APP_SRC_DIR)/update-user.c \
+	$(APP_SRC_DIR)/user-details.c \
 	$(APP_SRC_DIR)/auth.c \
 	$(APP_SRC_DIR)/database.c \
 	$(APP_SRC_DIR)/hashtable.c \
 	$(APP_SRC_DIR)/medical.c \
 	$(APP_SRC_DIR)/sha1.c \
 	$(APP_SRC_DIR)/user.c \
-	$(APP_SRC_DIR)/update-user.c \
 	$(APP_SRC_DIR)/negative_tests.c
 
 APP_INCLUDES = \

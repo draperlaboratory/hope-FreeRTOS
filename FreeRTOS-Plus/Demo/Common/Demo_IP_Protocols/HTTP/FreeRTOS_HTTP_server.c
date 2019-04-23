@@ -338,6 +338,7 @@ static BaseType_t prvOpenURL( HTTPClient_t *pxClient )
 {
 BaseType_t xRc;
 char pcSlash[ 2 ];
+char *pcQueryStringStart;
 
 	pxClient->bits.ulFlags = 0;
 
@@ -381,6 +382,12 @@ char pcSlash[ 2 ];
 		pxClient->pcRootDir,
 		pcSlash,
 		pxClient->pcUrlData);
+
+  /* Truncate filename at query string delimiter */
+  pcQueryStringStart = strchr( pxClient->pcCurrentFilename, '?');
+  if( pcQueryStringStart != NULL ) {
+    *pcQueryStringStart = '\0';
+  }
 
 	pxClient->pxFileHandle = ff_fopen( pxClient->pcCurrentFilename, "rb" );
 
