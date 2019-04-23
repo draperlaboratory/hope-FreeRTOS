@@ -48,6 +48,7 @@ bool CgiArgPresent(const char *argName, const char *cgiStr) {
 
 void CgiArgValue(char *argValue, size_t valueLen, const char *argName, const char *cgiStr) {
   bool found = false;
+  
   if (NULL != cgiStr) {
     char argSeparator[KEY_SIZE_MAX] = { 0 };
     int keyLen = snprintf(argSeparator, KEY_SIZE_MAX, ",%s:", argName);

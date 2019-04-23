@@ -39,26 +39,28 @@
 #include "medical.h"
 #include "FreeRTOS.h"
 
-database_search_result_t *GetSearchResult(user_t *user,
-    char *_first_name, char *_last_name, char *_address,
-    char *_condition, char *type_string);
+
+database_search_result_t * GetPatientSearchResult( char *cgistr );
+
+database_search_result_t * GetDrSearchResult( char *cgistr );
+
 CGI_FUNCTION(void, ShowSearchResult, database_search_result_t *search_result);
 
 BaseType_t CgiSearchResults( char *pcWriteBuffer, size_t xWriteBufferLen,
     char *pcHeaderBuffer, size_t xHeaderBufferLen,
     const char *pcCgiArgs )
 {
-  char type[2];
-  char first_name[USER_NAME_LENGTH];
-  char last_name[USER_NAME_LENGTH];
-  char address[USER_ADDRESS_LENGTH];
-  char condition[MEDICAL_NAME_LENGTH];
   char session_id[KEY_SIZE_MAX] = { 0 };
+
   user_t *user;
   database_search_result_t *search_result;
 
+  printf("in CgiSearchResults\n  parsing:\n");
+
   CgiArgValue(session_id, sizeof(session_id), "sessionId", pcCgiArgs);
 
+  printf("    session_id: %s\n", session_id);
+  
   if(DatabaseInit() == false) {
     return HTTP_INTERNAL_SERVER_ERROR;
   }
@@ -74,60 +76,140 @@ BaseType_t CgiSearchResults( char *pcWriteBuffer, size_t xWriteBufferLen,
   }
   MedicalSetPatient(user);
 
-  CgiArgValue(first_name, USER_NAME_LENGTH, "firstname", pcCgiArgs);
-  CgiArgValue(last_name, USER_NAME_LENGTH, "lastname", pcCgiArgs);
-  CgiArgValue(address, USER_ADDRESS_LENGTH, "address", pcCgiArgs);
-  CgiArgValue(condition, MEDICAL_NAME_LENGTH, "condition", pcCgiArgs);
-
-  // bad length argument permits stack-based buffer overflow 
-  CgiArgValue(type, USER_ADDRESS_LENGTH, "type", pcCgiArgs);
-
-  search_result = GetSearchResult(user, first_name, last_name, address, condition, type);
+  if ( user->type == USER_DOCTOR )
+    search_result = GetDrSearchResult(pcCgiArgs);
+  else if ( user->type == USER_PATIENT )
+    search_result = GetPatientSearchResult(pcCgiArgs);
+  
   CGI_IMPL_CALL(ShowSearchResult, search_result);
 
   return HTTP_OK;
 }
 
+void parse_search_cgistr(char *pcCgiArgs, char *type, char *first_name,
+			 char *last_name, char *address, char *condition) {
+
+  char ltype[2];
+  char lfirst_name[USER_NAME_LENGTH];
+  char llast_name[USER_NAME_LENGTH];
+  char laddress[USER_ADDRESS_LENGTH];
+  char lcondition[MEDICAL_NAME_LENGTH];
+
+  memset(ltype, '\0', sizeof(ltype));
+  memset(lfirst_name, '\0', sizeof(lfirst_name));
+  memset(llast_name, '\0', sizeof(llast_name));
+  memset(laddress, '\0', sizeof(laddress));
+  memset(lcondition, '\0', sizeof(lcondition));
+  
+  printf("in parse_search_cgistr helper\n");
+  
+  printf("  ltype @ 0x%x\n", ltype);
+  
+  CgiArgValue(lfirst_name, USER_NAME_LENGTH, "firstname", pcCgiArgs);
+  memcpy(first_name, lfirst_name, sizeof(lfirst_name));
+
+  CgiArgValue(llast_name, USER_NAME_LENGTH, "lastname", pcCgiArgs);
+  memcpy(last_name, llast_name, sizeof(llast_name));
+
+  CgiArgValue(laddress, USER_ADDRESS_LENGTH, "address", pcCgiArgs);
+  memcpy(address, laddress, sizeof(laddress));
+
+  CgiArgValue(lcondition, MEDICAL_NAME_LENGTH, "condition", pcCgiArgs);
+  memcpy(condition, lcondition, sizeof(lcondition));
+
+  printf("    first name: %s\n", first_name);
+  printf("    last name: %s\n", last_name);
+  printf("    address: %s\n", address);
+  printf("    condition: %s\n", condition);
+
+  printf("gonna corrupt stack w bad ltype parse...\n");
+  
+  // bad length argument permits stack-based buffer overflow 
+  CgiArgValue(ltype, USER_ADDRESS_LENGTH, "type", pcCgiArgs);
+
+  return;
+}
+
 database_search_result_t *
-GetSearchResult(user_t *user, char *_first_name, char *_last_name,
-    char *_address, char *_condition, char *type_string)
+GetPatientSearchResult( char *cgistr )
 {
-  char *first_name = _first_name;
-  char *last_name = _last_name;
-  char *address = _address;
-  char *condition = _condition;
+
+  char type[2];
+  char first_name[USER_NAME_LENGTH];
+  char last_name[USER_NAME_LENGTH];
+  char address[USER_ADDRESS_LENGTH];
+  char condition[MEDICAL_NAME_LENGTH];
+
   database_search_result_t *search_result;
   user_type_t search_type;
 
-  if(strlen(_first_name) == 0) {
-    first_name = NULL;
-  }
+  printf("getting PATIENT search result\n");
 
-  if(strlen(_last_name) == 0) {
-    last_name = NULL;
-  }
+  memset(type, '\0', sizeof(type));
+  memset(first_name, '\0', sizeof(first_name));
+  memset(last_name, '\0', sizeof(last_name));
+  memset(address, '\0', sizeof(address));
+  memset(condition, '\0', sizeof(condition));
+  
+  parse_search_cgistr(cgistr, type, first_name, last_name, address, condition);
+ 
+  printf("PATIENT search parsed:\n");
+  printf("  first name = %s\n", first_name);
+  printf("  last name = %s\n", last_name);
+  printf("  address = %s\n", address);
+  printf("  condition = %s\n", condition);
+  
+  search_type = atoi(type);
 
-  if(strlen(_address) == 0) {
-    address = NULL;
-  }
+  printf("doing USER level search\n");
+  search_result = DatabaseSearch(USER_PATIENT, search_type,
+				 strlen(first_name) ? NULL : first_name ,
+				 strlen(last_name)  ? NULL : last_name,
+				 strlen(address)    ? NULL : address,
+				 NULL);
 
-  if(strlen(_condition) == 0) {
-    condition = NULL;
-  }
+  return search_result;
+}
 
-  search_type = atoi(type_string);
+database_search_result_t *
+GetDrSearchResult( char *cgistr )
+{
 
-  switch(user->type) {
-    case USER_PATIENT:
-      search_result = DatabaseSearch(USER_DOCTOR, first_name, last_name, address, condition);
-      break;
-    case USER_DOCTOR:
-      search_result = DatabaseSearch(search_type, first_name, last_name, address, NULL);
-      break;
-    default:
-      break;
-  }
+  char type[2];
+  char first_name[USER_NAME_LENGTH];
+  char last_name[USER_NAME_LENGTH];
+  char address[USER_ADDRESS_LENGTH];
+  char condition[MEDICAL_NAME_LENGTH];
 
+  printf("getting DOCTOR search result\n");
+  
+  database_search_result_t *search_result;
+  user_type_t search_type;
+
+  memset(type, '\0', sizeof(type));
+  memset(first_name, '\0', sizeof(first_name));
+  memset(last_name, '\0', sizeof(last_name));
+  memset(address, '\0', sizeof(address));
+  memset(condition, '\0', sizeof(condition));
+  
+  parse_search_cgistr(cgistr, type, first_name, last_name, address, condition);
+  
+  printf("DOCTOR search parsed:\n");
+  printf("  first name = %s\n", first_name);
+  printf("  last name = %s\n", last_name);
+  printf("  address = %s\n", address);
+  printf("  condition = %s\n", condition);
+
+  search_type = atoi(type);
+
+  printf("doing DOCTOR level search\n");
+  search_result = DatabaseSearch(USER_DOCTOR, search_type,
+				 strlen(first_name) ? NULL : first_name ,
+				 strlen(last_name)  ? NULL : last_name,
+				 strlen(address)    ? NULL : address,
+				 NULL);
+
+  
   return search_result;
 }
 

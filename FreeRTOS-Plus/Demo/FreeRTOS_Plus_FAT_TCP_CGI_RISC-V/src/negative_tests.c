@@ -163,3 +163,25 @@ void patient_info_leak(void)
 
   printf("WARNING: NO VIOLATION. OPERATION SUCCEEDED.\n");
 }
+
+char globcgistr[] = ",type:12ccccccccccccccccccccccccccccLMNO,sessionId:123,firstname:John,lastname:Doe,address:123 hello world,condition:aids,";
+
+void stack_smash(void) {
+
+  char cgistr[200];
+
+  strcpy(cgistr, globcgistr);
+  
+  printf("cgistr = \n  %s\n", cgistr);
+  *(uint32_t*)(&cgistr[32]) = 0x80fffe10;
+  *(uint32_t*)(&cgistr[36]) = 0x20404ecc;
+
+  //  *(uint32_t*)(cgistr[strlen(",type:")+32]) = 0xDEADBEEF;
+  printf("cgistr = \n  %s\n", cgistr);
+  
+  printf("sending to search results cgi fn\n");
+  CgiSearchResults(0x0, 0, 0x0, 0, cgistr);
+  printf("back to stack smash fn\n");
+
+  return;
+}
