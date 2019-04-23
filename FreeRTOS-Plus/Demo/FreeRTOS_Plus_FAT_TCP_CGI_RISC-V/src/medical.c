@@ -74,7 +74,7 @@ MedicalGetDoctor(user_t *user)
 
 medical_result_t
 MedicalAddRecord(user_t *doctor_user, user_t *patient_user,
-                 char *condition, char *notes)
+                 char *condition, char *notes, medical_record_t **out)
 {
   doctor_t *doctor;
   patient_t *patient;
@@ -102,7 +102,18 @@ MedicalAddRecord(user_t *doctor_user, user_t *patient_user,
     return MEDICAL_FAILURE;
   }
 
+  if(out != NULL) {
+    *out = malloc(sizeof(medical_record_t));
+    if(*out == NULL) {
+      return MEDICAL_FAILURE;
+    }
+    memcpy(*out, &patient->records[patient->record_count], sizeof(medical_record_t));
+  }
+
   patient->record_count++;
+
+  doctor->patient_users[doctor->patient_count] = patient_user;
+  doctor->patient_count++;
   return MEDICAL_SUCCESS;
 }
 

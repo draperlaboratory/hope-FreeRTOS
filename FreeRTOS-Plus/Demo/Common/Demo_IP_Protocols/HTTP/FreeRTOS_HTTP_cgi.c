@@ -190,7 +190,7 @@ int currIndex;
 
         currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, CGI_OUTPUT_END );
 
-        printf( "CGI return text: \n\t%s", pcResponse );
+        /* printf( "CGI return text: \n\t%s", pcResponse ); */
     }
     else
     {

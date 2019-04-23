@@ -109,6 +109,7 @@
 #include "cgi.h"
 #include "database.h"
 #include "auth.h"
+#include "medical.h"
 
 /* Xilinx includes. */
 //#include "xil_cache.h"
@@ -359,9 +360,29 @@ int main( void )
   DatabaseInit();
   AuthInit();
 
-  user_t *user = UserCreate("user1", "password1", "aaaa", "aaaaa", "aaaaaaaaaa");
+  user_t *user = UserCreate("user1", "password1", "John", "Doe", "123 Main St");
   MedicalSetPatient(user);
   DatabaseAddUser(user);
+
+  user_t *doctor_user = UserCreate("the_doctor", "password2", "Joe", "Schmoe", "456 Second St");
+  MedicalSetDoctor(doctor_user);
+  DatabaseAddUser(doctor_user);
+
+  if(MedicalAddCert(doctor_user, "Wrist sprain", 2010) != MEDICAL_SUCCESS) {
+    return false;
+  }
+
+  medical_record_t *record;
+  if(MedicalAddRecord(doctor_user, user,
+     "Wrist sprain", "Take medicine twice daily.", &record)
+     != MEDICAL_SUCCESS) {
+    return false;
+  }
+
+  if(MedicalAddTreatment(doctor_user, record, "Ibuprofen", 200, "mg")
+     != MEDICAL_SUCCESS) {
+    return false;
+  }
 
   printf("Everything Running.\n");
 	vTaskStartScheduler();

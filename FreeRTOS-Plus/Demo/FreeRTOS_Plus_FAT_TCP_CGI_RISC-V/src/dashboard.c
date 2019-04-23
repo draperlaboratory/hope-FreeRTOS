@@ -40,7 +40,7 @@
 
 CGI_FUNCTION(void, CommonDashboard, user_t *user);
 CGI_FUNCTION(void, PatientDashboard, patient_t *patient);
-CGI_FUNCTION(void, DoctorDashboard, doctor_t *doctor);
+CGI_FUNCTION(void, DoctorDashboard, doctor_t *doctor, char *doctor_name);
 CGI_FUNCTION(void, AdminDashboard);
 
 BaseType_t CgiDashboard( char *pcWriteBuffer, size_t xWriteBufferLen,
@@ -62,6 +62,20 @@ BaseType_t CgiDashboard( char *pcWriteBuffer, size_t xWriteBufferLen,
   return HTTP_OK;
 }
 
+static char *UserTypeString(user_t *user)
+{
+  switch(user->type) {
+    case USER_PATIENT:
+      return "Patient";
+    case USER_DOCTOR:
+      return "Doctor";
+    case USER_ADMINISTRATOR:
+      return "Administrator";
+  }
+
+  return "Unknown";
+}
+
 CGI_FUNCTION(void, CommonDashboard, user_t *user)
 {
   char *user_full_name;
@@ -70,6 +84,10 @@ CGI_FUNCTION(void, CommonDashboard, user_t *user)
 
   CGI_CALL(HtmlEscape, user->first_name);
   CGI_PRINTF("!</p>\n");
+  CGI_CALL(Whitespace, 1);
+
+  CGI_PRINTF("<p>User type: %s</p>\n", UserTypeString(user));
+
   CGI_CALL(Whitespace, 1);
 
   CGI_CALL(LinkButton, "Find a Doctor", "search.html");
@@ -105,7 +123,7 @@ CGI_FUNCTION(void, CommonDashboard, user_t *user)
       CGI_CALL(PatientDashboard, MedicalGetPatient(user));
       break;
     case USER_DOCTOR:
-      CGI_CALL(DoctorDashboard, MedicalGetDoctor(user));
+      CGI_CALL(DoctorDashboard, MedicalGetDoctor(user), user->username);
       break;
     case USER_ADMINISTRATOR:
       CGI_CALL(AdminDashboard);
@@ -169,7 +187,7 @@ CGI_FUNCTION(void, PatientDashboard, patient_t *patient)
   CGI_PRINTF("</table>\n");
 }
 
-CGI_FUNCTION(void, DoctorDashboard, doctor_t *doctor)
+CGI_FUNCTION(void, DoctorDashboard, doctor_t *doctor, char *doctor_name)
 {
   size_t i;
   char *user_full_name;
@@ -198,7 +216,7 @@ CGI_FUNCTION(void, DoctorDashboard, doctor_t *doctor)
 
   CGI_CALL(Whitespace, 2);
 
-  CGI_PRINTF("<p>Patient count: %lu\n", doctor->patient_count);
+  CGI_PRINTF("<p>Patient count: %lu\n</p>", doctor->patient_count);
   CGI_PRINTF("<table style=\"width:100%%\" align=\"left\">\n");
 
   CGI_PRINTF("<tr>\n");
@@ -221,10 +239,11 @@ CGI_FUNCTION(void, DoctorDashboard, doctor_t *doctor)
     CGI_PRINTF("</td>");
     CGI_PRINTF("<td>");
 
-    CGI_CALL(FormStart, CGI_FORM_GET, "add-record.cgi");
-    CGI_PRINTF("<input type=\"hidden\" name=\"patient\" value=\"%s\">\n", doctor->patient_users[i]->username);
-    CGI_PRINTF("<input type=\"hidden\" name=\"doctor\" value=\"\">\n");
-    CGI_PRINTF("<input type=\"submit\" name=\"recordsubmit\" value=\"Add Medical Record\">\n");
+    /* CGI_PRINTF("<a href=\"http://172.25.218.200/add-record.html?patient=%s&doctor=%s\"><button>Add Record</button></a>", doctor->patient_users[i]->username, doctor_name); */
+    CGI_CALL(FormStart, CGI_FORM_GET, "add-record.cgi?");
+    CGI_PRINTF("<input type=\"hidden\" name=\"patient\" value=\"%s\"></input>\n", doctor->patient_users[i]->username);
+    CGI_PRINTF("<input type=\"hidden\" name=\"doctor\" value=\"%s\"></input>\n", doctor_name);
+    CGI_PRINTF("<input type=\"submit\" name=\"recordsubmit\" value=\"Add Medical Record\"></input>\n");
     CGI_CALL(FormEnd);
 
     CGI_PRINTF("</td>");
@@ -238,5 +257,5 @@ CGI_FUNCTION(void, DoctorDashboard, doctor_t *doctor)
 CGI_FUNCTION(void, AdminDashboard)
 {
   CGI_CALL(Whitespace, 2);
-  CGI_PRINTF("<p>Congrats, you're an admin now!</p>\n");
+  /* CGI_PRINTF("<p>Congrats, you're an admin now!</p>\n"); */
 }

@@ -59,7 +59,7 @@ bool MedicalSetDoctor(user_t *user);
 doctor_t *MedicalGetDoctor(user_t *user);
 
 medical_result_t MedicalAddRecord(user_t *doctor_user, user_t *patient_user,
-                                  char *condition, char *notes);
+                                  char *condition, char *notes, medical_record_t **out);
 medical_result_t MedicalRemoveRecord(user_t *doctor_user, user_t *patient_user, char *condition);
 
 medical_result_t MedicalAddTreatment(user_t *doctor_user, medical_record_t *record,
