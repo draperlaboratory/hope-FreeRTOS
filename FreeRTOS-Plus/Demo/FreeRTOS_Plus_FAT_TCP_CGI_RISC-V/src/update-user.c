@@ -74,6 +74,7 @@ BaseType_t CgiUpdateUser( char *pcWriteBuffer, size_t xWriteBufferLen,
 CGI_FUNCTION(void, UpdateUser, user_t *user, char *address)
 {
   printf("strlen new address: %d\n", strlen(address));
+  printf("User: %p, user->type: %p\n", user, &user->type);
   UserUpdateAddress(user, address);
 
   // redirect after form processing

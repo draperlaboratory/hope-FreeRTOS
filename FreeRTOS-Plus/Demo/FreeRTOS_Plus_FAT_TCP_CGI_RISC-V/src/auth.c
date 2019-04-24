@@ -84,7 +84,7 @@ AuthInit()
 
   result = HashTableSetup(&active_session_table,
                           AUTH_SESSION_ID_SIZE,
-                          sizeof(user_t),
+                          sizeof(user_t *),
                           AUTH_TABLE_CAPACITY);
 
   if(result == HASH_TABLE_ERROR) {
@@ -114,7 +114,7 @@ AuthStartSession(char *username, char *password, char *session_id_out)
     return AUTH_FAILURE;
   }
 
-  if(HashTableInsert(&active_session_table, session_id, user) == HASH_TABLE_ERROR) {
+  if(HashTableInsert(&active_session_table, session_id, &user) == HASH_TABLE_ERROR) {
     free(session_id);
     return AUTH_FAILURE;
   }
@@ -129,14 +129,17 @@ AuthStartSession(char *username, char *password, char *session_id_out)
 user_t *
 AuthCheckSessionId(char *session_id)
 {
-  user_t *user;
+  user_t **user;
+  user_t *result;
 
   user = HashTableLookup(&active_session_table, session_id);
   if(user == NULL) {
     return NULL;
   }
 
-  return user;
+  result = *user;
+
+  return *user;
 }
 
 bool

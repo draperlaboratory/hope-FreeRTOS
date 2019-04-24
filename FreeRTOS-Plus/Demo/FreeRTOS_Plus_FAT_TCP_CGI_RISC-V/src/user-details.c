@@ -126,17 +126,17 @@ CGI_FUNCTION(user_t *, GetFormUser, char *username)
 {
   user_t *user;
 
-  /* user = DatabaseGetUser(username); */
-  /*  */
-  /* if(user == NULL) { */
-  /*   CGI_PRINTF("<p>User not found in database</p>"); */
-  /*   return NULL; */
-  /* } */
+  user = DatabaseGetUser(username);
 
-  user = UserCreate(username, "password", "John", "Doe", "123 hello world");
   if(user == NULL) {
+    CGI_PRINTF("<p>User not found in database</p>");
     return NULL;
   }
+
+  /* user = UserCreate(username, "password", "John", "Doe", "123 hello world"); */
+  /* if(user == NULL) { */
+  /*   return NULL; */
+  /* } */
 
   return user;
 }
@@ -232,7 +232,7 @@ CGI_FUNCTION(void, ShowDetails, user_t *user)
 
   CGI_CALL(Whitespace, 1);
 
-  CGI_PRINTF("<table style=\"width:100%%\" align=\"left\">\n");
+  CGI_PRINTF("<table style=\"width:100%%\" align=\"left\" border=\"1\">\n");
   CGI_PRINTF("<tr>\n");
   CGI_PRINTF("<th>Full Name</th>\n");
   CGI_PRINTF("<th>Address</th>\n");
@@ -262,4 +262,5 @@ CGI_FUNCTION(void, DetailsDebug, user_t *user)
   CGI_PRINTF("<p>first_name: %s</p>", user->first_name);
   CGI_PRINTF("<p>last_name: %s</p>", user->last_name);
   CGI_PRINTF("<p>address: %s</p>", user->address);
+  CGI_CALL(Whitespace, 2);
 }

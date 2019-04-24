@@ -73,7 +73,7 @@ DatabaseInit(void)
 
   result = HashTableSetup(&database_table,
                           DATABASE_KEY_LENGTH,
-                          sizeof(user_t),
+                          sizeof(user_t *),
                           DATABASE_CAPACITY);
 
   if(result == HASH_TABLE_ERROR) {
@@ -90,7 +90,7 @@ DatabaseAddUser(user_t *user)
     return false;
   }
 
-  if(HashTableInsert(&database_table, user->username, user) == HASH_TABLE_ERROR) {
+  if(HashTableInsert(&database_table, user->username, &user) == HASH_TABLE_ERROR) {
     return false;
   }
 
@@ -111,13 +111,14 @@ user_t *
 DatabaseGetUser(char *username)
 {
   char key[USER_NAME_LENGTH];
+  user_t **user;
   user_t *result;
 
   memset(key, '\0', USER_NAME_LENGTH);
   snprintf(key, USER_NAME_LENGTH, "%s", username);
 
-  result = (user_t *)HashTableLookup(&database_table, key);
-
+  user = HashTableLookup(&database_table, key);
+  result = *user;
 
   return result;
 }
@@ -148,7 +149,6 @@ DatabaseSearch(user_type_t searcher_type, user_type_t type, char *first_name, ch
 
   
   for(i = 0; i < size; i++) {
-
     // doctor can see all results
     if ( searcher_type == USER_DOCTOR )
       goto include_result;

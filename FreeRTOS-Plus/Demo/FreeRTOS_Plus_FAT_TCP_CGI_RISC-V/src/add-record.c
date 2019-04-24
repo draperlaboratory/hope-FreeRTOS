@@ -125,8 +125,8 @@ CGI_FUNCTION(BaseType_t, UpdateRecord, char *doctor_name, char *patient_name,
     return HTTP_BAD_REQUEST;
   }
 
-  /* result = MedicalAddRecord(doctor_user, patient_user, condition, notes, &record); */
-  result = MedicalAddRecord(doctor_user, patient_user, condition, notes);
+  result = MedicalAddRecord(doctor_user, patient_user, condition, notes, &record);
+  /* result = MedicalAddRecord(doctor_user, patient_user, condition, notes); */
   switch(result) {
     case MEDICAL_SUCCESS:
       break;

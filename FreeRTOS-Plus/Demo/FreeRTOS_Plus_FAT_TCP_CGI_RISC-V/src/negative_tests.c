@@ -96,7 +96,7 @@ void unauth_doctor_routine(void)
   
   // should fail with PPAC policy since Doctor is not the active user
   printf("ABOUT TO TRY TO ADD RECORD AS A PATIENT. SHOULD VIOLATE PPAC\n");
-  MedicalAddRecord(doctor_user, patient_user, "Fractured Authentication", "The doctor is not logged in");
+  MedicalAddRecord(doctor_user, patient_user, "Fractured Authentication", "The doctor is not logged in", NULL);
   printf("WARNING: NO VIOLATION. OPERATION SUCCEEDED.\n");
 }
 
@@ -148,7 +148,7 @@ void patient_info_leak(void)
   printf("  ... done!\n");
 
   printf("MedicalAddRecord from doctor for user1\n");  
-  MedicalAddRecord(doctor_user, patient_user1, "Sample Condition", "sample notes");
+  MedicalAddRecord(doctor_user, patient_user1, "Sample Condition", "sample notes", NULL);
   printf("  ... done!\n");
 
   printf("AuthSetCurrentUserType user2\n");

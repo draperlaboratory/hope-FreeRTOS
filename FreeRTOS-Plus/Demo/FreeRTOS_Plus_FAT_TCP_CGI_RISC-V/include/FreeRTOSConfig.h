@@ -137,6 +137,12 @@
 #define configUSE_QUEUE_SETS					1
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS	3 /* FreeRTOS+FAT requires 2 pointers if a CWD is supported. */
 
+/* SSITH-HOPE: Use separate ISR stack.  Without this setting, FreeRTOS reuse's
+   main's stack for interrupts once the scheduler has started (because main
+   won't continue running after that point).  But that causes problems with our
+   stack frame metadata. */
+#define configISR_STACK_SIZE_WORDS ( 500 )
+
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 					0
 #define configMAX_CO_ROUTINE_PRIORITIES 		( 2 )

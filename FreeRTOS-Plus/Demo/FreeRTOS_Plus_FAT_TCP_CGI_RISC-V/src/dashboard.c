@@ -162,8 +162,9 @@ CGI_FUNCTION(void, PatientDashboard, patient_t *patient)
       exit(EXIT_FAILURE);
     }
     CGI_PRINTF("<td>");
-
+    CGI_PRINTF("<a href=\"http://172.25.218.200/user-details.html?username=%s\">", patient->records[i].doctor_user->username);
     CGI_CALL(HtmlEscape, doctor_name);
+    CGI_PRINTF("</a>");
     CGI_PRINTF("</td>\n");
     free(doctor_name);
 
@@ -174,6 +175,7 @@ CGI_FUNCTION(void, PatientDashboard, patient_t *patient)
       CGI_CALL(HtmlEscape, patient->records[i].treatments[j].name);
       CGI_PRINTF(", %.2f %s", patient->records[i].treatments[j].dose,
           patient->records[i].treatments[j].unit);
+      CGI_PRINTF("</p>");
     }
     CGI_PRINTF("</td>\n");
 
@@ -239,12 +241,12 @@ CGI_FUNCTION(void, DoctorDashboard, doctor_t *doctor, char *doctor_name)
     CGI_PRINTF("</td>");
     CGI_PRINTF("<td>");
 
-    /* CGI_PRINTF("<a href=\"http://172.25.218.200/add-record.html?patient=%s&doctor=%s\"><button>Add Record</button></a>", doctor->patient_users[i]->username, doctor_name); */
-    CGI_CALL(FormStart, CGI_FORM_GET, "add-record.cgi?");
-    CGI_PRINTF("<input type=\"hidden\" name=\"patient\" value=\"%s\"></input>\n", doctor->patient_users[i]->username);
-    CGI_PRINTF("<input type=\"hidden\" name=\"doctor\" value=\"%s\"></input>\n", doctor_name);
-    CGI_PRINTF("<input type=\"submit\" name=\"recordsubmit\" value=\"Add Medical Record\"></input>\n");
-    CGI_CALL(FormEnd);
+    CGI_PRINTF("<a href=\"http://172.25.218.200/add-record.html?patient=%s&ampdoctor=%s\"><button>Add Record</button></a>", doctor->patient_users[i]->username, doctor_name);
+    /* CGI_CALL(FormStart, CGI_FORM_GET, "add-record.cgi?"); */
+    /* CGI_PRINTF("<input type=\"hidden\" name=\"patient\" value=\"%s\"></input>\n", doctor->patient_users[i]->username); */
+    /* CGI_PRINTF("<input type=\"hidden\" name=\"doctor\" value=\"%s\"></input>\n", doctor_name); */
+    /* CGI_PRINTF("<input type=\"submit\" name=\"recordsubmit\" value=\"Add Medical Record\"></input>\n"); */
+    /* CGI_CALL(FormEnd); */
 
     CGI_PRINTF("</td>");
     CGI_PRINTF("</tr>\n");

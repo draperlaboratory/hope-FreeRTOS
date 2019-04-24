@@ -197,7 +197,7 @@ root directory, and the RAM disk appears as a directory off the root. */
 that run the tests continuously. */
 #define mainRUN_STDIO_TESTS_IN_MULTIPLE_TASK 0
 
-#define NEGATIVE_TEST_DEBUG
+/* #define NEGATIVE_TEST_DEBUG */
 #ifdef NEGATIVE_TEST_DEBUG
 #include "negative_tests.h"
 #endif
@@ -360,13 +360,15 @@ int main( void )
   DatabaseInit();
   AuthInit();
 
-  user_t *user = UserCreate("user1", "password1", "John", "Doe", "123 Main St");
-  MedicalSetPatient(user);
+  user_t *user = UserCreate("patient_user1", "password1", "John", "Doe", "123 Main St");
+  printf("User: %p, user->type: %p\n", user, &user->type);
   DatabaseAddUser(user);
+  MedicalSetPatient(user);
+
 
   user_t *doctor_user = UserCreate("the_doctor", "password2", "Joe", "Schmoe", "456 Second St");
-  MedicalSetDoctor(doctor_user);
   DatabaseAddUser(doctor_user);
+  MedicalSetDoctor(doctor_user);
 
   if(MedicalAddCert(doctor_user, "Wrist sprain", 2010) != MEDICAL_SUCCESS) {
     return false;

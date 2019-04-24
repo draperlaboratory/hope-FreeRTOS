@@ -207,15 +207,15 @@ GetPatientSearchResult( char *cgistr )
   /* __asm("j 0x20405108"); */
   }
 
-  printf("PATIENT search parsed:\n");
-  printf("  first name = %s\n", first_name);
-  printf("  last name = %s\n", last_name);
-  printf("  address = %s\n", address);
-  printf("  condition = %s\n", condition);
+  /* printf("PATIENT search parsed:\n"); */
+  /* printf("  first name = %s\n", first_name); */
+  /* printf("  last name = %s\n", last_name); */
+  /* printf("  address = %s\n", address); */
+  /* printf("  condition = %s\n", condition); */
   
   search_type = atoi(type);
 
-  printf("doing USER level search\n");
+  /* printf("doing USER level search\n"); */
   search_result = DatabaseSearch(USER_PATIENT, search_type,
 				 strlen(first_name) ? NULL : first_name ,
 				 strlen(last_name)  ? NULL : last_name,
@@ -295,9 +295,9 @@ CGI_FUNCTION(void, ShowSearchResult, database_search_result_t *search_result)
     }
 
     CGI_PRINTF("<td>");
-    CGI_PRINTF("<a href=\"user-details.cgi?username=%s&type=advanced\">", node->user->username);
-    CGI_CALL(HtmlEscape, user_full_name);
-    CGI_PRINTF("</a>");
+    /* CGI_PRINTF("<a href=\"user-details.cgi?username=%s&type=advanced\">", node->user->username); */
+    /* CGI_CALL(HtmlEscape, user_full_name); */
+    /* CGI_PRINTF("</a>"); */
     CGI_PRINTF("</td>\n");
 
     CGI_PRINTF("<td>");
