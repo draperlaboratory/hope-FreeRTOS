@@ -126,17 +126,17 @@ CGI_FUNCTION(user_t *, GetFormUser, char *username)
 {
   user_t *user;
 
-  user = DatabaseGetUser(username);
+  /* user = DatabaseGetUser(username); */
 
-  if(user == NULL) {
-    CGI_PRINTF("<p>User not found in database</p>");
-    return NULL;
-  }
-
-  /* user = UserCreate(username, "password", "John", "Doe", "123 hello world"); */
   /* if(user == NULL) { */
+  /*   CGI_PRINTF("<p>User not found in database</p>"); */
   /*   return NULL; */
   /* } */
+
+  user = UserCreate(username, "password2", "Joe", "Schmoe", "456 Second St");
+  if(user == NULL) {
+    return NULL;
+  }
 
   return user;
 }
