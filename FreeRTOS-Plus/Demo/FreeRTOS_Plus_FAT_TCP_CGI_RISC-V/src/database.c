@@ -137,7 +137,7 @@ DatabaseSearch(user_type_t searcher_type, user_type_t type, char *first_name, ch
   database_search_result_t *result;
 
   size = DatabaseSize();
-  users = (user_t **)HashTableToArray(&database_table);
+  users = DatabaseUserList();
   if(users == NULL) {
     return NULL;
   }
@@ -146,7 +146,6 @@ DatabaseSearch(user_type_t searcher_type, user_type_t type, char *first_name, ch
   if(result == NULL) {
     return NULL;
   }
-
   
   for(i = 0; i < size; i++) {
     // doctor can see all results
@@ -191,14 +190,27 @@ DatabaseSearch(user_type_t searcher_type, user_type_t type, char *first_name, ch
 }
 
 user_t **
-DatabaseUserList(size_t max)
+DatabaseUserList(void)
 {
+  user_t ***user_ptrs;
   user_t **users;
+  size_t i;
 
-  users = (user_t **)HashTableToArray(&database_table);
+  user_ptrs = (user_t ***)HashTableToArray(&database_table);
+  if(user_ptrs == NULL) {
+    return NULL;
+  }
+
+  users = malloc(sizeof(user_t) * database_table.size);
   if(users == NULL) {
     return NULL;
   }
+
+  for(i = 0; i < database_table.size; i++) {
+    users[i] = *user_ptrs[i];
+  }
+
+  free(user_ptrs);
 
   return users;
 }

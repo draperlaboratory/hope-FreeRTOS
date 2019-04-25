@@ -24,6 +24,6 @@ size_t DatabaseSize(void);
 database_search_result_t *DatabaseSearch(user_type_t searcher_type, user_type_t type, char *first_name, char *last_name, char *address, char *condition);
 void DatabaseSearchResultFree(database_search_result_t *result);
 
-user_t **DatabaseUserList(size_t max);
+user_t **DatabaseUserList();
 
 #endif // DATABASE_H
