@@ -223,7 +223,6 @@ static void prvCheckTask(void *pvParameters)
 	char *const pcPassMessage = ".";
 	char *pcStatusMessage = pcPassMessage;
 	extern void vSendString(const char *const pcString);
-	extern void vToggleLED(void);
 
 	/* Just to stop compiler warnings. */
 	(void)pvParameters;
@@ -329,7 +328,6 @@ static void prvCheckTask(void *pvParameters)
 		ulLastRegTest2Value = ulRegTest2LoopCounter;
 
 		/* Write the status message to the UART. */
-		vToggleLED();
 		vSendString(pcStatusMessage);
 
 		/* If an error has been found then increase the LED toggle rate by
