@@ -28,13 +28,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include "http_statuses.h"
 #include "database.h"
-#include "FreeRTOS.h"
 #include "cgi-args.h"
 #include "cgi-util.h"
 #include "auth.h"
 #include "sample.h"
+#include "FreeRTOS_HTTP_commands.h"
 
 #define CGI_RESPONSE_LEN_MAX 2048
 #define CGI_HEADER_LEN_MAX 256
@@ -58,14 +57,14 @@ BaseType_t CgiRegister( char *pcWriteBuffer, size_t xWriteBufferLen,
     CgiArgValue( address, sizeof(address), "address", pcCgiArgs );
     
     if(DatabaseInit() == false) {
-      return HTTP_INTERNAL_SERVER_ERROR;
+      return WEB_INTERNAL_SERVER_ERROR;
     }
 
     if(CGI_IMPL_CALL(RegisterNewUser, username, password, first_name, last_name, address) == false) {
-      return HTTP_INTERNAL_SERVER_ERROR;
+      return WEB_INTERNAL_SERVER_ERROR;
     }
 
-    return HTTP_OK;
+    return WEB_REPLY_OK;
 }
 
 CGI_FUNCTION(bool, RegisterNewUser, char *username, char *password, char *first_name, char *last_name, char *address)

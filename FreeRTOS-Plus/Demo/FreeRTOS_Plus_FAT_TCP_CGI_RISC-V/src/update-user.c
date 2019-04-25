@@ -29,7 +29,6 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "http_statuses.h"
 #include "database.h"
 #include "cgi-args.h"
 #include "cgi-util.h"
@@ -37,6 +36,7 @@
 #include "sample.h"
 #include "user.h"
 #include "FreeRTOS.h"
+#include "FreeRTOS_HTTP_commands.h"
 
 CGI_FUNCTION(void, UpdateUser, user_t *user, char *address);
 
@@ -53,12 +53,12 @@ BaseType_t CgiUpdateUser( char *pcWriteBuffer, size_t xWriteBufferLen,
 
   user = AuthCheckSessionId(session_id);
   if (user == NULL) {
-    return HTTP_UNAUTHORIZED;
+    return WEB_UNAUTHORIZED;
   }
 
   /* user = UserCreate("user1", "password", "John", "Doe", "123 hello world"); */
   /* if(user == NULL) { */
-  /*   return HTTP_INTERNAL_SERVER_ERROR; */
+  /*   return WEB_INTERNAL_SERVER_ERROR; */
   /* } */
   /* MedicalSetPatient(user); */
   /* DatabaseAddUser(user); */
@@ -68,7 +68,7 @@ BaseType_t CgiUpdateUser( char *pcWriteBuffer, size_t xWriteBufferLen,
 
   CGI_IMPL_CALL(UpdateUser, user, new_address);
 
-  return HTTP_OK;
+  return WEB_REPLY_OK;
 }
 
 CGI_FUNCTION(void, UpdateUser, user_t *user, char *address)

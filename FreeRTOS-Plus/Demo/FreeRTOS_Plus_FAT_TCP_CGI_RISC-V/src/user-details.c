@@ -30,7 +30,6 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "http_statuses.h"
 #include "database.h"
 #include "cgi-args.h"
 #include "cgi-util.h"
@@ -40,6 +39,7 @@
 #include "user.h"
 #include "database.h"
 #include "FreeRTOS.h"
+#include "FreeRTOS_HTTP_commands.h"
 
 #define DETAILS_TYPE_LENGTH 0x10
 
@@ -73,17 +73,17 @@ BaseType_t CgiUserDetails( char *pcWriteBuffer, size_t xWriteBufferLen,
 
   /* user = AuthCheckSessionId(session_id); */
   /* if (user == NULL) { */
-  /*   return HTTP_UNAUTHORIZED; */
+  /*   return WEB_UNAUTHORIZED; */
   /* } */
 
   user = UserCreate("user1", "password", "John", "Doe", "123 hello world");
   if(user == NULL) {
-    return HTTP_INTERNAL_SERVER_ERROR;
+    return WEB_INTERNAL_SERVER_ERROR;
   }
 
   form_user = CGI_IMPL_CALL(GetFormUser, username);
   if(form_user == NULL) {
-    return HTTP_INTERNAL_SERVER_ERROR;
+    return WEB_INTERNAL_SERVER_ERROR;
   }
   MedicalSetPatient(form_user);
 
@@ -106,7 +106,7 @@ BaseType_t CgiUserDetails( char *pcWriteBuffer, size_t xWriteBufferLen,
       break;
   }
 
-  return HTTP_OK;
+  return WEB_REPLY_OK;
 }
 
 user_details_type_t

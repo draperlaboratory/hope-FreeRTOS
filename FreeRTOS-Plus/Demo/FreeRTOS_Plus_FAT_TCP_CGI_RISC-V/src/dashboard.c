@@ -29,7 +29,6 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "http_statuses.h"
 #include "user.h"
 #include "medical.h"
 #include "cgi-args.h"
@@ -37,6 +36,7 @@
 #include "auth.h"
 #include "sample.h"
 #include "FreeRTOS.h"
+#include "FreeRTOS_HTTP_commands.h"
 
 CGI_FUNCTION(void, CommonDashboard, user_t *user);
 CGI_FUNCTION(void, PatientDashboard, patient_t *patient);
@@ -54,12 +54,12 @@ BaseType_t CgiDashboard( char *pcWriteBuffer, size_t xWriteBufferLen,
 
   user = AuthCheckSessionId(session_id);
   if (user == NULL) {
-    return HTTP_UNAUTHORIZED;
+    return WEB_UNAUTHORIZED;
   }
 
   CGI_IMPL_CALL(CommonDashboard, user);
 
-  return HTTP_OK;
+  return WEB_REPLY_OK;
 }
 
 static char *UserTypeString(user_t *user)

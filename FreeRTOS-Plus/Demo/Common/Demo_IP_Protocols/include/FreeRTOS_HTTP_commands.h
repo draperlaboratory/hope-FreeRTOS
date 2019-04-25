@@ -25,6 +25,8 @@
 #ifndef FREERTOS_HTTP_COMMANDS_H
 #define	FREERTOS_HTTP_COMMANDS_H
 
+#include "FreeRTOS.h"
+
 enum {
 	WEB_REPLY_OK = 200,
 	WEB_NO_CONTENT = 204,

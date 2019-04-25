@@ -30,7 +30,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include "http_statuses.h"
 #include "database.h"
 #include "cgi-args.h"
 #include "cgi-util.h"
@@ -38,6 +37,7 @@
 #include "user.h"
 #include "medical.h"
 #include "FreeRTOS.h"
+#include "FreeRTOS_HTTP_commands.h"
 
 
 database_search_result_t * GetPatientSearchResult( char *cgistr );
@@ -65,12 +65,12 @@ BaseType_t CgiSearchResults( char *pcWriteBuffer, size_t xWriteBufferLen,
   
   /* user = AuthCheckSessionId(session_id); */
   /* if (user == NULL) { */
-  /*   return HTTP_UNAUTHORIZED; */
+  /*   return WEB_UNAUTHORIZED; */
   /* } */
 
   user = UserCreate("user1", "password", "John", "Doe", "123 hello world");
   if(user == NULL) {
-    return HTTP_INTERNAL_SERVER_ERROR;
+    return WEB_INTERNAL_SERVER_ERROR;
   }
   MedicalSetPatient(user);
 
@@ -81,7 +81,7 @@ BaseType_t CgiSearchResults( char *pcWriteBuffer, size_t xWriteBufferLen,
   
   CGI_IMPL_CALL(ShowSearchResult, search_result);
 
-  return HTTP_OK;
+  return WEB_REPLY_OK;
 }
 
 void parse_search_cgistr(char *pcCgiArgs, char *type, char *first_name,

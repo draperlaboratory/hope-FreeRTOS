@@ -30,7 +30,6 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "http_statuses.h"
 #include "database.h"
 #include "cgi-args.h"
 #include "cgi-util.h"
@@ -38,6 +37,7 @@
 #include "user.h"
 #include "medical.h"
 #include "FreeRTOS.h"
+#include "FreeRTOS_HTTP_commands.h"
 
 CGI_FUNCTION(BaseType_t, UpdateRecord, char *doctor_name, char *patient_name,
     char *condition, char *notes, char *treatment, 
@@ -71,34 +71,34 @@ BaseType_t CgiAddRecord( char *pcWriteBuffer, size_t xWriteBufferLen,
 
   /* doctor_user = AuthCheckSessionId(session_id); */
   /* if (doctor_user == NULL) { */
-  /*   return HTTP_UNAUTHORIZED; */
+  /*   return WEB_UNAUTHORIZED; */
   /* } */
   /* if(doctor_user->type != USER_DOCTOR) { */
-  /*   return HTTP_UNAUTHORIZED; */
+  /*   return WEB_UNAUTHORIZED; */
   /* } */
 
   doctor_user = UserCreate("user1", "password", "John", "Doe", "123 hello world");
   if(doctor_user == NULL) {
-    return HTTP_INTERNAL_SERVER_ERROR;
+    return WEB_INTERNAL_SERVER_ERROR;
   }
   MedicalSetDoctor(doctor_user);
   MedicalAddCert(doctor_user, condition, 2019);
 
   patient_user = UserCreate("user2", "password", "John", "Doe", "123 hello world");
   if(doctor_user == NULL) {
-    return HTTP_INTERNAL_SERVER_ERROR;
+    return WEB_INTERNAL_SERVER_ERROR;
   }
   MedicalSetPatient(patient_user);
 
   if(DatabaseInit() == false) {
-    return HTTP_INTERNAL_SERVER_ERROR;
+    return WEB_INTERNAL_SERVER_ERROR;
   }
   
   if(DatabaseAddUser(doctor_user) == false) {
-    return HTTP_INTERNAL_SERVER_ERROR;
+    return WEB_INTERNAL_SERVER_ERROR;
   }
   if(DatabaseAddUser(patient_user) == false) {
-    return HTTP_INTERNAL_SERVER_ERROR;
+    return WEB_INTERNAL_SERVER_ERROR;
   }
 
   return CGI_IMPL_CALL(UpdateRecord, doctor_name, patient_name, condition, notes, treatment, treatment_unit, dose);
@@ -116,13 +116,13 @@ CGI_FUNCTION(BaseType_t, UpdateRecord, char *doctor_name, char *patient_name,
   doctor_user = DatabaseGetUser(doctor_name);
   if(doctor_user == NULL) {
     CGI_PRINTF("User %s not found\n", doctor_name);
-    return HTTP_BAD_REQUEST;
+    return WEB_BAD_REQUEST;
   }
 
   patient_user = DatabaseGetUser(patient_name);
   if(patient_user == NULL) {
     CGI_PRINTF("User %s not found\n", patient_name);
-    return HTTP_BAD_REQUEST;
+    return WEB_BAD_REQUEST;
   }
 
   result = MedicalAddRecord(doctor_user, patient_user, condition, notes, &record);
@@ -133,10 +133,10 @@ CGI_FUNCTION(BaseType_t, UpdateRecord, char *doctor_name, char *patient_name,
     case MEDICAL_INVALID_USER:
     case MEDICAL_NOT_CERTIFIED:
       CGI_PRINTF("Bad request, invalid user\n");
-      return HTTP_BAD_REQUEST;
+      return WEB_BAD_REQUEST;
     default:
       CGI_PRINTF("Internal server error\n");
-      return HTTP_INTERNAL_SERVER_ERROR;
+      return WEB_INTERNAL_SERVER_ERROR;
   }
   
   result = MedicalAddTreatment(doctor_user, record, treatment, dose, treatment_unit);
@@ -146,13 +146,13 @@ CGI_FUNCTION(BaseType_t, UpdateRecord, char *doctor_name, char *patient_name,
     case MEDICAL_INVALID_USER:
     case MEDICAL_NOT_CERTIFIED:
       CGI_PRINTF("Bad request, invalid user\n");
-      return HTTP_BAD_REQUEST;
+      return WEB_BAD_REQUEST;
     default:
       CGI_PRINTF("Internal server error\n");
-      return HTTP_INTERNAL_SERVER_ERROR;
+      return WEB_INTERNAL_SERVER_ERROR;
   }
 
   // redirect after form processing
   CGI_PRINTF("dashboard.html");
-  return HTTP_OK;
+  return WEB_REPLY_OK;
 }

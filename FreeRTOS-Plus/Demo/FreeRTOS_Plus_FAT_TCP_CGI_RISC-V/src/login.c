@@ -28,12 +28,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include "http_statuses.h"
-#include "FreeRTOS.h"
 #include "cgi-args.h"
 #include "cgi-util.h"
 #include "auth.h"
 #include "sample.h"
+#include "FreeRTOS.h"
+#include "FreeRTOS_HTTP_commands.h"
 
 CGI_HEADER_FUNCTION(auth_result_t, Login, char *username, char *password);
 CGI_FUNCTION(BaseType_t, CheckLoginResult, auth_result_t login_result);
@@ -42,13 +42,13 @@ BaseType_t CgiLogin( char *pcWriteBuffer, size_t xWriteBufferLen,
                     char *pcHeaderBuffer, size_t xHeaderBufferLen,
                     const char *pcCgiArgs )
 {
-    BaseType_t rv = HTTP_OK;
+    BaseType_t rv = WEB_REPLY_OK;
     char username[KEY_SIZE_MAX] = { 0 }; 
     char password[KEY_SIZE_MAX] = { 0 };
     auth_result_t login_result;
 
     /* if( SampleConfiguration() == false ) { */
-    /*   return HTTP_INTERNAL_SERVER_ERROR; */
+    /*   return WEB_INTERNAL_SERVER_ERROR; */
     /* } */
 
     CgiArgValue( username, sizeof(username), "username", pcCgiArgs );
@@ -66,20 +66,20 @@ CGI_FUNCTION(BaseType_t, CheckLoginResult, auth_result_t login_result)
     {
        case AUTH_SUCCESS:
            CGI_PRINTF("dashboard.html" );
-           return HTTP_OK;
+           return WEB_REPLY_OK;
        case AUTH_USER_NOT_FOUND:
            CGI_PRINTF("User not found in database" );
-           return HTTP_BAD_REQUEST;
+           return WEB_BAD_REQUEST;
        case AUTH_INVALID_CREDENTIALS:
            CGI_PRINTF("Invalid password" );
-           return HTTP_BAD_REQUEST;
+           return WEB_BAD_REQUEST;
        case AUTH_NOT_LOGGED_IN:
            CGI_PRINTF("One or more empty fields" );
-           return HTTP_BAD_REQUEST;
+           return WEB_BAD_REQUEST;
        case AUTH_FAILURE:
-           return HTTP_SEE_OTHER;
+           return WEB_INTERNAL_SERVER_ERROR;
        default:
-           return HTTP_OK;
+           return WEB_REPLY_OK;
     }
 }
 

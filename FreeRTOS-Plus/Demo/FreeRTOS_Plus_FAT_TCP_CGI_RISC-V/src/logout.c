@@ -28,12 +28,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include "http_statuses.h"
-#include "FreeRTOS.h"
 #include "cgi-args.h"
 #include "cgi-util.h"
 #include "auth.h"
 #include "sample.h"
+#include "FreeRTOS.h"
+#include "FreeRTOS_HTTP_commands.h"
 
 CGI_FUNCTION(bool, Logout, char *session_id);
 
@@ -45,7 +45,7 @@ BaseType_t CgiLogout( char *pcWriteBuffer, size_t xWriteBufferLen,
 
   /* if( SampleConfiguration() == false ) { */
   /*  */
-  /*   return HTTP_INTERNAL_SERVER_ERROR; */
+  /*   return WEB_INTERNAL_SERVER_ERROR; */
   /* } */
 
   CgiArgValue(session_id, AUTH_SESSION_ID_SIZE, "sessionId", pcCgiArgs);
@@ -53,10 +53,10 @@ BaseType_t CgiLogout( char *pcWriteBuffer, size_t xWriteBufferLen,
   CGI_IMPL_HEADER_CALL(DeleteCookie, "sessionId");
 
   if(CGI_IMPL_CALL(Logout, session_id) == false) {
-    return HTTP_INTERNAL_SERVER_ERROR;
+    return WEB_INTERNAL_SERVER_ERROR;
   }
 
-  return HTTP_OK;
+  return WEB_REPLY_OK;
 }
 
 CGI_FUNCTION(bool, Logout, char *session_id)
