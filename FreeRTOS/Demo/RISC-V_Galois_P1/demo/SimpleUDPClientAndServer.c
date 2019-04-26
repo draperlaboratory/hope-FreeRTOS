@@ -236,6 +236,13 @@ static void prvSimpleZeroCopyServerTask(void *pvParameters)
 			/* It is expected to receive one more byte than the string length as
 			the NULL terminator is also transmitted. */
 			//configASSERT( lBytes == ( ( BaseType_t ) strlen( ( const char * ) pucUDPPayloadBuffer ) + 1 ) );
+			lBytes = FreeRTOS_sendto(xListeningSocket,								   /* The socket being sent to. */
+										(void *)pucUDPPayloadBuffer,				   /* A pointer to the the data being sent. */
+										strlen((const char *)pucUDPPayloadBuffer) + 1, /* The length of the data being sent - including the string's null terminator. */
+										FREERTOS_ZERO_COPY,							   /* ulFlags with the FREERTOS_ZERO_COPY bit set. */
+										&xClient,						   /* Where the data is being sent. */
+										sizeof(xClientLength));
+			FreeRTOS_debug_printf(("prvSimpleZeroCopyServerTask: FreeRTOS_sendto returned %lu\r\n", lBytes));
 		}
 
 		if (lBytes >= 0)
