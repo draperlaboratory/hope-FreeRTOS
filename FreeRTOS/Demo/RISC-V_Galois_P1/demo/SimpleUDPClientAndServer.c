@@ -196,6 +196,7 @@ static void prvSimpleZeroCopyServerTask(void *pvParameters)
 	struct freertos_sockaddr xClient, xBindAddress;
 	uint32_t xClientLength = sizeof(xClient), ulIPAddress;
 	Socket_t xListeningSocket;
+	Socket_t xClientSocket;
 
 	/* Just to prevent compiler warnings. */
 	(void)pvParameters;
@@ -203,6 +204,9 @@ static void prvSimpleZeroCopyServerTask(void *pvParameters)
 	/* Attempt to open the socket. */
 	xListeningSocket = FreeRTOS_socket(FREERTOS_AF_INET, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP);
 	configASSERT(xListeningSocket != FREERTOS_INVALID_SOCKET);
+
+	xClientSocket = FreeRTOS_socket(FREERTOS_AF_INET, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP);
+	configASSERT(xClientSocket != FREERTOS_INVALID_SOCKET);
 
 	/* This test receives data sent from a different port on the same IP address.
 	Obtain the nodes IP address.  Configure the freertos_sockaddr structure with
@@ -231,18 +235,18 @@ static void prvSimpleZeroCopyServerTask(void *pvParameters)
 		/* Print the received characters. */
 		if (lBytes > 0)
 		{
-			printf("prvSimpleZeroCopyServerTask: received %lu bytes, expected %u\r\n", lBytes,
-				   strlen((const char *)pucUDPPayloadBuffer) + 1);
+			FreeRTOS_printf(("prvSimpleZeroCopyServerTask: received %lu bytes, expected %u\r\n", lBytes,
+							 strlen((const char *)pucUDPPayloadBuffer) + 1));
 			/* It is expected to receive one more byte than the string length as
 			the NULL terminator is also transmitted. */
 			//configASSERT( lBytes == ( ( BaseType_t ) strlen( ( const char * ) pucUDPPayloadBuffer ) + 1 ) );
-			lBytes = FreeRTOS_sendto(xListeningSocket,								   /* The socket being sent to. */
-										(void *)pucUDPPayloadBuffer,				   /* A pointer to the the data being sent. */
-										strlen((const char *)pucUDPPayloadBuffer) + 1, /* The length of the data being sent - including the string's null terminator. */
-										FREERTOS_ZERO_COPY,							   /* ulFlags with the FREERTOS_ZERO_COPY bit set. */
-										&xClient,						   /* Where the data is being sent. */
-										sizeof(xClientLength));
-			FreeRTOS_debug_printf(("prvSimpleZeroCopyServerTask: FreeRTOS_sendto returned %lu\r\n", lBytes));
+			lBytes = FreeRTOS_sendto(xClientSocket,									/* The socket being sent to. */
+									 (void *)pucUDPPayloadBuffer,					/* A pointer to the the data being sent. */
+									 strlen((const char *)pucUDPPayloadBuffer) + 1, /* The length of the data being sent - including the string's null terminator. */
+									 FREERTOS_ZERO_COPY,							/* ulFlags with the FREERTOS_ZERO_COPY bit set. */
+									 &xClient,										/* Where the data is being sent. */
+									 sizeof(xClientLength));
+			FreeRTOS_printf(("prvSimpleZeroCopyServerTask: FreeRTOS_sendto returned %lu\r\n", lBytes));
 		}
 
 		if (lBytes >= 0)
