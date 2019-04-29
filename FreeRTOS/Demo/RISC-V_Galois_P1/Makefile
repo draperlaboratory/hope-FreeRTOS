@@ -186,6 +186,35 @@ ifeq ($(PROG),main_tcp)
 		demo/TCPEchoClient_SingleTasks.c \
 		demo/SimpleTCPEchoServer.c
 else
+ifeq ($(PROG),main_udp)
+	CFLAGS += -DmainDEMO_TYPE=5
+	CFLAGS += -mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS=1
+	INCLUDES += \
+		-I./demo \
+		-I$(FREERTOS_TCP_SOURCE_DIR) \
+		-I$(FREERTOS_TCP_SOURCE_DIR)/include \
+		-I$(FREERTOS_TCP_SOURCE_DIR)/portable/Compiler/GCC
+	FREERTOS_SRC += \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_IP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_ARP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DHCP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DNS.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Sockets.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_IP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_UDP_IP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_WIN.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Stream_Buffer.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/BufferManagement/BufferAllocation_2.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/riscv_hal_eth.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c	
+	APP_SRC += \
+		bsp/rand.c
+	DEMO_SRC += \
+		demo/SimpleUDPClientAndServer.c \
+		demo/TCPEchoClient_SingleTasks.c \
+		demo/SimpleTCPEchoServer.c
+else
+
 ifeq ($(PROG),main_sd)
 	CFLAGS += -DmainDEMO_TYPE=6
 	DEMO_SRC += devices/ff.c
@@ -194,6 +223,7 @@ ifeq ($(PROG),main_sd)
 	INCLUDES += -I./devices
 else
 	$(info unknown demo: $(PROG))
+endif
 endif
 endif
 endif
