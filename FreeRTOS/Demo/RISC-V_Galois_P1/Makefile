@@ -117,10 +117,9 @@ INCLUDES = \
 	-I../Common/include \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V
 
-ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
-
-CFLAGS = $(WARNINGS) $(INCLUDES)
-CFLAGS += -O0 -g3 $(ARCH) $(ABI) -mcmodel=medany
+ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy \
+	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions \
+	-DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
 ifeq ($(PROG),main_blinky)
 	CFLAGS += -DmainDEMO_TYPE=1
@@ -161,6 +160,7 @@ ifeq ($(PROG),main_gpio)
 else
 ifeq ($(PROG),main_tcp)
 	CFLAGS += -DmainDEMO_TYPE=5
+	CFLAGS += -DmainCREATE_TCP_ECHO_SERVER_TASK=1
 	INCLUDES += \
 		-I./demo \
 		-I$(FREERTOS_TCP_SOURCE_DIR) \
@@ -178,14 +178,16 @@ ifeq ($(PROG),main_tcp)
 		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Stream_Buffer.c \
 		$(FREERTOS_TCP_SOURCE_DIR)/portable/BufferManagement/BufferAllocation_2.c \
 		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/riscv_hal_eth.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c
-		
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c	
 	APP_SRC += \
 		bsp/rand.c
 	DEMO_SRC += \
 		demo/SimpleUDPClientAndServer.c \
 		demo/TCPEchoClient_SingleTasks.c \
 		demo/SimpleTCPEchoServer.c
+else
+ifeq ($(PROG),main_udp)
+	# TODO
 else
 ifeq ($(PROG),main_sd)
 	CFLAGS += -DmainDEMO_TYPE=6
@@ -195,6 +197,7 @@ ifeq ($(PROG),main_sd)
 	INCLUDES += -I./devices
 else
 	$(info unknown demo: $(PROG))
+endif
 endif
 endif
 endif

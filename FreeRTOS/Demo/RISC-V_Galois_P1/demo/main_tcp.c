@@ -122,9 +122,17 @@ mainCREATE_TCP_ECHO_SERVER_TASK:  When set to 1 a task is created that accepts
 connections on the standard echo port (port 7), then echos back any data
 received on that connection.
 */
-#define mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS 1
-#define mainCREATE_TCP_ECHO_TASKS_SINGLE 1
-#define mainCREATE_TCP_ECHO_SERVER_TASK 1
+#ifndef mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS
+#define mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS 0
+#endif
+
+#ifndef mainCREATE_TCP_ECHO_TASKS_SINGLE
+#define mainCREATE_TCP_ECHO_TASKS_SINGLE 0
+#endif
+
+#ifndef mainCREATE_TCP_ECHO_SERVER_TASK
+#define mainCREATE_TCP_ECHO_SERVER_TASK 0
+#endif
 
 /*
  * Just seeds the simple pseudo random number generator.
