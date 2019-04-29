@@ -188,7 +188,7 @@ ifeq ($(PROG),main_tcp)
 else
 ifeq ($(PROG),main_udp)
 	CFLAGS += -DmainDEMO_TYPE=5
-	CFLAGS += -mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS=1
+	CFLAGS += -DmainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS=1
 	INCLUDES += \
 		-I./demo \
 		-I$(FREERTOS_TCP_SOURCE_DIR) \
