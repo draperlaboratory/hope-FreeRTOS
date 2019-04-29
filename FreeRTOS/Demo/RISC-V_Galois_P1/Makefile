@@ -55,7 +55,7 @@ INCLUDES = \
 
 ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
-CFLAGS = $(WARNINGS) $(INCLUDES) -DmainDEMO_TYPE=$(DEMO_TYPE)
+CFLAGS = $(WARNINGS) $(INCLUDES)
 CFLAGS += -O0 -g3 $(ARCH) $(ABI) -mcmodel=medany
 
 DEMO_SRC = main.c \
@@ -186,9 +186,6 @@ ifeq ($(PROG),main_tcp)
 		demo/TCPEchoClient_SingleTasks.c \
 		demo/SimpleTCPEchoServer.c
 else
-ifeq ($(PROG),main_udp)
-	# TODO
-else
 ifeq ($(PROG),main_sd)
 	CFLAGS += -DmainDEMO_TYPE=6
 	DEMO_SRC += devices/ff.c
@@ -197,7 +194,6 @@ ifeq ($(PROG),main_sd)
 	INCLUDES += -I./devices
 else
 	$(info unknown demo: $(PROG))
-endif
 endif
 endif
 endif
