@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <title>Add Record</title>
+    <link rel="stylesheet" type="text/css" href="base.css">
+    <!-- <script src="helpers.js"></script> -->
+    <!--
+    Copyright DornerWorks 2018
+
+    Redistribution and use in source and binary forms, with or without modification,
+    are permitted provided that the following conditions are met:
+    1.  Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+    2.  Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation and/or
+    other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+    FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DORNERWORKS
+    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+    GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+    HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+    THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    -->
+</head>
+
+<body>
+<h1>Add a Medical Record</h1>
+<div id="error-field" class="error"></div>
+<form id="add-record-form" action="javascript:add_record()">
+	<p><b>Condition: </b><input type="text" name="condition"></p>
+  <p><b>Treatment: </b><input type="text" name="treatment"></p>
+  <p><b>Dose: </b><input type="text" name="dose">
+  <select name="unit" multiple>
+    <option value="mg">mg</option>
+    <option value="mL">mL</option>
+    <option value="g">g</option>
+  </select>
+  </p>
+	<b>Notes: </b><textarea name="notes" rows=4 cols=40></textarea>
+	<input type=submit name="recordsubmit" value="submit">
+</form>
+<script type="text/javascript">
+  function errorSet(text) {
+      document.getElementById("error-field").innerHTML = text;
+  }
+
+  function errorClear() {
+      errorSet("");
+  }
+
+  function createArgStrPair(field, name) {
+      return name + ":" + field + ",";
+  }
+
+  function getXmlFromText(text) {
+      var parser = new DOMParser();
+      return parser.parseFromString(text,"text/xml")
+  }
+
+  function getXmlValueFromTag(xmlDoc, tag) {
+      try {
+          return xmlDoc.getElementsByTagName(tag)[0].childNodes[0].nodeValue;
+      } catch (err) {
+          return "";
+      }
+  }
+
+  function getHtmlStringFromTag(xmlDoc, tag) {
+      try {
+          return xmlDoc.getElementsByTagName(tag)[0].innerHTML;
+      } catch (err) {
+          return "";
+      }
+  }
+
+  function getCookieValue(key) {
+    var cookie = document.cookie.match('(^|[^;]+)\\s*' + key + '\\s*=\\s*([^;]+)');
+    return cookie ? cookie.pop() : '';
+  }
+
+  function setCookieValue(headerfields) {
+    document.cookie = headerfields;
+  }
+
+  function cgiHandler(argStr, script, element, type) {
+    var xhttp = new XMLHttpRequest();
+
+    xhttp.onreadystatechange = function() {
+      if (this.readyState == 4) {
+        var xmlDoc = getXmlFromText(this.responseText);
+        var response = {
+          exitStatus: parseInt(getXmlValueFromTag(xmlDoc, "exitstatus")),
+          headerFields: getXmlValueFromTag(xmlDoc, "headerfields"),
+          responseText: getHtmlStringFromTag(xmlDoc, "responseText")
+        };
+
+        switch (response.exitStatus) {
+          case 200:
+            setCookieValue(response.headerFields);
+
+            switch(type) {
+              case "load":
+                document.getElementById(element).innerHTML = response.responseText;
+                break;
+              case "redirect":
+                window.location.href = response.responseText;
+                break;
+              default:
+                break;
+            }
+            return response;
+          default:
+             errorSet(exitstatus + ": " + response.responseText);
+             return null;
+        }
+      }
+    }
+
+    xhttp.open("POST", "../cgi-bin/" + script, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=UTF-8");
+    xhttp.send("userInput=ARGS" + argStr + "ENDARGS");
+  }
+
+  function loadCgiContent(argStr, script, element) {
+    cgiHandler(argStr, script, element, "load");
+  }
+
+  function submitCgiForm(argStr, script) {
+    cgiHandler(argStr, script, "", "redirect");
+  }
+  function add_record() {
+    var form = document.getElementById("add-record-form");
+    var valid = validate_update(form);
+
+    if (valid == true) {
+      submit_update(form);
+    }
+  }
+
+  function validate_update(form) {
+    if (form.condition.value.length == 0) {
+      alert("Condition field cannot be empty");
+      return false;
+    }
+    if (form.treatment.value.length == 0) {
+      alert("Treatment field cannot be empty");
+      return false;
+    }
+    if (form.dose.value.length == 0) {
+      alert("Dose field cannot be empty");
+      return false;
+    }
+    return true;
+  }
+
+  function submit_update(form) {
+    var sessionId = getCookieValue("sessionId");
+    var urlParams = new URLSearchParams(window.location.search);
+    var argStr = ",";
+
+    argStr += createArgStrPair(form.condition.value, "condition");
+    argStr += createArgStrPair(form.treatment.value, "treatment");
+    argStr += createArgStrPair(form.dose.value, "dose");
+    argStr += createArgStrPair(urlParams.get("patient"), "patient");
+    argStr += createArgStrPair(urlParams.get("doctor"), "doctor");
+    argStr += createArgStrPair(sessionId, "sessionId");
+
+    submitCgiForm(argStr, "add-record.cgi");
+  }
+</script>
+</body>
+</html>

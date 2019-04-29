@@ -1,3 +1,4 @@
+/* WARNING: Automatically Generated File */
 
 #ifndef SEARCH_RESULTS_HTML
 #define SEARCH_RESULTS_HTML

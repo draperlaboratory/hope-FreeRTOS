@@ -1,3 +1,4 @@
+/* WARNING: Automatically Generated File */
 
 #ifndef USER_DETAILS_HTML
 #define USER_DETAILS_HTML
