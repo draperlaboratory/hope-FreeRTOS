@@ -162,7 +162,7 @@ int currIndex;
 
     if( 0 == xRc )
     {
-        printf( "CGI lookup found for url: %s", pcUrl );
+        printf( "CGI lookup found for url: %s\n", pcUrl );
         /* Basic HTML start */
         currIndex = snprintf( pcResponse, xResponseLen, CGI_XML_START );
         currIndex += snprintf(&pcResponse[currIndex], xResponseLen - currIndex, CGI_OUTPUT_START);
@@ -190,6 +190,7 @@ int currIndex;
 
         currIndex += snprintf( &pcResponse[currIndex], xResponseLen - currIndex, CGI_OUTPUT_END );
 
+        printf("Response code: %d\n", xHTTPResponseCode);
         /* printf( "CGI return text: \n\t%s", pcResponse ); */
     }
     else

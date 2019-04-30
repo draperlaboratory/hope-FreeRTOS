@@ -123,6 +123,8 @@ AuthStartSession(char *username, char *password, char *session_id_out)
     snprintf(session_id_out, AUTH_SESSION_ID_SIZE + 1, "%s", session_id);
   }
 
+  printf("authorized user %s with sessionId %s\n", username, session_id);
+
   return AUTH_SUCCESS;
 }
 

@@ -129,7 +129,7 @@ size_t DatabaseSize()
 }
 
 database_search_result_t *
-DatabaseSearch(user_type_t searcher_type, user_type_t type, char *first_name, char *last_name, char *address, char *condition)
+DatabaseSearch(user_type_t type, char *first_name, char *last_name, char *address, char *condition)
 {
   size_t i;
   size_t size;
@@ -148,10 +148,6 @@ DatabaseSearch(user_type_t searcher_type, user_type_t type, char *first_name, ch
   }
   
   for(i = 0; i < size; i++) {
-    // doctor can see all results
-    if ( searcher_type == USER_DOCTOR )
-      goto include_result;
-    
     if((type != USER_UNKNOWN) && (users[i]->type != type)) {
       continue;
     }
@@ -175,8 +171,6 @@ DatabaseSearch(user_type_t searcher_type, user_type_t type, char *first_name, ch
       }
     }
 
-  include_result:
-    
     if(DatabaseSearchResultAppend(result, users[i]) == false) {
       free(users);
       DatabaseSearchResultFree(result);
