@@ -28,9 +28,10 @@
 
 import sys, os, glob
 
-FILES_SRC_DIR = 'www/'
-FILES_DST_DIR = 'CreateExampleFiles/generated/'
-SRC_FILES = glob.glob(FILES_SRC_DIR + '*.html') + glob.glob(FILES_SRC_DIR + '*.js')
+WORKING_DIR = os.path.dirname(os.path.abspath(__file__))
+FILES_SRC_DIR = os.path.join(WORKING_DIR, 'www/')
+FILES_DST_DIR = os.path.join(WORKING_DIR, 'CreateExampleFiles/generated/')
+SRC_FILES = glob.glob(FILES_SRC_DIR + '*.html')
 TEXT_FILE_TYPES = ['html']
 NEW_FS_HEADER_NAME = 'generated_files'
 NEW_FS_HEADER = FILES_DST_DIR + NEW_FS_HEADER_NAME + '.h'

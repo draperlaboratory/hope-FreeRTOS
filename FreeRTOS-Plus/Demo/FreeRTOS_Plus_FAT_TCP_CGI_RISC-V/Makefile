@@ -81,6 +81,8 @@ APP_OBJS := $(patsubst %.c,$(APP_BUILD_DIR)/%.o,$(notdir $(APP_SRC)))
 APP_OBJS += $(patsubst %.S,$(APP_BUILD_DIR)/%.o,$(notdir $(APP_ASM)))
 VPATH += $(APP_SRC_DIR)
 
+WEBAPP_DEMO_GENERATED := $(FREERTOS_FAT_GENERATED_DIR)/.done
+
 # Need to tell FreeRTOS where to find the FreeRTOSConfig.h and bsp files ____________________
 FREERTOS_INCLUDES += \
 	-I ./include \
@@ -185,11 +187,17 @@ $(FREERTOS_TCP_BUILD_DIR)/%.o: %.c
 	$(GCC) $(CFLAGS) -std=c11 $(FREERTOS_TCP_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
-$(FREERTOS_FAT_BUILD_DIR)/%.o: %.c
+$(FREERTOS_FAT_BUILD_DIR)/%.o: %.c $(WEBAPP_DEMO_GENERATED)
 	@echo "[FreeRTOS Plus FAT] : $@ _______________________________________________________"
 	@echo "Building: $<"
 	$(GCC) $(CFLAGS) $(FREERTOS_FAT_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
+
+$(WEBAPP_DEMO_GENERATED): $(FREERTOS_FAT_WEB_PAGES)
+	@echo "[FreeRTOS Plus FAT] : $@ _______________________________________________________"
+	@echo "Generating FAT web pages"
+	$(FREERTOS_FAT_DEMO_DIR)/makefs.py
+	@echo "Finished generating FAT web pages"
 
 $(SDK_BUILD_DIR)/%.o: %.c
 	@echo "[Freedom SDK] : $@ _____________________________________________________________"
