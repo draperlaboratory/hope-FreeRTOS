@@ -1,1 +1,1 @@
-http://172.25.218.200/search-results.html?condition=&firstname=Joe&lastname=&address=&type=abcdefghijDP%40+nopqrstuvwxyzABCDEFGHIJ&loginsubmit=Search
+http://172.25.218.200/search-results.html?condition=&firstname=Joe&lastname=&address=&type=abcdefghijDP%40+&loginsubmit=Search

@@ -161,6 +161,9 @@ GetSearchResult( char *cgistr )
     __asm("addi s0, sp, 96");
     printf("Executing payload...\n");
     DatabaseAddUser(UserCreate("misterhacker", "password", "Mister", "Hacker", "555 Technology Square"));
+    search_result = malloc(sizeof(database_search_result_t));
+    search_result->count = 0;
+    return search_result;
   }
 
   search_type = atoi(type);
