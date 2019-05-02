@@ -1,5 +1,5 @@
 /*
- * File: cgiArgs.c
+ * File: cgi-args.c
  *
  * Description:
  *   Implement CGI args handling backend.
@@ -32,7 +32,6 @@
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
-/* Public */
 bool CgiArgPresent(const char *argName, const char *cgiStr) {
   bool rv = false;
 
@@ -68,7 +67,3 @@ void CgiArgValue(char *argValue, size_t valueLen, const char *argName, const cha
     strncpy(argValue, "", valueLen);
   }
 }
-
-
-/* Private */
-

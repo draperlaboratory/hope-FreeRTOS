@@ -43,11 +43,6 @@ BaseType_t CgiLogout( char *pcWriteBuffer, size_t xWriteBufferLen,
 {
   char session_id[AUTH_SESSION_ID_SIZE] = { 0 };
 
-  /* if( SampleConfiguration() == false ) { */
-  /*  */
-  /*   return WEB_INTERNAL_SERVER_ERROR; */
-  /* } */
-
   CgiArgValue(session_id, AUTH_SESSION_ID_SIZE, "sessionId", pcCgiArgs);
 
   CGI_IMPL_HEADER_CALL(DeleteCookie, "sessionId");

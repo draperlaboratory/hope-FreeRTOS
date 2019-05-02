@@ -68,7 +68,6 @@ BaseType_t CgiAddRecord( char *pcWriteBuffer, size_t xWriteBufferLen,
   CgiArgValue( treatment_unit, sizeof(treatment_unit), "unit", pcCgiArgs );
   CgiArgValue( dose_string, sizeof(dose_string), "dose", pcCgiArgs );
 
-
   dose = atoi(dose_string);
 
   doctor_user = AuthCheckSessionId(session_id);

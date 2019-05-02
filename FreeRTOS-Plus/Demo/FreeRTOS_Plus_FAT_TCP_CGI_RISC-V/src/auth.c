@@ -23,7 +23,7 @@ AuthClearCurrentUserType(void)
 void __attribute__ ((noinline))
 AuthSetCurrentUserType(user_t *user)
 {
-  printf("in auth set current type user is 0x%x\n", user);
+  printf("Current authorized user is 0x%x (%s)\n", user, user->username);
   AuthClearCurrentUserType();
   current_auth_user_type = user->type;
   current_auth_patient_data = (int)user->data;
@@ -123,8 +123,6 @@ AuthStartSession(char *username, char *password, char *session_id_out)
     snprintf(session_id_out, AUTH_SESSION_ID_SIZE + 1, "%s", session_id);
   }
 
-  printf("authorized user %s with sessionId %s\n", username, session_id);
-
   return AUTH_SUCCESS;
 }
 
@@ -140,7 +138,6 @@ AuthCheckSessionId(char *session_id)
   }
 
   result = *user;
-  AuthClearCurrentUserType();
   AuthSetCurrentUserType(*user);
 
   return *user;

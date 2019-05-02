@@ -47,10 +47,6 @@ BaseType_t CgiLogin( char *pcWriteBuffer, size_t xWriteBufferLen,
     char password[KEY_SIZE_MAX] = { 0 };
     auth_result_t login_result;
 
-    /* if( SampleConfiguration() == false ) { */
-    /*   return WEB_INTERNAL_SERVER_ERROR; */
-    /* } */
-
     CgiArgValue( username, sizeof(username), "username", pcCgiArgs );
     CgiArgValue( password, sizeof(password), "password", pcCgiArgs );
 

@@ -11,67 +11,28 @@
 bool
 SampleConfiguration()
 {
-  user_t *patient_user1;
-  user_t *patient_user2;
+  user_t *user;
   user_t *doctor_user;
   medical_record_t *record;
-  char *patient_first_name = "John";
-  char *patient_last_name = "Doe";
 
-  if(DatabaseInit() == false) {
+  user = UserCreate("patient_user1", "password1", "John", "Doe", "123 Main St");
+  DatabaseAddUser(user);
+  MedicalSetPatient(user);
+
+  doctor_user = UserCreate("the_doctor", "password2", "Joe", "Schmoe", "456 Second St");
+  DatabaseAddUser(doctor_user);
+  MedicalSetDoctor(doctor_user);
+
+  if(MedicalAddCert(doctor_user, "Carpal tunnel", 2010) != MEDICAL_SUCCESS) {
     return false;
   }
-
-  if(AuthInit() == false) {
-    return false;
-  }
-
-  patient_user1 = UserCreate("user1", "password1", patient_first_name, patient_last_name, "123 Main St.");
-  if(patient_user1 == NULL) {
-    return false;
-  }
-  if(MedicalSetPatient(patient_user1) == false) {
+  if(MedicalAddCert(doctor_user, "Back pain", 2011) != MEDICAL_SUCCESS) {
     return false;
   }
 
-  patient_user2 = UserCreate("user2", "password2", "Foo", "Bar", "456 Second St.");
-  if(patient_user2 == NULL) {
-    return false;
-  }
-  if(MedicalSetPatient(patient_user2) == false) {
-    return false;
-  }
-
-  doctor_user = UserCreate("the_doctor", "root", "Doctor", "User", "789 Third St.");
-  if(doctor_user == NULL) {
-    return NULL;
-  }
-  if(MedicalSetDoctor(doctor_user) == false) {
-    return false;
-  }
-
-  if(DatabaseAddUser(patient_user1) == false) {
-    return false;
-  }
-
-  if(DatabaseAddUser(patient_user2) == false) {
-    return false;
-  }
-
-  if(DatabaseAddUser(doctor_user) == false) {
-    return false;
-  }
-
-  if(AuthStartSession("the_doctor", "root", NULL) != AUTH_SUCCESS) {
-    return false;
-  }
-
-  if(MedicalAddCert(doctor_user, "Wrist sprain", 2019) != MEDICAL_SUCCESS) {
-    return false;
-  }
-
-  if(MedicalAddRecord(doctor_user, patient_user1,
-                      "Wrist sprain", "Take medication twice daily", &record)
+  AuthSetCurrentUserType(doctor_user);
+  if(MedicalAddRecord(doctor_user, user,
+     "Carpal tunnel", "Take medication twice daily.", &record)
      != MEDICAL_SUCCESS) {
     return false;
   }
@@ -80,6 +41,7 @@ SampleConfiguration()
      != MEDICAL_SUCCESS) {
     return false;
   }
+  AuthClearCurrentUserType();
 
   return true;
 }

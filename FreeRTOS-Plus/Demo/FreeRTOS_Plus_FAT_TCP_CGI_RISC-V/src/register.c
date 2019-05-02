@@ -56,10 +56,6 @@ BaseType_t CgiRegister( char *pcWriteBuffer, size_t xWriteBufferLen,
     CgiArgValue( last_name, sizeof(last_name), "last_name", pcCgiArgs );
     CgiArgValue( address, sizeof(address), "address", pcCgiArgs );
     
-    if(DatabaseInit() == false) {
-      return WEB_INTERNAL_SERVER_ERROR;
-    }
-
     if(CGI_IMPL_CALL(RegisterNewUser, username, password, first_name, last_name, address) == false) {
       return WEB_INTERNAL_SERVER_ERROR;
     }

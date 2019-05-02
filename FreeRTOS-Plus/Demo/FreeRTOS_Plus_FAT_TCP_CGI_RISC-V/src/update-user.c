@@ -56,16 +56,6 @@ BaseType_t CgiUpdateUser( char *pcWriteBuffer, size_t xWriteBufferLen,
     return WEB_UNAUTHORIZED;
   }
 
-  /* user = UserCreate("user1", "password", "John", "Doe", "123 hello world"); */
-  /* if(user == NULL) { */
-  /*   return WEB_INTERNAL_SERVER_ERROR; */
-  /* } */
-  /* MedicalSetPatient(user); */
-  /* DatabaseAddUser(user); */
-  /* AuthStartSession("user1", "password", session_id); */
-  /*  */
-  /* CGI_IMPL_HEADER_CALL(SetCookie, "sessionId", session_id); */
-
   CGI_IMPL_CALL(UpdateUser, user, new_address);
 
   return WEB_REPLY_OK;

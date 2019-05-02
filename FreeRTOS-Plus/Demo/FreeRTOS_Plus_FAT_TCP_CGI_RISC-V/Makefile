@@ -52,6 +52,7 @@ APP_SRC = \
 	$(APP_SRC_DIR)/medical.c \
 	$(APP_SRC_DIR)/sha1.c \
 	$(APP_SRC_DIR)/user.c \
+	$(APP_SRC_DIR)/sample.c \
 	$(APP_SRC_DIR)/negative_tests.c
 
 APP_INCLUDES = \

@@ -360,34 +360,9 @@ int main( void )
   DatabaseInit();
   AuthInit();
 
-  user_t *user = UserCreate("patient_user1", "password1", "John", "Doe", "123 Main St");
-  DatabaseAddUser(user);
-  MedicalSetPatient(user);
-
-  user_t *doctor_user = UserCreate("the_doctor", "password2", "Joe", "Schmoe", "456 Second St");
-  DatabaseAddUser(doctor_user);
-  MedicalSetDoctor(doctor_user);
-
-  if(MedicalAddCert(doctor_user, "Carpal tunnel", 2010) != MEDICAL_SUCCESS) {
+  if( SampleConfiguration() == false) {
     return false;
   }
-  if(MedicalAddCert(doctor_user, "Back pain", 2011) != MEDICAL_SUCCESS) {
-    return false;
-  }
-
-  medical_record_t *record;
-  AuthSetCurrentUserType(doctor_user);
-  if(MedicalAddRecord(doctor_user, user,
-     "Carpal tunnel", "Take medication twice daily.", &record)
-     != MEDICAL_SUCCESS) {
-    return false;
-  }
-
-  if(MedicalAddTreatment(doctor_user, record, "Ibuprofen", 200, "mg")
-     != MEDICAL_SUCCESS) {
-    return false;
-  }
-  AuthClearCurrentUserType();
 
   printf("Everything Running.\n");
 	vTaskStartScheduler();

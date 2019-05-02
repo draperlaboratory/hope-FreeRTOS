@@ -71,14 +71,9 @@ BaseType_t CgiUserDetails( char *pcWriteBuffer, size_t xWriteBufferLen,
   CgiArgValue( username, sizeof(username), "username", pcCgiArgs );
   CgiArgValue( details_type, sizeof(details_type), "type", pcCgiArgs );
 
-  /* user = AuthCheckSessionId(session_id); */
-  /* if (user == NULL) { */
-  /*   return WEB_UNAUTHORIZED; */
-  /* } */
-
-  user = UserCreate("user1", "password", "John", "Doe", "123 hello world");
-  if(user == NULL) {
-    return WEB_INTERNAL_SERVER_ERROR;
+  user = AuthCheckSessionId(session_id);
+  if (user == NULL) {
+    return WEB_UNAUTHORIZED;
   }
 
   form_user = CGI_IMPL_CALL(GetFormUser, username);
@@ -132,11 +127,6 @@ CGI_FUNCTION(user_t *, GetFormUser, char *username)
     CGI_PRINTF("<p>User not found in database</p>");
     return NULL;
   }
-
-  /* user = UserCreate(username, "password", "John", "Doe", "123 hello world"); */
-  /* if(user == NULL) { */
-  /*   return NULL; */
-  /* } */
 
   return user;
 }

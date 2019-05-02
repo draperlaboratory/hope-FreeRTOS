@@ -1,8 +1,8 @@
 /*
- * File: login.c
+ * File: dashboard.c
  *
  * Description:
- *   Process the login form for the Draper medical demo.
+ *   Process the dashboard form for the Draper medical demo.
  *
  * Copyright DornerWorks 2018
  *
@@ -259,5 +259,4 @@ CGI_FUNCTION(void, DoctorDashboard, doctor_t *doctor, char *doctor_name)
 CGI_FUNCTION(void, AdminDashboard)
 {
   CGI_CALL(Whitespace, 2);
-  /* CGI_PRINTF("<p>Congrats, you're an admin now!</p>\n"); */
 }
