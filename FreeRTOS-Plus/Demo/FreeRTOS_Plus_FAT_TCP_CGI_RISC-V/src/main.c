@@ -361,22 +361,23 @@ int main( void )
   AuthInit();
 
   user_t *user = UserCreate("patient_user1", "password1", "John", "Doe", "123 Main St");
-  printf("User: %p, user->type: %p\n", user, &user->type);
   DatabaseAddUser(user);
   MedicalSetPatient(user);
-
 
   user_t *doctor_user = UserCreate("the_doctor", "password2", "Joe", "Schmoe", "456 Second St");
   DatabaseAddUser(doctor_user);
   MedicalSetDoctor(doctor_user);
 
-  if(MedicalAddCert(doctor_user, "Wrist sprain", 2010) != MEDICAL_SUCCESS) {
+  if(MedicalAddCert(doctor_user, "Carpal tunnel", 2010) != MEDICAL_SUCCESS) {
+    return false;
+  }
+  if(MedicalAddCert(doctor_user, "Back pain", 2011) != MEDICAL_SUCCESS) {
     return false;
   }
 
   medical_record_t *record;
   if(MedicalAddRecord(doctor_user, user,
-     "Wrist sprain", "Take medicine twice daily.", &record)
+     "Carpal tunnel", "Take medication twice daily.", &record)
      != MEDICAL_SUCCESS) {
     return false;
   }

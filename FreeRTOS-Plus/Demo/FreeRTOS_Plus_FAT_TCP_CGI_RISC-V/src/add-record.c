@@ -41,7 +41,7 @@
 
 CGI_FUNCTION(BaseType_t, UpdateRecord, char *doctor_name, char *patient_name,
     char *condition, char *notes, char *treatment, 
-    char *treatment_unit, double dose);
+    char *treatment_unit, size_t dose);
 
 BaseType_t CgiAddRecord( char *pcWriteBuffer, size_t xWriteBufferLen,
     char *pcHeaderBuffer, size_t xHeaderBufferLen,
@@ -57,7 +57,7 @@ BaseType_t CgiAddRecord( char *pcWriteBuffer, size_t xWriteBufferLen,
   char treatment[MEDICAL_NAME_LENGTH + 1] = { 0 };
   char treatment_unit[MEDICAL_UNIT_NAME_LENGTH + 1] = { 0 };
   char dose_string[0x10] = { 0 };
-  double dose;
+  size_t dose;
   
   CgiArgValue( session_id, sizeof(session_id), "sessionId", pcCgiArgs );
   CgiArgValue( patient_name, sizeof(patient_name), "patient", pcCgiArgs );
@@ -65,48 +65,24 @@ BaseType_t CgiAddRecord( char *pcWriteBuffer, size_t xWriteBufferLen,
   CgiArgValue( condition, sizeof(condition), "condition", pcCgiArgs );
   CgiArgValue( notes, sizeof(notes), "notes", pcCgiArgs );
   CgiArgValue( treatment, sizeof(treatment), "treatment", pcCgiArgs );
+  CgiArgValue( treatment_unit, sizeof(treatment_unit), "unit", pcCgiArgs );
   CgiArgValue( dose_string, sizeof(dose_string), "dose", pcCgiArgs );
 
-  dose = atof(dose_string);
 
-  /* doctor_user = AuthCheckSessionId(session_id); */
-  /* if (doctor_user == NULL) { */
-  /*   return WEB_UNAUTHORIZED; */
-  /* } */
-  /* if(doctor_user->type != USER_DOCTOR) { */
-  /*   return WEB_UNAUTHORIZED; */
-  /* } */
+  dose = atoi(dose_string);
 
-  doctor_user = UserCreate("user1", "password", "John", "Doe", "123 hello world");
-  if(doctor_user == NULL) {
-    return WEB_INTERNAL_SERVER_ERROR;
+  doctor_user = AuthCheckSessionId(session_id);
+  if (doctor_user == NULL) {
+    return WEB_UNAUTHORIZED;
   }
-  MedicalSetDoctor(doctor_user);
-  MedicalAddCert(doctor_user, condition, 2019);
-
-  patient_user = UserCreate("user2", "password", "John", "Doe", "123 hello world");
-  if(doctor_user == NULL) {
-    return WEB_INTERNAL_SERVER_ERROR;
-  }
-  MedicalSetPatient(patient_user);
-
-  if(DatabaseInit() == false) {
-    return WEB_INTERNAL_SERVER_ERROR;
-  }
-  
-  if(DatabaseAddUser(doctor_user) == false) {
-    return WEB_INTERNAL_SERVER_ERROR;
-  }
-  if(DatabaseAddUser(patient_user) == false) {
-    return WEB_INTERNAL_SERVER_ERROR;
-  }
+  // missing check for doctor user type
 
   return CGI_IMPL_CALL(UpdateRecord, doctor_name, patient_name, condition, notes, treatment, treatment_unit, dose);
 }
 
 CGI_FUNCTION(BaseType_t, UpdateRecord, char *doctor_name, char *patient_name,
     char *condition, char *notes, char *treatment, 
-    char *treatment_unit, double dose)
+    char *treatment_unit, size_t dose)
 {
   user_t *doctor_user;
   user_t *patient_user;
@@ -126,7 +102,6 @@ CGI_FUNCTION(BaseType_t, UpdateRecord, char *doctor_name, char *patient_name,
   }
 
   result = MedicalAddRecord(doctor_user, patient_user, condition, notes, &record);
-  /* result = MedicalAddRecord(doctor_user, patient_user, condition, notes); */
   switch(result) {
     case MEDICAL_SUCCESS:
       break;

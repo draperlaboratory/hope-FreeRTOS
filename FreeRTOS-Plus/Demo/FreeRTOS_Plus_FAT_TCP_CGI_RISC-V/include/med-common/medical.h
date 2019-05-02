@@ -23,7 +23,7 @@ typedef enum {
 typedef struct _medical_treatment_t {
   char name[MEDICAL_NAME_LENGTH];
   char unit[MEDICAL_UNIT_NAME_LENGTH];
-  double dose;
+  size_t dose;
 } medical_treatment_t;
 
 typedef struct _medical_record_t {
@@ -63,7 +63,7 @@ medical_result_t MedicalAddRecord(user_t *doctor_user, user_t *patient_user,
 medical_result_t MedicalRemoveRecord(user_t *doctor_user, user_t *patient_user, char *condition);
 
 medical_result_t MedicalAddTreatment(user_t *doctor_user, medical_record_t *record,
-                                     char *name, double dose, char *unit);
+                                     char *name, size_t dose, char *unit);
 medical_result_t MedicalRemoveTreatment(user_t *doctor_user, medical_record_t *record,
                                         char *name);
 

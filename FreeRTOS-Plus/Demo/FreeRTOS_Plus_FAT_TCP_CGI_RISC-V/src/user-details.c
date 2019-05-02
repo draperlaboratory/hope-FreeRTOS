@@ -177,8 +177,8 @@ CGI_FUNCTION(void, PatientDetails, patient_t *patient)
     for(j = 0; j < patient->records[i].treatment_count; j++) {
       CGI_PRINTF("<p>");
       CGI_CALL(HtmlEscape, patient->records[i].treatments[j].name);
-      CGI_PRINTF(", %.2f %s", patient->records[i].treatments[j].dose,
-                                   patient->records[i].treatments[j].unit);
+      CGI_PRINTF(", %u %s", patient->records[i].treatments[j].dose,
+          patient->records[i].treatments[j].unit);
     }
     CGI_PRINTF("</td>\n");
 

@@ -96,18 +96,14 @@ MedicalAddRecord(user_t *doctor_user, user_t *patient_user,
   patient->records[patient->record_count].doctor_user = doctor_user;
 
   patient->records[patient->record_count].notes = malloc(strlen(notes) + 1);
-  snprintf(patient->records[patient->record_count].notes, strlen(notes), "%s", notes);
+  snprintf(patient->records[patient->record_count].notes, strlen(notes) + 1, "%s", notes);
 
   if(patient->records[patient->record_count].notes == NULL) {
     return MEDICAL_FAILURE;
   }
 
   if(out != NULL) {
-    *out = malloc(sizeof(medical_record_t));
-    if(*out == NULL) {
-      return MEDICAL_FAILURE;
-    }
-    memcpy(*out, &patient->records[patient->record_count], sizeof(medical_record_t));
+    *out = &patient->records[patient->record_count];
   }
 
   patient->record_count++;
@@ -152,7 +148,7 @@ MedicalRemoveRecord(user_t *doctor_user, user_t *patient_user, char *condition)
 
 medical_result_t
 MedicalAddTreatment(user_t *doctor_user, medical_record_t *record,
-                    char *name, double dose, char *unit)
+                    char *name, size_t dose, char *unit)
 {
   doctor_t *doctor;
 

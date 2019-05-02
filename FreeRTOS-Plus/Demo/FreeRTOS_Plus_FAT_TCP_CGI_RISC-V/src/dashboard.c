@@ -137,6 +137,7 @@ CGI_FUNCTION(void, PatientDashboard, patient_t *patient)
 {
   size_t i, j;
   char *doctor_name;
+  medical_record_t *record;
 
   CGI_CALL(Whitespace, 2);
 
@@ -150,38 +151,40 @@ CGI_FUNCTION(void, PatientDashboard, patient_t *patient)
   CGI_PRINTF("</tr>\n");
 
   for(i = 0; i < patient->record_count; i++) {
+    record = &patient->records[i];
     CGI_PRINTF("<tr>\n");
 
     CGI_PRINTF("<td>");
 
-    CGI_CALL(HtmlEscape, patient->records[i].condition);
+    CGI_CALL(HtmlEscape, record->condition);
     CGI_PRINTF("</td>\n");
 
-    doctor_name = UserFullName(patient->records[i].doctor_user);
+    doctor_name = UserFullName(record->doctor_user);
     if(doctor_name == NULL) {
       exit(EXIT_FAILURE);
     }
     CGI_PRINTF("<td>");
-    CGI_PRINTF("<a href=\"http://172.25.218.200/user-details.html?username=%s\">", patient->records[i].doctor_user->username);
+    CGI_PRINTF("<a href=\"http://172.25.218.200/user-details.html?username=%s\">", record->doctor_user->username);
     CGI_CALL(HtmlEscape, doctor_name);
     CGI_PRINTF("</a>");
     CGI_PRINTF("</td>\n");
     free(doctor_name);
 
     CGI_PRINTF("<td>");
-    for(j = 0; j < patient->records[i].treatment_count; j++) {
-      CGI_PRINTF("<p>");
 
-      CGI_CALL(HtmlEscape, patient->records[i].treatments[j].name);
-      CGI_PRINTF(", %.2f %s", patient->records[i].treatments[j].dose,
-          patient->records[i].treatments[j].unit);
+    for(j = 0; j < record->treatment_count; j++) {
+      CGI_PRINTF("<p>");
+      CGI_CALL(HtmlEscape, record->treatments[j].name);
+      CGI_PRINTF(", %u %s", record->treatments[j].dose,
+          record->treatments[j].unit);
       CGI_PRINTF("</p>");
     }
+
     CGI_PRINTF("</td>\n");
 
     CGI_PRINTF("<td>");
 
-    CGI_CALL(HtmlEscape, patient->records[i].notes);
+    CGI_CALL(HtmlEscape, record->notes);
     CGI_PRINTF("</td>\n");
     CGI_PRINTF("</tr>\n");
   }
@@ -233,22 +236,19 @@ CGI_FUNCTION(void, DoctorDashboard, doctor_t *doctor, char *doctor_name)
     }
 
     CGI_PRINTF("<tr>\n");
+
     CGI_PRINTF("<td>");
     CGI_CALL(HtmlEscape, user_full_name);
     CGI_PRINTF("</td>");
+
     CGI_PRINTF("<td>");
     CGI_CALL(HtmlEscape, doctor->patient_users[i]->address);
     CGI_PRINTF("</td>");
+
     CGI_PRINTF("<td>");
-
-    CGI_PRINTF("<a href=\"http://172.25.218.200/add-record.html?patient=%s&ampdoctor=%s\"><button>Add Record</button></a>", doctor->patient_users[i]->username, doctor_name);
-    /* CGI_CALL(FormStart, CGI_FORM_GET, "add-record.cgi?"); */
-    /* CGI_PRINTF("<input type=\"hidden\" name=\"patient\" value=\"%s\"></input>\n", doctor->patient_users[i]->username); */
-    /* CGI_PRINTF("<input type=\"hidden\" name=\"doctor\" value=\"%s\"></input>\n", doctor_name); */
-    /* CGI_PRINTF("<input type=\"submit\" name=\"recordsubmit\" value=\"Add Medical Record\"></input>\n"); */
-    /* CGI_CALL(FormEnd); */
-
+    CGI_PRINTF("<a href=\"http://172.25.218.200/add-record.html?patient=%s&amp;doctor=%s\"><button>Add Record</button></a>", doctor->patient_users[i]->username, doctor_name);
     CGI_PRINTF("</td>");
+
     CGI_PRINTF("</tr>\n");
     free(user_full_name);
   }
