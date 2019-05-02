@@ -376,6 +376,7 @@ int main( void )
   }
 
   medical_record_t *record;
+  AuthSetCurrentUserType(doctor_user);
   if(MedicalAddRecord(doctor_user, user,
      "Carpal tunnel", "Take medication twice daily.", &record)
      != MEDICAL_SUCCESS) {
@@ -386,6 +387,7 @@ int main( void )
      != MEDICAL_SUCCESS) {
     return false;
   }
+  AuthClearCurrentUserType();
 
   printf("Everything Running.\n");
 	vTaskStartScheduler();

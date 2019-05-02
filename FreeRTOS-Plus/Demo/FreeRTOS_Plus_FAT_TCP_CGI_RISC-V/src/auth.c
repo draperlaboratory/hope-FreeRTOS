@@ -140,6 +140,8 @@ AuthCheckSessionId(char *session_id)
   }
 
   result = *user;
+  AuthClearCurrentUserType();
+  AuthSetCurrentUserType(*user);
 
   return *user;
 }

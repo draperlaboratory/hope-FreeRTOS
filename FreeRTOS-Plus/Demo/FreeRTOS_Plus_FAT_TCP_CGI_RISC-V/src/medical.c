@@ -72,6 +72,25 @@ MedicalGetDoctor(user_t *user)
   return (doctor_t *)user->data;
 }
 
+static medical_result_t
+MedicalAssignPatientToDoctor(doctor_t *doctor, user_t *patient_user)
+{
+  size_t i;
+
+  if(doctor->patient_count == MEDICAL_MAX_PATIENTS) {
+    return MEDICAL_FIELD_FULL;
+  }
+
+  for(i = 0; i < doctor->patient_count; i++) {
+    if(strcmp(patient_user->username, doctor->patient_users[i]->username) == 0) {
+      return MEDICAL_SUCCESS;
+    }
+  }
+
+  doctor->patient_users[doctor->patient_count] = patient_user;
+  doctor->patient_count++;
+}
+
 medical_result_t
 MedicalAddRecord(user_t *doctor_user, user_t *patient_user,
                  char *condition, char *notes, medical_record_t **out)
@@ -108,8 +127,10 @@ MedicalAddRecord(user_t *doctor_user, user_t *patient_user,
 
   patient->record_count++;
 
-  doctor->patient_users[doctor->patient_count] = patient_user;
-  doctor->patient_count++;
+  if(MedicalAssignPatientToDoctor(doctor, patient_user) == MEDICAL_FIELD_FULL) {
+    return MEDICAL_FIELD_FULL;
+  }
+
   return MEDICAL_SUCCESS;
 }
 
