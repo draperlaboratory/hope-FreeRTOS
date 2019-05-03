@@ -10,6 +10,10 @@ include FreeRTOS.mk
 -include $(wildcard $(OUTDIR)/*.d)
 # Platform spcific settings for this application _____________________________________________
 
+CFLAGS := $(ISP_CFLAGS)
+ASMFLAGS := $(ISP_ASMFLAGS)
+LDFLAGS := $(ISP_LDFLAGS)
+
 ARCH = RISC-V
 ARCH_PORTABLE_INC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/
 ARCH_PORTABLE_SRC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/port.c
@@ -66,6 +70,7 @@ CFLAGS += -DportasmHANDLE_INTERRUPT=$(INTERRUPT_HANDLER)
 # Set up application source, include, and object files for compilation: ______________________
 APP_SRC_DIR = .
 APP_SRC = \
+	$(APP_SRC_DIR)/isp/utils.c \
 	$(APP_SRC_DIR)/main.c \
 	$(APP_SRC_DIR)/blinky_demo/main_blinky.c \
 	$(APP_SRC_DIR)/full_demo/main_full.c
@@ -88,6 +93,7 @@ APP_OBJS += $(patsubst %.S,$(APP_BUILD_DIR)/%.o,$(notdir $(APP_ASM)))
 VPATH += \
 	$(APP_SRC_DIR)/blinky_demo \
 	$(APP_SRC_DIR)/full_demo \
+	$(APP_SRC_DIR)/isp \
 	$(APP_SRC_DIR)
 
 DEMO_COMMON_SRC =  \
@@ -102,7 +108,20 @@ DEMO_COMMON_SRC =  \
 DEMO_COMMON_OBJS := $(patsubst %.c,$(APP_BUILD_DIR)/%.o,$(notdir $(DEMO_COMMON_SRC)))
 VPATH += $(FREERTOS_DIR)/Demo/Common/Minimal
 
+TEST_SRC_DIR = ./isp
+TEST_SRC = \
+	$(APP_SRC_DIR)/isp/test_stub.c
+
+TEST_INCLUDES = \
+	-I ./isp
+
+TEST_BUILD_DIR = $(BUILD_DIR)/isp
+TEST_OBJS := $(patsubst %.c,$(TEST_BUILD_DIR)/%.o,$(notdir $(TEST_SRC)))
+VPATH += \
+	$(APP_SRC_DIR)/isp
+
 OUT_ELF = $(BUILD_DIR)/FreeRTOS-$(PROJ_NAME).elf
+OUT_LIB = $(BUILD_DIR)/libfreertos.a
 
 # Need to tell FreeRTOS where to find the FreeRTOSConfig.h __________________________________
 FREERTOS_INCLUDES += \
@@ -121,14 +140,21 @@ OUT_OBJS = \
 	$(DEMO_COMMON_OBJS) \
 	$(FREERTOS_OBJS)
 
+# List of object files to compile for the system:
+LIB_OBJS = \
+	$(APP_OBJS) \
+	$(DEMO_COMMON_OBJS) \
+	$(FREERTOS_OBJS)
+
 BUILD_DIRECTORIES = \
 	$(APP_BUILD_DIR) \
+	$(TEST_BUILD_DIR) \
 	$(FREERTOS_BUILD_DIR)
 
 LDFLAGS += -Wl,-Map,"$(BUILD_DIR)/$(PROJ_NAME).map"
 
 .PHONY: debug clean app_compile debug-app frtos_compile print-info out_elf sim-qemu gdb
-all: directories $(OUT_OBJS) $(OUT_ELF)
+all: directories $(OUT_OBJS) $(OUT_ELF) $(OUT_LIB)
 directories: $(BUILD_DIRECTORIES)
 app_compile: directories $(APP_OBJS)
 frtos_compile: directories $(FREERTOS_OBJS)
@@ -152,6 +178,8 @@ out_elf: directories $(OUT_ELF)
 $(APP_BUILD_DIR)/%.o : %.c
 	@echo "[APP Objects] : $@ ______________________________________________________________"
 	@echo "Building: $<"
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(APP_BUILD_DIR)
 	$(GCC) $(CFLAGS) $(APP_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
@@ -173,12 +201,27 @@ $(FREERTOS_BUILD_DIR)/%.o : %.S
 	$(GCC) $(ASMFLAGS) $(FREERTOS_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
+$(TEST_BUILD_DIR)/%.o : %.c
+	@echo "[Test Objects] : $@ ______________________________________________________________"
+	@echo "Building: $<"
+	$(GCC) $(CFLAGS) $(TEST_INCLUDES) -o $@ -c $<
+	@echo "Finished Building: $<"
+
 # Generate ELF ___________________________________________________________________________
-$(OUT_ELF): $(OUT_OBJS)
+$(OUT_ELF): $(OUT_OBJS) $(TEST_OBJS)
 	@echo '___________________________________________________________________________________'
 	@echo 'Building target: $@'
 	@echo '_______________________________'
-	$(GCC) $(LDFLAGS) $(LDOPTS) -o $@ $(OUT_OBJS) $(LIB_FLAGS)
+	$(GCC) $(LDFLAGS) $(LDOPTS) -o $@ $(OUT_OBJS) $(TEST_OBJS) $(LIB_FLAGS)
+	@echo 'Finished building target: $@'
+	@echo ' '
+
+# Generate lib___________________________________________________________________________
+$(OUT_LIB): $(LIB_OBJS)
+	@echo '___________________________________________________________________________________'
+	@echo 'Building target: $@'
+	@echo '_______________________________'
+	$(AR) rcs $@ $^
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -188,10 +231,10 @@ $(BUILD_DIRECTORIES):
 	mkdir -p $@
 
 clean:
-	rm -rv $(BUILD_DIR)
+	rm -rf $(BUILD_DIR)
 
 sim-qemu: $(OUT_ELF)
-	qemu-system-riscv32 -kernel $^  -S -s -machine sifive_e
+	qemu-system-riscv32 -kernel $^  -S -s -machine sifive_e -nographic
 
 gdb: $(OUT_ELF)
 	$(GDB) -iex "set mem inaccessible-by-default off" -iex "set arch riscv:rv32" -iex "set riscv use_compressed_breakpoint off"

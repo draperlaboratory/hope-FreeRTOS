@@ -73,6 +73,7 @@ of their size. */
 typedef struct A_BLOCK_LINK
 {
 	struct A_BLOCK_LINK *pxNextFreeBlock;	/*<< The next free block in the list. */
+	size_t orig_req_size;
 	size_t xBlockSize;						/*<< The size of the free block. */
 } BlockLink_t;
 
@@ -115,11 +116,114 @@ size_t xBlockSize;																	\
 }
 /*-----------------------------------------------------------*/
 
+#define MAX_COLORS 13
+#if MAX_COLORS
+
+// Special static variable used for applying tags to pointers returned from malloc
+static void *volatile dover_ptr_tag[MAX_COLORS];
+static uintptr_t dover_ptr_tag_index = 0;
+#else
+// Special static variable used for applying tags to pointers returned from malloc
+static void *volatile dover_ptr_tag;
+#endif
+static void *volatile dover_ptr_untag;
+static void *volatile dover_ptr_zero = 0;
+
+// prototypes
+size_t btow(size_t);
+void* dover_remove_tag(void *);
+void * dover_tag(volatile uintptr_t *, size_t);
+void dover_untag(volatile uintptr_t *, size_t);
+
+// Convert bytes to words, rounding up
+size_t btow(size_t bytes){
+  uintptr_t words = bytes / sizeof(uintptr_t);
+  // Handle fractional word
+  if(bytes & (sizeof(uintptr_t) - 1))
+    words++;
+  return words;
+}
+
+// Strip tag from a pointer
+void* __attribute__ ((noinline)) dover_remove_tag(void *volatile ptr) {
+  void *volatile res;
+
+  vTaskSuspendAll();
+
+  // remove tag from ptr
+  dover_ptr_untag = ptr;
+  res = dover_ptr_untag;
+
+  xTaskResumeAll();
+  return res;
+}
+
+
+// Apply tags to a block of heap memory by writing tagged 0's to the memory cells
+//      Needs to be prevented from inlining and word aligned so proper
+//      code tags can be applied
+void * __attribute__ ((noinline)) dover_tag(volatile uintptr_t *ptr, size_t bytes) {
+  size_t words = btow(bytes);
+  size_t count;
+  volatile uintptr_t *p;
+  void *volatile res;
+
+  vTaskSuspendAll();
+
+#if MAX_COLORS
+  // constrain index to bounds
+  dover_ptr_tag_index++;
+  dover_ptr_tag_index = dover_ptr_tag_index % MAX_COLORS;
+  dover_ptr_tag[dover_ptr_tag_index] = (void*volatile)ptr;
+  p = dover_ptr_tag[dover_ptr_tag_index];
+  res = (void*volatile)p;
+#else
+  dover_ptr_tag = ptr;
+  p = dover_ptr_tag;
+  res = p;
+#endif
+  xTaskResumeAll();
+
+ uintptr_t zero;
+
+  count = 0;
+  while(count < words) {
+    *p = dover_ptr_zero; // Tag the word
+    p++;
+    count++;
+  }
+
+  return res;
+}
+
+/*-----------------------------------------------------------*/
+
+// Apply tags to a block of heap memory by writing tagged 0's to the memory cells
+//      Needs to be prevented from inlining and word aligned so proper
+//      code tags can be applied
+void __attribute__ ((noinline)) dover_untag(volatile uintptr_t *ptr, size_t bytes) {
+  size_t words = btow(bytes);
+  size_t count;
+  volatile uintptr_t *p;
+
+  p = ptr;
+  count = 0;
+  while(count < words) {
+    *p = (uintptr_t)dover_ptr_zero; // write specially tagged zero
+    p++;
+    count++;
+  }
+}
+
+/*-----------------------------------------------------------*/
+
 void *pvPortMalloc( size_t xWantedSize )
 {
 BlockLink_t *pxBlock, *pxPreviousBlock, *pxNewBlockLink;
 static BaseType_t xHeapHasBeenInitialised = pdFALSE;
 void *pvReturn = NULL;
+
+ size_t orig_xWantedSize = xWantedSize;
 
 	vTaskSuspendAll();
 	{
@@ -193,6 +297,11 @@ void *pvReturn = NULL;
 	}
 	( void ) xTaskResumeAll();
 
+	if(pvReturn) {
+	  pxBlock->orig_req_size = orig_xWantedSize;
+	  pvReturn = dover_tag(pvReturn, orig_xWantedSize);
+	}
+
 	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
 	{
 		if( pvReturn == NULL )
@@ -209,11 +318,13 @@ void *pvReturn = NULL;
 
 void vPortFree( void *pv )
 {
-uint8_t *puc = ( uint8_t * ) pv;
+uint8_t *puc;
 BlockLink_t *pxLink;
 
 	if( pv != NULL )
 	{
+		puc = ( uint8_t * ) dover_remove_tag(pv);
+
 		/* The memory being freed will have an BlockLink_t structure immediately
 		before it. */
 		puc -= heapSTRUCT_SIZE;
@@ -221,6 +332,8 @@ BlockLink_t *pxLink;
 		/* This unexpected casting is to keep some compilers from issuing
 		byte alignment warnings. */
 		pxLink = ( void * ) puc;
+
+		dover_untag(pv, pxLink->orig_req_size);
 
 		vTaskSuspendAll();
 		{

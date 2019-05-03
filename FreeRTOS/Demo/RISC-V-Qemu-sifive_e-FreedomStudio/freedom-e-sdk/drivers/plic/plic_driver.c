@@ -12,9 +12,9 @@
 
 void volatile_memzero(uint8_t * base, unsigned int size)
 {
-  volatile uint8_t * ptr;
+  volatile uint32_t * ptr;
   for (ptr = base; ptr < (base + size); ptr++){
-    *ptr = 0;
+    *ptr = (uint32_t)0;
   }
 }
 

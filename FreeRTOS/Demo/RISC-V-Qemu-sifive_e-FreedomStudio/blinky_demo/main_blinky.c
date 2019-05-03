@@ -89,6 +89,9 @@ it at any time, and even with a queue length of 1, the sending task will never
 find the queue full. */
 #define mainQUEUE_LENGTH					( 1 )
 
+/* Enable ISP hooks */
+#define ISP_SUPPORT						( 1 )
+
 /*-----------------------------------------------------------*/
 
 /*
@@ -103,6 +106,10 @@ void main_blinky( void );
 static void prvQueueReceiveTask( void *pvParameters );
 static void prvQueueSendTask( void *pvParameters );
 
+/* ISP test entry points */
+int isp_main(void);
+void isp_main_task(void*);
+
 /*-----------------------------------------------------------*/
 
 /* The queue used by both tasks. */
@@ -110,8 +117,20 @@ static QueueHandle_t xQueue = NULL;
 
 /*-----------------------------------------------------------*/
 
+#if (ISP_SUPPORT == 1)
 void main_blinky( void )
 {
+	xTaskCreate(isp_main_task, "Main task", 1000, NULL, 1, NULL);
+
+	vTaskStartScheduler();
+
+	// never reached
+	return;
+}
+#else
+void main_blinky( void )
+{
+
 	/* Create the queue. */
 	xQueue = xQueueCreate( mainQUEUE_LENGTH, sizeof( uint32_t ) );
 
@@ -139,6 +158,24 @@ void main_blinky( void )
 	FreeRTOS web site for more details on the FreeRTOS heap
 	http://www.freertos.org/a00111.html. */
 	for( ;; );
+}
+#endif
+/*-----------------------------------------------------------*/
+
+
+void isp_main_task(void *argument)
+{
+  unsigned long result;
+
+  result = (unsigned long)isp_main();
+  vTaskDelay(1);
+
+  printf("\nMain task has completed with code: 0x%08x\n", result);
+
+  for( ;; );
+
+  // this may need changes to portable layer
+  vTaskEndScheduler();
 }
 /*-----------------------------------------------------------*/
 
