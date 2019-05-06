@@ -30,9 +30,6 @@ APP_SRC = \
 	$(APP_SRC_DIR)/cgi-args.c \
 	$(APP_SRC_DIR)/cgi-util.c \
 	$(APP_SRC_DIR)/sleep.c \
-	$(APP_SRC_DIR)/cgi_leakage.c \
-	$(APP_SRC_DIR)/cgi_overflow.c \
-	$(APP_SRC_DIR)/cgi_permissions.c \
 	$(APP_SRC_DIR)/hr_gettime.c \
 	$(APP_SRC_DIR)/main.c \
 	$(APP_SRC_DIR)/memcpy.c \
