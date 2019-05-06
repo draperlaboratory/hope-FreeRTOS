@@ -3080,6 +3080,7 @@ BaseType_t xResult = pdPASS;
 		xResult = pdPASS;
 	}
 
+  printf("Successfully processed TCP packet\n");
 	/* pdPASS being returned means the buffer has been consumed. */
 	return xResult;
 }

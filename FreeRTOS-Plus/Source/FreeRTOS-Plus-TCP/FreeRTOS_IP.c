@@ -385,6 +385,7 @@ struct freertos_sockaddr xAddress;
 		{
 			case eNetworkDownEvent :
 				/* Attempt to establish a connection. */
+        printf("Network is down\n");
 				xNetworkUp = pdFALSE;
 				prvProcessNetworkDownEvent();
 				break;
@@ -393,6 +394,7 @@ struct freertos_sockaddr xAddress;
 				/* The network hardware driver has received a new packet.  A
 				pointer to the received buffer is located in the pvData member
 				of the received event structure. */
+        printf("Received a packet\n");
 				prvHandleEthernetPacket( ( NetworkBufferDescriptor_t * ) ( xReceivedEvent.pvData ) );
 				break;
 
@@ -439,6 +441,7 @@ struct freertos_sockaddr xAddress;
 				/* The DHCP state machine needs processing. */
 				#if( ipconfigUSE_DHCP == 1 )
 				{
+          printf("DHCP Event\n");
 					vDHCPProcess( pdFALSE );
 				}
 				#endif /* ipconfigUSE_DHCP */
@@ -561,6 +564,7 @@ static void prvHandleEthernetPacket( NetworkBufferDescriptor_t *pxBuffer )
 			/* Make it NULL to avoid using it later on. */
 			pxBuffer->pxNextBuffer = NULL;
 
+      printf("Processing ethernet packet\n");
 			prvProcessEthernetPacket( pxBuffer );
 			pxBuffer = pxNextBuffer;
 
@@ -1361,22 +1365,32 @@ eFrameProcessingResult_t eReturned = eReleaseBuffer;
 
 	configASSERT( pxNetworkBuffer );
 
+  printf("Interpreting Ethernet frame\n");
 	/* Interpret the Ethernet frame. */
 	if( pxNetworkBuffer->xDataLength >= sizeof( EthernetHeader_t ) )
 	{
 		eReturned = ipCONSIDER_FRAME_FOR_PROCESSING( pxNetworkBuffer->pucEthernetBuffer );
 		pxEthernetHeader = ( EthernetHeader_t * )( pxNetworkBuffer->pucEthernetBuffer );
-
 		if( eReturned == eProcessBuffer )
 		{
+      printf("Will process ethernet buffer\n");
+      printf("Frame type: %d\n", pxEthernetHeader->usFrameType);
+      for (size_t i = 0; i < (pxNetworkBuffer->xDataLength / 20); i++) {
+        for (size_t j = 0; j < 20; j++) {
+         printf("%x ", pxNetworkBuffer->pucEthernetBuffer[20*i + j]);
+        }
+        printf("\n");
+      }
 			/* Interpret the received Ethernet packet. */
 			switch( pxEthernetHeader->usFrameType )
 			{
 			case ipARP_FRAME_TYPE:
+        printf("Received ARP packet\n");
 				/* The Ethernet frame contains an ARP packet. */
 				if( pxNetworkBuffer->xDataLength >= sizeof( ARPPacket_t ) )
 				{
 					eReturned = eARPProcessPacket( ( ARPPacket_t * )pxNetworkBuffer->pucEthernetBuffer );
+          printf("Processed ARP packet\n");
 				}
 				else
 				{
@@ -1385,6 +1399,7 @@ eFrameProcessingResult_t eReturned = eReleaseBuffer;
 				break;
 
 			case ipIPv4_FRAME_TYPE:
+        printf("Received IP packet\n");
 				/* The Ethernet frame contains an IP packet. */
 				if( pxNetworkBuffer->xDataLength >= sizeof( IPPacket_t ) )
 				{
@@ -1398,6 +1413,7 @@ eFrameProcessingResult_t eReturned = eReleaseBuffer;
 
 			default:
 				/* No other packet types are handled.  Nothing to do. */
+        printf("Received IDK packet\n");
 				eReturned = eReleaseBuffer;
 				break;
 			}
@@ -1574,6 +1590,8 @@ uint8_t ucProtocol;
 			 */
 			vARPRefreshCacheEntry( &( pxIPPacket->xEthernetHeader.xSourceAddress ), pxIPHeader->ulSourceIPAddress );
 		}
+
+    printf("Looking at IP protocol\n");
 		switch( ucProtocol )
 		{
 			case ipPROTOCOL_ICMP :
@@ -1652,6 +1670,7 @@ uint8_t ucProtocol;
 			case ipPROTOCOL_TCP :
 				{
 
+          printf("Received TCP packet\n");
 					if( xProcessReceivedTCPPacket( pxNetworkBuffer ) == pdPASS )
 					{
 						eReturn = eFrameConsumed;

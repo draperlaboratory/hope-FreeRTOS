@@ -253,6 +253,14 @@ gen-tags: $(OUT_ELF)
 	-o ./isp-output \
 	--tag-only
 
+sim-qemu-localhost: $(OUT_ELF)
+	isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos -o $(BUILD_DIR) \
+		-e "-net nic -net user,net=10.10.70.0,dhcpstart=10.10.70.1,hostfwd=tcp::5555-:80"
+
+sim-qemu-localhost-static: $(OUT_ELF)
+	isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos -o $(BUILD_DIR) \
+		-e "-net nic -net user,net=172.25.218.202,hostfwd=tcp::5555-:80"
+
 sim-qemu: $(OUT_ELF)
 	sudo env PATH=$(PATH) ISP_PREFIX=$(ISP_PREFIX) isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos -o $(BUILD_DIR) \
 		-e "-net nic -net tap,ifname=tap0,script=no,downscript=no"

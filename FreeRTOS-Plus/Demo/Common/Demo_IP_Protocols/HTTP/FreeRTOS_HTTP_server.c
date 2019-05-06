@@ -340,6 +340,8 @@ BaseType_t xRc;
 char pcSlash[ 2 ];
 char *pcQueryStringStart;
 
+  printf("Recevied HTTP request\n");
+
 	pxClient->bits.ulFlags = 0;
 
 	#if( ipconfigHTTP_HAS_HANDLE_REQUEST_HOOK != 0 )
