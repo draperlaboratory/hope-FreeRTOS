@@ -552,20 +552,16 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
 		server. */
 		FreeRTOS_GetAddressConfiguration( &ulIPAddress, &ulNetMask, &ulGatewayAddress, &ulDNSServerAddress );
 		FreeRTOS_inet_ntoa( ulIPAddress, cBuffer );
-		FreeRTOS_printf( ( "IP Address: %s\r\n", cBuffer ) );
-      printf( ( "IP Address: %s\r\n", cBuffer ) );
+    printf( "IP Address: %s\r\n", cBuffer );
 
 		FreeRTOS_inet_ntoa( ulNetMask, cBuffer );
-		FreeRTOS_printf( ( "Subnet Mask: %s\r\n", cBuffer ) );
-      printf( ( "Subnet Mask: %s\r\n", cBuffer ) );
+    printf( "Subnet Mask: %s\r\n", cBuffer );
 
 		FreeRTOS_inet_ntoa( ulGatewayAddress, cBuffer );
-		FreeRTOS_printf( ( "Gateway Address: %s\r\n", cBuffer ) );
-      printf( ( "Gateway Address: %s\r\n", cBuffer ) );
+    printf( "Gateway Address: %s\r\n", cBuffer );
 
 		FreeRTOS_inet_ntoa( ulDNSServerAddress, cBuffer );
-		FreeRTOS_printf( ( "DNS Server Address: %s\r\n\r\n\r\n", cBuffer ) );
-      printf( ( "DNS Server Address: %s\r\n\r\n\r\n", cBuffer ) );
+    printf( "DNS Server Address: %s\r\n\r\n\r\n", cBuffer );
 	}
 }
 /*-----------------------------------------------------------*/
@@ -614,13 +610,15 @@ static void prvSRand( UBaseType_t ulSeed )
 
 static void prvMiscInitialisation( void )
 {
-time_t xTimeNow;
+/* time_t xTimeNow; */
+  uint32_t cpu_freq;
 
 	/* Seed the random number generator. */
-	time( &xTimeNow );
-	FreeRTOS_debug_printf( ( "Seed for randomiser: %lu\n", xTimeNow ) );
-	prvSRand( ( uint32_t ) xTimeNow );
-	FreeRTOS_debug_printf( ( "Random numbers: %08X %08X %08X %08X\n", ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32() ) );
+	/* time( &xTimeNow ); */
+  cpu_freq = get_cpu_freq();
+	printf( "Seed for randomiser: %lu\n", cpu_freq );
+	prvSRand( cpu_freq );
+	printf( "Random numbers: %08X %08X %08X %08X\n", ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32() );
 
 //	Xil_DCacheEnable();
 }
