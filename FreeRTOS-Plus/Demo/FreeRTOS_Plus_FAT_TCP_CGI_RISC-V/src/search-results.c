@@ -205,7 +205,7 @@ CGI_FUNCTION(BaseType_t, ShowSearchResult, database_search_result_t *search_resu
     }
 
     CGI_PRINTF("<td>");
-    CGI_PRINTF("<a href=\"http://172.25.218.200/user-details.html?username=%s\">", node->user->username);
+    CGI_PRINTF("<a href=\"%s/user-details.html?username=%s\">", CGI_BASE_URL, node->user->username);
     CGI_PRINTF("</a>");
     CGI_CALL(HtmlEscape, user_full_name);
     CGI_PRINTF("</td>\n");

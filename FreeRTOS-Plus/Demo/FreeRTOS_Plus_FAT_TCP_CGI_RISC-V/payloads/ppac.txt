@@ -1,1 +1,1 @@
-http://http://172.25.218.200/add-record.html?patient=patient_user1&doctor=the_doctor
+http://127.0.0.1:5555/add-record.html?patient=patient_user1&doctor=the_doctor

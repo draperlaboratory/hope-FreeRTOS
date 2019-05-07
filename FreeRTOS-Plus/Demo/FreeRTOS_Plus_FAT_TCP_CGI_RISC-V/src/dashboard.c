@@ -164,7 +164,7 @@ CGI_FUNCTION(void, PatientDashboard, patient_t *patient)
       exit(EXIT_FAILURE);
     }
     CGI_PRINTF("<td>");
-    CGI_PRINTF("<a href=\"http://172.25.218.200/user-details.html?username=%s\">", record->doctor_user->username);
+    CGI_PRINTF("<a href=\"%s/user-details.html?username=%s\">", CGI_BASE_URL, record->doctor_user->username);
     CGI_CALL(HtmlEscape, doctor_name);
     CGI_PRINTF("</a>");
     CGI_PRINTF("</td>\n");
@@ -246,7 +246,7 @@ CGI_FUNCTION(void, DoctorDashboard, doctor_t *doctor, char *doctor_name)
     CGI_PRINTF("</td>");
 
     CGI_PRINTF("<td>");
-    CGI_PRINTF("<a href=\"http://172.25.218.200/add-record.html?patient=%s&amp;doctor=%s\"><button>Add Record</button></a>", doctor->patient_users[i]->username, doctor_name);
+    CGI_PRINTF("<a href=\"%s/add-record.html?patient=%s&amp;doctor=%s\"><button>Add Record</button></a>", CGI_BASE_URL, doctor->patient_users[i]->username, doctor_name);
     CGI_PRINTF("</td>");
 
     CGI_PRINTF("</tr>\n");

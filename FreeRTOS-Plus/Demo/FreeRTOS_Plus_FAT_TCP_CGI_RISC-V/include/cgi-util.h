@@ -6,6 +6,8 @@
 #include "user.h"
 #include "auth.h"
 
+#define CGI_BASE_URL "http://127.0.0.1:5555"
+
 #define CGI_SESSION_COOKIE_SIZE AUTH_SESSION_ID_SIZE
 #define SECONDS_IN_DAY 86400
 
