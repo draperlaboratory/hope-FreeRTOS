@@ -18,8 +18,6 @@ PORT_OBJS += $(patsubst %.S,$(FREERTOS_BUILD_DIR)/%.o,$(notdir $(ARCH_PORTABLE_A
 FREERTOS_OBJS += $(PORT_OBJS)
 VPATH += $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)
 
-GDB_PORT ?= 3333
-
 # Set up application source, include, and object files for compilation: ______________________
 APP_SRC_DIR = ./src
 CGI_SRC_DIR = $(APP_SRC_DIR)/cgi-app
@@ -234,14 +232,18 @@ clean-libxil:
 	rm -fv $(CLEAN_OBJS)
 	rm -fv $(LIBXIL_DIR)/$(LIBXIL)
 
-# Policy Variables ___________________________________________
+# Policy/Runtime Variables ______________________________________________________________
 POLICY_DIR = $(ISP_PREFIX)/kernels
 POLICY_RUNTIME ?= hifive
 POLICY ?= none
-QEMU_GDB = -S -s
-QEMU_SERIAL = mon:stdio # Sometimes file:uart.log
 ISP_PREFIX ?= /opt/isp
 PROJ_NAME = web-server
+HTTP_PORT ?= 5555
+GDB_PORT ?= 3333
+
+ifdef QEMU_DEBUG
+	_QEMU_DEBUG := -g $(GDB_PORT)
+endif
 
 # Generate ISP Tags _____________________________________________________________________
 gen-tags: $(OUT_ELF)
@@ -257,19 +259,11 @@ sim-qemu: sim-qemu-user
 
 sim-qemu-user: $(OUT_ELF)
 	isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos -o $(BUILD_DIR) \
-		-e "-net nic -net user,net=10.10.70.0,dhcpstart=10.10.70.1,hostfwd=tcp::5555-:80"
-
-sim-qemu-user-debug: $(OUT_ELF)
-	isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos -o $(BUILD_DIR) \
-		-e "-net nic -net user,net=10.10.70.0,dhcpstart=10.10.70.1,hostfwd=tcp::5555-:80" -g $(GDB_PORT)
+		-e "-net nic -net user,net=10.10.70.0,dhcpstart=10.10.70.1,hostfwd=tcp::$(HTTP_PORT)-:80" $(_QEMU_DEBUG)
 
 sim-qemu-tap: $(OUT_ELF)
 	sudo env PATH=$(PATH) ISP_PREFIX=$(ISP_PREFIX) isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos -o $(BUILD_DIR) \
-		-e "-net nic -net tap,ifname=tap0,script=no,downscript=no"
-
-sim-qemu-tap-debug: $(OUT_ELF)
-	sudo env PATH=$(PATH) ISP_PREFIX=$(ISP_PREFIX) isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos -o $(BUILD_DIR) \
-		-e "-net nic -net tap,ifname=tap0,script=no,downscript=no" -g $(GDB_PORT)
+		-e "-net nic -net tap,ifname=tap0,script=no,downscript=no" $(_QEMU_DEBUG)
 
 sim-gdb: $(OUT_ELF)
 	isp_debug $(OUT_ELF) $(GDB_PORT)
