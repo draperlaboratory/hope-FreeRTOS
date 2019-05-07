@@ -561,7 +561,7 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
     printf( "Gateway Address: %s\r\n", cBuffer );
 
 		FreeRTOS_inet_ntoa( ulDNSServerAddress, cBuffer );
-    printf( "DNS Server Address: %s\r\n\r\n\r\n", cBuffer );
+    printf( "DNS Server Address: %s\r\n\r\n", cBuffer );
 	}
 }
 /*-----------------------------------------------------------*/

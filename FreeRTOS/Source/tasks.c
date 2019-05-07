@@ -804,9 +804,7 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB ) PRIVILEGED_FUNCTION;
 			#endif /* tskSTATIC_AND_DYNAMIC_ALLOCATION_POSSIBLE */
 
 			prvInitialiseNewTask( pxTaskCode, pcName, ( uint32_t ) usStackDepth, pvParameters, uxPriority, pxCreatedTask, pxNewTCB, NULL );
-      printf("Adding new task to ready list\n");
 			prvAddNewTaskToReadyList( pxNewTCB );
-      printf("Done adding new task to ready list\n");
 			xReturn = pdPASS;
 		}
 		else
@@ -1138,25 +1136,19 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB )
 	{
 		/* If the created task is of a higher priority than the current task
 		then it should run now. */
-    printf("checking new task priority\n");
 		if( pxCurrentTCB->uxPriority < pxNewTCB->uxPriority )
 		{
-      printf("taskYIELD_IF_USING_PREEMPTION is happening\n");
 			taskYIELD_IF_USING_PREEMPTION(); 
-      printf("taskYIELD_IF_USING_PREEMPTION happened lol\n");
 		}
 		else
 		{
-      printf("mtCOVERAGE_TEST_MARKER is happening\n");
 			mtCOVERAGE_TEST_MARKER();
-      printf("mtCOVERAGE_TEST_MARKER happened\n");
 		}
 	}
 	else
 	{
 		mtCOVERAGE_TEST_MARKER();
 	}
-  printf("Done with scheduler running check\n");
 }
 /*-----------------------------------------------------------*/
 

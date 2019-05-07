@@ -1574,7 +1574,6 @@ uint8_t ucProtocol;
 			vARPRefreshCacheEntry( &( pxIPPacket->xEthernetHeader.xSourceAddress ), pxIPHeader->ulSourceIPAddress );
 		}
 
-    printf("Looking at IP protocol\n");
 		switch( ucProtocol )
 		{
 			case ipPROTOCOL_ICMP :
