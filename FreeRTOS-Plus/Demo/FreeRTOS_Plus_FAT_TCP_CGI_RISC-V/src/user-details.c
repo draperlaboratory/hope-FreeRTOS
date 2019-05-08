@@ -80,7 +80,6 @@ BaseType_t CgiUserDetails( char *pcWriteBuffer, size_t xWriteBufferLen,
   if(form_user == NULL) {
     return WEB_INTERNAL_SERVER_ERROR;
   }
-  MedicalSetPatient(form_user);
 
   CGI_IMPL_CALL(ShowDetails, form_user);
 
