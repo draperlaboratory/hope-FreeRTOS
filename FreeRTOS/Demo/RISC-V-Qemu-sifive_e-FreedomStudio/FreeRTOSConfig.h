@@ -128,11 +128,6 @@
 #define configUSE_CO_ROUTINES 			0
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
 
-#define configUSE_HEAP_SECTION_NAME     1
-#if configUSE_HEAP_SECTION_NAME
-#define configHEAP_SECTION_NAME_STRING  ".freertos_heap"
-#endif
-
 /* Software timer definitions. */
 #define configUSE_TIMERS				1
 #define configTIMER_TASK_PRIORITY		( configMAX_PRIORITIES - 1 )
