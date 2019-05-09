@@ -3,7 +3,7 @@
 #include "medical.h"
 #include "auth.h"
 
-void password_negative_test(void)
+void NegativeTestPassword(void)
 {
   user_t *user;
 
@@ -13,178 +13,123 @@ void password_negative_test(void)
     return;
   }
 
-  // leak will fail with password policy
-  printf("ABOUT TO LEAK PASSWORD. SHOULD VIOLATE PASSWORD POLICY\n");
+  printf("About to leak password. Should violate password policy\n");
   printf("User password: %s\n", user->password);
   printf("WARNING: NO VIOLATION. OPERATION SUCCEEDED\n");
 }
 
-void user_type_test(void)
+void NegativeTestUserType(void)
 {
   user_t *user;
 
-  printf("user type test!\n");
-  printf("  about to create user \n");
   user = UserCreate("user", "toor", "User", "Two", "123 Main St.");
-  printf("  user created!\n");
-  printf("    addr = 0x%x\n", user);
-  printf("    addr @ type = 0x%x\n", &user->type);
-  printf("  about to set type\n");
   MedicalSetPatient(user);
-  printf("  type set!\n");
   if(user == NULL) {
     printf("TEST ERROR: Failed to create user\n");
   }
 
-  // illegal attempt tp escalate privilege
-  printf("ABOUT TO TRY TO SET USER TO DOCTOR. SHOULD VIOLATE USER TYPE POLICY\n");
+  printf("About to try to set user to doctor. Should violate userType policy\n");
   MedicalSetDoctor(user);
   printf("WARNING: NO VIOLATION. OPERATION SUCCEEDED. \n");
 }
 
-void user_type_overwrite_test(void)
+void NegativeTestUserTypeOverwrite(void)
 {
   user_t *user;
   char payload[0x80]; 
 
-  printf("user type overwrite test!\n");
-  printf("  about to create user \n");
   user = UserCreate("user", "toor", "User", "Two", "123 Main St.");
-  printf("  user created!\n");
-  printf("    addr = 0x%x\n", user);
-  printf("    addr @ type = 0x%x\n", &user->type);
-  printf("  about to set type\n");
   MedicalSetPatient(user);
-  printf("  type set!\n");
   if(user == NULL) {
     printf("TEST ERROR: Failed to create user\n");
   }
 
-  // illegal attempt tp escalate privilege
-  printf("ABOUT TO TRY TO OVERWRITE USER TYPE. SHOULD VIOLATE USER TYPE POLICY\n");
+  printf("About to try to overwrite user type. Should violate userType policy\n");
   memset(payload, 'a', sizeof(payload));
   UserUpdateAddress(user, payload);
   printf("WARNING: NO VIOLATION. OPERATION SUCCEEDED. \n");
 }
 
-void unauth_doctor_routine(void)
+void NegativeTestPPACDoctor(void)
 {
   user_t *patient_user;
   user_t *doctor_user;
 
-  printf("UserCreate for patient\n");
   patient_user = UserCreate("patient_user", "password123", "Pat", "Ient", "123 Main St.");
-  printf("  ... done!\n");
   if(patient_user == NULL) {
     printf("TEST ERROR: Failed to create patient\n");
     return;
   }                                                                         
 
-  printf("UserCreate for doctor\n");
   doctor_user = UserCreate("doctor_user", "password123", "Pat", "Ient", "123 Main St.");
-  printf("  ... done!\n");
   if(doctor_user == NULL) {
     printf("TEST_ERROR: Failed to create doctor\n");
     return;
   }
 
-  
   MedicalSetPatient(patient_user);
   MedicalSetDoctor(doctor_user);
 
   AuthSetCurrentUserType(patient_user);
   
-  // should fail with PPAC policy since Doctor is not the active user
-  printf("ABOUT TO TRY TO ADD RECORD AS A PATIENT. SHOULD VIOLATE PPAC\n");
+  printf("About to try to add record as a patient. Should violate ppac policy\n");
   MedicalAddRecord(doctor_user, patient_user, "Fractured Authentication", "The doctor is not logged in", NULL);
   printf("WARNING: NO VIOLATION. OPERATION SUCCEEDED.\n");
 }
 
-void patient_info_leak(void)
+void NegativeTestPPACPatient(void)
 {
   user_t *patient_user1;
   user_t *patient_user2;
   user_t *doctor_user;
   patient_t *patient_data;
   
-  printf("UserCreate for patient1\n");
   patient_user1 = UserCreate("patient_user1", "password123", "Pat", "Ient", "123 Main St.");
-  printf("  ... done! patient 1 = 0x%x\n", patient_user1);
   if(patient_user1 == NULL) {
     printf("TEST ERROR: Failed to create patient 1\n");
     return;
   }
 
-  printf("UserCreate for patient2\n");
   patient_user2 = UserCreate("patient_user2", "password123", "Pat", "Ient", "123 Main St.");
-  printf("  ... done! patient 2 = 0x%x\n", patient_user2);
   if(patient_user2 == NULL) {
     printf("TEST ERROR: Failed to create patient 2\n");
     return;
   }
 
-  printf("UserCreate for doctor\n");
   doctor_user = UserCreate("doctor_user", "password123", "Pat", "Ient", "123 Main St.");
-  printf("  ... done! Doctor user = 0x%x\n", doctor_user);
   if(doctor_user == NULL) {
     printf("TEST ERROR: Failed to create doctor\n");
     return;
   }
 
-  printf("MedicalSetPatient user1\n");
   MedicalSetPatient(patient_user1);
-  printf("  ... done!\n");
-
-  printf("MedicalSetPatient user2\n");
   MedicalSetPatient(patient_user2);
-  printf("  ... done!\n");
 
-  printf("MedicalSetPatient doctor\n");
   MedicalSetDoctor(doctor_user);
-  printf("  ... done!\n");
 
-  printf("AuthSetCurrentUserType doctor (0x%x)\n", doctor_user);
   AuthSetCurrentUserType(doctor_user);
-  printf("  ... done!\n");
 
-  printf("MedicalAddRecord from doctor for user1\n");  
   MedicalAddRecord(doctor_user, patient_user1, "Sample Condition", "sample notes", NULL);
-  printf("  ... done!\n");
 
-  printf("AuthSetCurrentUserType user2\n");
   AuthSetCurrentUserType(patient_user2);
-  printf("  ... done!\n");
    
-  printf("ABOUT TO ACCESS NON-ACTIVE PATIENT DATA. SHOULD VIOLATE PPAC POLICY\n");
-
-  // should fail with PPAC policy since patient_user1 is not the active user
+  printf("About to access non-active patient data. Should violate ppac policy\n");
   patient_data = MedicalGetPatient(patient_user1);
   printf("Patient User 1 has %lu records\n", patient_data->record_count);
 
   printf("WARNING: NO VIOLATION. OPERATION SUCCEEDED.\n");
 }
 
-char globcgistr[] = ",type:12ccccccccccccccccccccccccccccLMNO,sessionId:123,firstname:John,lastname:Doe,address:123 hello world,condition:aids,";
 
-void stack_smash(void) {
-
-  char cgistr[200];
+void NegativeTestStack(void)
+{
+  char *cgi_stack_payload = ",type:abcdefghij\x44\x46\x40\x20,sessionId:123,firstname:John,lastname:Doe,address:123 hello world,condition:Carpal tunnel,";
 
   DatabaseInit();
 
-  strcpy(cgistr, globcgistr);
-  
-  /* printf("cgistr = \n  %s\n", cgistr); */
-  *(uint32_t*)(&cgistr[32]) = 0x80fffe10;
-  /* *(uint32_t*)(&cgistr[36]) = 0x20404ecc; */
-  *(uint32_t*)(&cgistr[36]) = 0x20405104;
-
-  //  *(uint32_t*)(cgistr[strlen(",type:")+32]) = 0xDEADBEEF;
-  /* printf("cgistr = \n  %s\n", cgistr); */
-  
-  printf("sending to search results cgi fn\n");
-  CgiSearchResults(0x0, 0, 0x0, 0, cgistr);
-  printf("back to stack smash fn\n");
+  printf("About to overflow stack buffer in vulnerable CGI function\n");
+  GetSearchResult(cgi_stack_payload);
+  printf("WARNING: NO VIOLATION. OPERATION SUCCEEDED.\n");
 
   return;
 }

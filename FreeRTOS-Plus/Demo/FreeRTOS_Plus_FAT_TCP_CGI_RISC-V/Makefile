@@ -77,6 +77,11 @@ APP_OBJS := $(patsubst %.c,$(APP_BUILD_DIR)/%.o,$(notdir $(APP_SRC)))
 APP_OBJS += $(patsubst %.S,$(APP_BUILD_DIR)/%.o,$(notdir $(APP_ASM)))
 VPATH += $(APP_SRC_DIR)
 
+# Negative tests
+ifdef NEGATIVE_TEST
+	CFLAGS += -DNEGATIVE_TEST=NegativeTest$(NEGATIVE_TEST)
+endif
+
 WEBAPP_DEMO_GENERATED := $(FREERTOS_FAT_GENERATED_DIR)/.done
 
 # Need to tell FreeRTOS where to find the FreeRTOSConfig.h and bsp files ____________________

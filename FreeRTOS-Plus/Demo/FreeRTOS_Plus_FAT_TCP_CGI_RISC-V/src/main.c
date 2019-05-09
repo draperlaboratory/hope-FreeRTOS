@@ -110,6 +110,7 @@
 #include "database.h"
 #include "auth.h"
 #include "medical.h"
+#include "negative_tests.h"
 
 /* Xilinx includes. */
 //#include "xil_cache.h"
@@ -197,10 +198,6 @@ root directory, and the RAM disk appears as a directory off the root. */
 that run the tests continuously. */
 #define mainRUN_STDIO_TESTS_IN_MULTIPLE_TASK 0
 
-/* #define NEGATIVE_TEST_DEBUG */
-#ifdef NEGATIVE_TEST_DEBUG
-#include "negative_tests.h"
-#endif
 
 /*-----------------------------------------------------------*/
 
@@ -317,10 +314,11 @@ int main( void )
    write( STDOUT_FILENO, pcPassMessage, strlen( pcPassMessage ) );
    write( STDOUT_FILENO, pcPassMessage, strlen( pcPassMessage ) );
 
-    #ifdef NEGATIVE_TEST_DEBUG
-    negative_test();
-    #endif
-    
+  #ifdef NEGATIVE_TEST
+    printf("Starting negative test\n");
+    NEGATIVE_TEST();
+    for(;;);
+  #endif
    
    printf("Init time.\n");
 	/* Miscellaneous initialisation including preparing the logging and seeding

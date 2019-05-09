@@ -69,8 +69,8 @@ BaseType_t CgiSearchResults( char *pcWriteBuffer, size_t xWriteBufferLen,
   return CGI_IMPL_CALL(ShowSearchResult, search_result);
 }
 
-void ParseSearchCgiString(char *pcCgiArgs) {
-
+void ParseSearchCgiString(char *pcCgiArgs)
+{
   char ltype[2] = { 0 };
   char lfirst_name[USER_NAME_LENGTH] = { 0 };
   char llast_name[USER_NAME_LENGTH] = { 0 };
