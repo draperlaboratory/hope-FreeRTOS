@@ -44,9 +44,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* Xilinx library files. */
 #include <xemacps.h>
-#include "Zynq/x_topology.h"
 #include "Zynq/x_emacpsif.h"
 #include "Zynq/x_emacpsif_hw.h"
+
+#include "platform.h"
 
 /* Provided memory configured as uncached. */
 #include "uncached_memory.h"
@@ -104,20 +105,11 @@ static void prvEMACHandlerTask( void *pvParameters );
 
 /* EMAC data/descriptions. */
 static xemacpsif_s xEMACpsif;
-struct xtopology_t xXTopology =
-{
-	.emac_baseaddr = XPAR_PS7_ETHERNET_0_BASEADDR,
-	.emac_type = xemac_type_emacps,
-	.intc_baseaddr = 0x0,
-	.intc_emac_intr = 0x0,
-	.scugic_baseaddr = XPAR_PS7_SCUGIC_0_BASEADDR,
-	.scugic_emac_intr = 0x36,
-};
 
 XEmacPs_Config mac_config =
 {
 	.DeviceId = XPAR_PS7_ETHERNET_0_DEVICE_ID,	/**< Unique ID  of device */
-	.BaseAddress = XPAR_PS7_ETHERNET_0_BASEADDR /**< Physical base address of IPIF registers */
+	.BaseAddress = GEM0_CTRL_ADDR /**< Physical base address of IPIF registers */
 };
 
 extern int phy_detected;
@@ -157,9 +149,13 @@ const TickType_t xWaitLinkDelay = pdMS_TO_TICKS( 7000UL ), xWaitRelinkDelay = pd
 		{
 			FreeRTOS_printf( ( "xEMACInit: EmacPs Configuration Failed....\n" ) );
 		}
+      printf("EMAC Initialized\n");
+
 
 		/* Initialize the mac and set the MAC address. */
 		XEmacPs_SetMacAddress( pxEMAC_PS, ( void * ) ucMACAddress, 1 );
+
+      printf("MAC Set\n");
 
 		#if( ipconfigUSE_LLMNR == 1 )
 		{
@@ -168,12 +164,17 @@ const TickType_t xWaitLinkDelay = pdMS_TO_TICKS( 7000UL ), xWaitRelinkDelay = pd
 		}
 		#endif	/* ipconfigUSE_LLMNR == 1 */
 
+      printf("MdioDiv Attempt\n");
 		XEmacPs_SetMdioDivisor( pxEMAC_PS, MDC_DIV_224 );
+      printf("Link Speed Attempt\n");
 		ulLinkSpeed = Phy_Setup( pxEMAC_PS );
+      printf("OpSpeed Attempt\n");
 		XEmacPs_SetOperatingSpeed( pxEMAC_PS, ulLinkSpeed);
 
 		/* Setting the operating speed of the MAC needs a delay. */
 		vTaskDelay( pdMS_TO_TICKS( 25UL ) );
+
+      printf("Clock Set\n");
 
 		ulDMAReg = XEmacPs_ReadReg( pxEMAC_PS->Config.BaseAddress, XEMACPS_DMACR_OFFSET);
 
@@ -183,10 +184,15 @@ const TickType_t xWaitLinkDelay = pdMS_TO_TICKS( 7000UL ), xWaitRelinkDelay = pd
 			ulDMAReg | XEMACPS_DMACR_DISC_WHEN_NO_AHB_MASK);
 
 		setup_isr( &xEMACpsif );
+      printf("ISRs set\n");
 		init_dma( &xEMACpsif );
+      printf("DMA Up\n");
 		start_emacps( &xEMACpsif );
+      printf("EMAC Started\n");
 
 		prvGMACWaitLS( xWaitLinkDelay );
+
+      printf("Task Create\n");
 
 		/* The deferred interrupt handler task is created at the highest
 		possible priority to ensure the interrupt handler can return directly
@@ -205,6 +211,11 @@ const TickType_t xWaitLinkDelay = pdMS_TO_TICKS( 7000UL ), xWaitRelinkDelay = pd
 	xLinkStatus = xGetPhyLinkStatus();
 
 	return ( xLinkStatus != pdFALSE );
+}
+/*-----------------------------------------------------------*/
+BaseType_t xCheckLoopback( NetworkBufferDescriptor_t * const pxDescriptor, BaseType_t bReleaseAfterSend )
+{
+   return 0;
 }
 /*-----------------------------------------------------------*/
 

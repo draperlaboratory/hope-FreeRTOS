@@ -379,6 +379,8 @@ struct freertos_sockaddr xAddress;
 
 		iptraceNETWORK_EVENT_RECEIVED( xReceivedEvent.eEventType );
 
+      printf("Event:  %d.\n", xReceivedEvent.eEventType);
+
 		switch( xReceivedEvent.eEventType )
 		{
 			case eNetworkDownEvent :
@@ -1298,6 +1300,8 @@ static void prvProcessNetworkDownEvent( void )
 	again, or wait for it to be available again.  This is hardware dependent. */
 	if( xNetworkInterfaceInitialise() != pdPASS )
 	{
+      printf("NetworkInterface Initialize Failed.\n");
+
 		/* Ideally the network interface initialisation function will only
 		return when the network is available.  In case this is not the case,
 		wait a while before retrying the initialisation. */
@@ -1306,6 +1310,8 @@ static void prvProcessNetworkDownEvent( void )
 	}
 	else
 	{
+      printf("NetworkInterface Initialize Succeeded.\n");
+      
 		/* Set remaining time to 0 so it will become active immediately. */
 		#if ipconfigUSE_DHCP == 1
 		{
@@ -1320,6 +1326,7 @@ static void prvProcessNetworkDownEvent( void )
 		}
 		#endif
 	}
+   printf("Leaving.\n");
 }
 /*-----------------------------------------------------------*/
 

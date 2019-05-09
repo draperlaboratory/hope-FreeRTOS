@@ -35,21 +35,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "NetworkBufferManagement.h"
 
 #include "Zynq/x_emacpsif.h"
-#include "Zynq/x_topology.h"
 #include "xstatus.h"
 
-#include "xparameters.h"
-#include "xparameters_ps.h"
 #include "xil_exception.h"
-#include "xil_mmu.h"
+#include "xil_stubs.h"
+
+#include "plic/plic_driver.h"
 
 #include "uncached_memory.h"
 
-/* Two defines used to set or clear the EMAC interrupt */
-#define INTC_BASE_ADDR		XPAR_SCUGIC_CPU_BASEADDR
-#define INTC_DIST_BASE_ADDR	XPAR_SCUGIC_DIST_BASEADDR
-
-
+static void* iarg_addr = NULL;
 
 #if( ipconfigPACKET_FILLER_SIZE != 2 )
 	#error Please define ipconfigPACKET_FILLER_SIZE as the value '2'
@@ -71,12 +66,6 @@ static unsigned char *pxDMA_tx_buffers[ ipconfigNIC_N_TX_DESC ] = { NULL };
 	immediately to the IP-task.
 */
 static NetworkBufferDescriptor_t *pxDMA_rx_buffers[ ipconfigNIC_N_RX_DESC ] = { NULL };
-
-/*
-	The FreeRTOS+TCP port is using a fixed 'topology', which is declared in
-	./portable/NetworkInterface/Zynq/NetworkInterface.c
-*/
-extern struct xtopology_t xXTopology;
 
 static SemaphoreHandle_t xTXDescriptorSemaphore = NULL;
 
@@ -509,7 +498,6 @@ XStatus init_dma(xemacpsif_s *xemacpsif)
 	int iIndex;
 	UBaseType_t xRxSize;
 	UBaseType_t xTxSize;
-	struct xtopology_t *xtopologyp = &xXTopology;
 
 	xRxSize = ipconfigNIC_N_RX_DESC * sizeof( xemacpsif->rxSegments[ 0 ] );
 
@@ -530,6 +518,10 @@ XStatus init_dma(xemacpsif_s *xemacpsif)
 	xemacpsif->emacps.RxBdRing.BaseBdAddr = ( uint32_t ) xemacpsif->rxSegments;
 	xemacpsif->emacps.TxBdRing.BaseBdAddr = ( uint32_t ) xemacpsif->txSegments;
 
+   printf("Uncached Mem Allocated.\n");
+   printf("Rx Allocated 0x%x.\n", (uint32_t)xemacpsif->rxSegments);
+   printf("Rx Allocated 0x%x.\n", (uint32_t)xemacpsif->txSegments);
+
 	if( xTXDescriptorSemaphore == NULL )
 	{
 		xTXDescriptorSemaphore = xSemaphoreCreateCounting( ( UBaseType_t ) ipconfigNIC_N_TX_DESC, ( UBaseType_t ) ipconfigNIC_N_TX_DESC );
@@ -540,6 +532,7 @@ XStatus init_dma(xemacpsif_s *xemacpsif)
 	 */
 	for( iIndex = 0; iIndex < ipconfigNIC_N_RX_DESC; iIndex++ )
 	{
+      printf("RX Descriptor %d.\n"), iIndex;
 		pxBuffer = pxDMA_rx_buffers[ iIndex ];
 		if( pxBuffer == NULL )
 		{
@@ -551,10 +544,13 @@ XStatus init_dma(xemacpsif_s *xemacpsif)
 			}
 		}
 
+      printf("RX Segments %d 0x%x.\n", iIndex, (uint32_t)&(xemacpsif->rxSegments[ iIndex ]));
 		xemacpsif->rxSegments[ iIndex ].flags = 0;
 		xemacpsif->rxSegments[ iIndex ].address = ( ( uint32_t )pxBuffer->pucEthernetBuffer ) & XEMACPS_RXBUF_ADD_MASK;
 
 		pxDMA_rx_buffers[ iIndex ] = pxBuffer;
+
+      printf("RX Cache check %d.\n", iIndex);
 		/* Make sure this memory is not in cache for now. */
 		if( ucIsCachedMemory( pxBuffer->pucEthernetBuffer ) != 0 )
 		{
@@ -566,6 +562,8 @@ XStatus init_dma(xemacpsif_s *xemacpsif)
 	xemacpsif->rxSegments[ ipconfigNIC_N_RX_DESC - 1 ].address |= XEMACPS_RXBUF_WRAP_MASK;
 
 	memset( xemacpsif->tx_space, '\0', ipconfigNIC_N_TX_DESC * xemacpsif->uTxUnitSize );
+
+   printf("RX Descriptors Allocated.\n");
 
 	clean_dma_txdescs( xemacpsif );
 
@@ -600,14 +598,8 @@ XStatus init_dma(xemacpsif_s *xemacpsif)
 		XEmacPs_WriteReg( xemacpsif->emacps.Config.BaseAddress, XEMACPS_NWCFG_OFFSET, value );
 	}
 
-	/*
-	 * Connect the device driver handler that will be called when an
-	 * interrupt for the device occurs, the handler defined above performs
-	 * the specific interrupt processing for the device.
-	 */
-	XScuGic_RegisterHandler(INTC_BASE_ADDR, xtopologyp->scugic_emac_intr,
-		(Xil_ExceptionHandler)XEmacPs_IntrHandler,
-		(void *)&xemacpsif->emacps);
+   iarg_addr = &xemacpsif->emacps;
+
 	/*
 	 * Enable the interrupt for emacps.
 	 */
@@ -651,13 +643,28 @@ FreeRTOS_printf( ( "resetrx_on_no_rxdata: RESET~\n" ) );
 	xemacpsif->last_rx_frms_cntr = tempcntr;
 }
 
+extern plic_instance_t g_plic;
+
 void EmacDisableIntr(void)
 {
-	XScuGic_DisableIntr(INTC_DIST_BASE_ADDR, xXTopology.scugic_emac_intr);
+   PLIC_disable_interrupt(&g_plic, 5);
 }
 
 void EmacEnableIntr(void)
 {
-	XScuGic_EnableIntr(INTC_DIST_BASE_ADDR, xXTopology.scugic_emac_intr);
+   PLIC_enable_interrupt(&g_plic, 5);
 }
 
+void handle_m_ext_interrupt(void)
+{
+   int n = PLIC_claim_interrupt(&g_plic);
+
+   printf("Interrupt\n");
+
+   if (5 == n)
+   {
+      XEmacPs_IntrHandler(iarg_addr);
+   }
+
+   PLIC_complete_interrupt(&g_plic, n);
+}
