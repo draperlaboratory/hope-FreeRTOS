@@ -192,8 +192,3 @@ void vPortHandleInterrupt( void )
 {
 	/* Not implemented. */
 }
-
-
-
-
-
