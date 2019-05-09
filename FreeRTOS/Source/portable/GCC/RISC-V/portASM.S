@@ -95,16 +95,10 @@ at the top of this file. */
 .extern ulTimerIncrementsForOneTick
 .extern xISRStackTop
 
-ram_start: .word 0x80000000
-
-sp_scrogged:
-	j sp_scrogged
 /*-----------------------------------------------------------*/
 
 .align 8
 freertos_risc_v_trap_handler:
-	lw t1, ram_start
-	ble sp, t1, sp_scrogged
 	addi sp, sp, -portCONTEXT_SIZE
 	sw x1, 1 * portWORD_SIZE( sp )
 	sw x5, 2 * portWORD_SIZE( sp )
@@ -192,21 +186,12 @@ handle_synchronous:
 	addi a1, a1, 4						/* Synchronous so updated exception return address to the instruction after the instruction that generated the exeption. */
 	sw a1, 0( sp )						/* Save updated exception return address. */
 
-test_if_access_fault:
-	li t0, 5 							   /* 5 == Load Access Fault */
-	beq a0, t0, handle_access_fault
-   li t0, 7 							   /* 7 == Store Access Fault */
-	beq a0, t0, handle_access_fault
-
 test_if_environment_call:
 	li t0, 11 							/* 11 == environment call. */
 	bne a0, t0, is_exception			/* Not an M environment call, so some other exception. */
 	lw sp, xISRStackTop					/* Switch to ISR stack before function call. */
 	jal vTaskSwitchContext
 	j processed_source
-
-handle_access_fault:
-	j test_if_environment_call
 
 is_exception:
 	ebreak

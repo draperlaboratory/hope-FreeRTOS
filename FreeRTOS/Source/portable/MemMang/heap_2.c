@@ -318,9 +318,8 @@ void *pvReturn = NULL;
 
 void vPortFree( void *pv )
 {
-	uint8_t *puc;
-	BlockLink_t *pxLink;
-
+uint8_t *puc;
+BlockLink_t *pxLink;
 
 	if( pv != NULL )
 	{
