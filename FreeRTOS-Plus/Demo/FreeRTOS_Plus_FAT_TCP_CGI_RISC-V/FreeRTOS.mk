@@ -1,8 +1,8 @@
 -include BuildEnvironment.mk
 
-BSP_DIR   = ../../../FreeRTOS/Demo/RISCV_HiFive1_GCC/bsp
-BSP_INC   = $(BSP_DIR)/include
-BSP_LIB   = $(BSP_DIR)/libls 
+LIBXIL_DIR   = ./libxil
+LIBXIL_INC   = $(LIBXIL_DIR)/include
+LIBXIL_LIB   = $(LIBXIL_DIR)/libls
 FREERTOS_DIR = ../../..
 FREERTOS_SOURCE_DIR = $(FREERTOS_DIR)/FreeRTOS/Source
 
@@ -23,8 +23,8 @@ FREERTOS_INC = $(FREERTOS_SOURCE_DIR)/include
 
 FREERTOS_INCLUDES := \
 	-I $(FREERTOS_INC) \
-	-I $(BSP_DIR)/env \
-	-I $(BSP_INC)
+	-I $(LIBXIL_DIR)/env \
+	-I $(LIBXIL_INC)
 
 FREERTOS_BUILD_DIR = $(BUILD_DIR)/FreeRTOS
 FREERTOS_OBJS = $(patsubst %.c,$(FREERTOS_BUILD_DIR)/%.o,$(notdir $(FREERTOS_SRC)))

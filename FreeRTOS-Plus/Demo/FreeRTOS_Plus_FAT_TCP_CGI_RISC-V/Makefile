@@ -54,9 +54,9 @@ APP_INCLUDES = \
 	-I ./include \
 	-I ./include/med-common \
 	-I $(FREERTOS_INC) \
-	-I $(BSP_INC) \
-	-I $(BSP_INC)/devices \
-	-I $(BSP_DIR)/env \
+	-I $(LIBXIL_INC) \
+	-I $(LIBXIL_INC)/devices \
+	-I $(LIBXIL_DIR)/env \
 	$(SDK_INCLUDES) \
 	-I $(ARCH_PORTABLE_INC) \
 	-I $(ARCH_PORTABLE_EXT) \
@@ -87,8 +87,7 @@ WEBAPP_DEMO_GENERATED := $(FREERTOS_FAT_GENERATED_DIR)/.done
 # Need to tell FreeRTOS where to find the FreeRTOSConfig.h and bsp files ____________________
 FREERTOS_INCLUDES += \
 	-I ./include \
-	-I $(BSP_INC) \
-	-I $(BSP_DIR)/libxil/include \
+	-I $(LIBXIL_INC) \
 	$(SDK_INCLUDES) \
 	-I $(ARCH_PORTABLE_INC) \
 	-I $(ARCH_PORTABLE_CLINC) \
@@ -99,6 +98,23 @@ FREERTOS_CLI_INCLUDES += $(FREERTOS_INCLUDES)
 FREERTOS_TCP_INCLUDES += $(FREERTOS_INCLUDES)
 FREERTOS_FAT_INCLUDES += $(FREERTOS_INCLUDES)
 
+# LIBXIL ____________________________________________________________________________________
+
+LIBXIL_BUILD_DIR = $(BUILD_DIR)/libxil
+
+LIBXIL_SRC := \
+	$(LIBXIL_DIR)/libsrc/emacps_v3_2/src/xemacps.c \
+	$(LIBXIL_DIR)/libsrc/emacps_v3_2/src/xemacps_control.c \
+	$(LIBXIL_DIR)/libsrc/emacps_v3_2/src/xemacps_intr.c \
+	$(LIBXIL_DIR)/libsrc/standalone_v5_5/src/xil_assert.c \
+	$(LIBXIL_DIR)/libsrc/standalone_v5_5/src/xil_stubs.c \
+	$(LIBXIL_DIR)/libsrc/standalone_v5_5/src/xil_io.c
+VPATH += $(LIBXIL_DIR)/libsrc/emacps_v3_2/src $(LIBXIL_DIR)/libsrc/standalone_v5_5/src
+
+LIBXIL_OBJS := $(patsubst %.c,$(LIBXIL_BUILD_DIR)/%.o,$(notdir $(LIBXIL_SRC)))
+LIBXIL_LINK_DEPS += $(LIBXIL_DIR)/$(LIBXIL)
+LIBXIL_LDFLAGS += -Wl,--start-group -lxil -Wl,--end-group
+LIBXIL_INCLUDES = -I$(LIBXIL_INC)
 
 # List of object files to compile for the system:
 OUT_OBJS = \
@@ -117,11 +133,13 @@ BUILD_DIRECTORIES = \
 	$(FREERTOS_CLI_BUILD_DIR) \
 	$(FREERTOS_TCP_BUILD_DIR) \
 	$(FREERTOS_FAT_BUILD_DIR) \
-	$(SDK_BUILD_DIR)
+	$(SDK_BUILD_DIR) \
+	$(LIBXIL_BUILD_DIR)
 
-.PHONY: debug clean app_compile debug-app frtos_compile print-info frtos_p_util frtos_cli frtos_tcp frtos_fat freedom_sdk out_elf clean-libxil sim-qemu sim-qemu-debug sim-gdb
+.PHONY: debug clean app_compile debug-app frtos_compile print-info frtos_p_util frtos_cli frtos_tcp frtos_fat freedom_sdk out_elf clean-libxil sim-qemu sim-qemu-debug sim-gdb libxil
 all: directories $(OUT_OBJS) $(OUT_ELF)
 directories: $(BUILD_DIRECTORIES)
+libxil: $(LIBXIL_BUILD_DIR)/libxil.a
 app_compile: directories $(APP_OBJS)
 frtos_compile: directories $(FREERTOS_OBJS)
 frtos_p_util: directories $(FREERTOS_PLUS_UTIL_OBJS)
@@ -146,6 +164,18 @@ out_elf: directories $(OUT_ELF)
 #    - $(MODULE_BUILD_DIR)/%.o : %.c
 
 # Compile Object Files ____________________________________________________________________
+$(LIBXIL_BUILD_DIR)/%.o: %.c
+	@echo "[libxil Objects] : $@ ___________________________________________________________"
+	@echo "Building: $<"
+	$(GCC) $(CFLAGS) $(LIBXIL_INCLUDES) -c -o $@ $<
+	@echo "Finished Building: $<"
+
+$(LIBXIL_BUILD_DIR)/libxil.a: $(LIBXIL_OBJS)
+	@echo "[libxil.a] ______________________________________________________________________"
+	@echo "Archiving $@"
+	$(AR) rcs $@ $^
+	@echo "Finished Archiving $^"
+
 $(APP_BUILD_DIR)/%.o : %.c
 	@echo "[APP Objects] : $@ ______________________________________________________________"
 	@echo "Building: $<"
@@ -212,13 +242,11 @@ $(SDK_BUILD_DIR)/%.o : %.S
 	$(GCC) $(ASMFLAGS) $(SDK_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
-include $(BSP_DIR)/libxil/libxil.mk
-
 # Generate ELF ___________________________________________________________________________
-$(OUT_ELF): $(OUT_OBJS) $(LINKER_SCRIPT) $(LINK_DEPS)
+$(OUT_ELF): $(OUT_OBJS) $(LINKER_SCRIPT) $(LINK_DEPS) libxil
 	@echo 'Building target: $@'
 	@echo '_______________________________'
-	$(GCC) $(CFLAGS) $(INCLUDES) $(OUT_OBJS) -o $@ $(LDFLAGS) $(LDOPTS) -L$(BSP_DIR)/libxil/
+	$(GCC) $(CFLAGS) $(INCLUDES) $(OUT_OBJS) -o $@ $(LDFLAGS) $(LIBXIL_LDFLAGS) $(LDOPTS) -L$(LIBXIL_BUILD_DIR)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -230,12 +258,10 @@ clean:
 	rm -rfv ./isp-output
 	rm -fv status.log
 	rm -fv uart.log
-	rm -fv $(BSP_DIR)/libxil.a
 	rm -fv $(LIBXIL_OBJS)
 
 clean-libxil:
-	rm -fv $(CLEAN_OBJS)
-	rm -fv $(LIBXIL_DIR)/$(LIBXIL)
+	rm -rfv $(LIBXIL_BUILD_DIR)
 
 # Policy/Runtime Variables ______________________________________________________________
 POLICY_DIR = $(ISP_PREFIX)/kernels
@@ -288,6 +314,8 @@ debug:
 	@echo $(FREERTOS_TCP_OBJS)
 	@echo "Freedom SDK Objects: __________________________"
 	@echo $(SDK_OBJS)
+	@echo "LIBXIL Objects: _______________________________"
+	@echo $(LIBXIL_OBJS)
 
 print-info:
 	@echo "VPATH: $(VPATH)"
