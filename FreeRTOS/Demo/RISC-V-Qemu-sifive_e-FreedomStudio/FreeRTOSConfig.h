@@ -96,10 +96,10 @@
  *----------------------------------------------------------*/
 
 #define configCLINT_BASE_ADDRESS		CLINT_CTRL_ADDR
-#define configUSE_PREEMPTION			1
+#define configUSE_PREEMPTION			0
 #define configUSE_IDLE_HOOK				0
 #define configUSE_TICK_HOOK				1
-#define configCPU_CLOCK_HZ				( 66000000 ) /*QEMU*/
+#define configCPU_CLOCK_HZ				( 66000000 ) 
 #define configTICK_RATE_HZ				( ( TickType_t ) 20 )
 #define configMAX_PRIORITIES			( 7 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 70 )
@@ -110,13 +110,19 @@
 #define configIDLE_SHOULD_YIELD			0
 #define configUSE_MUTEXES				1
 #define configQUEUE_REGISTRY_SIZE		8
-#define configCHECK_FOR_STACK_OVERFLOW	1 /* XXX: Change back to 2 */
+#define configCHECK_FOR_STACK_OVERFLOW	2
 #define configUSE_RECURSIVE_MUTEXES		1
 #define configUSE_MALLOC_FAILED_HOOK	1
 #define configUSE_APPLICATION_TASK_TAG	0
 #define configUSE_COUNTING_SEMAPHORES	1
 #define configGENERATE_RUN_TIME_STATS	0
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
+
+/* SSITH-HOPE: Use separate ISR stack.  Without this setting, FreeRTOS reuse's
+   main's stack for interrupts once the scheduler has started (because main
+   won't continue running after that point).  But that causes problems with our
+   stack frame metadata. */
+#define configISR_STACK_SIZE_WORDS ( 500 )
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 			0

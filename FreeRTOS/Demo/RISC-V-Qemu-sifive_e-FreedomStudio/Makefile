@@ -239,7 +239,7 @@ $(BUILD_DIRECTORIES):
 	mkdir -p $@
 
 clean:
-	rm -rv $(BUILD_DIR)
+	rm -rf $(BUILD_DIR)
 
 sim-qemu: $(OUT_ELF)
 	qemu-system-riscv32 -kernel $^  -S -s -machine sifive_e -nographic

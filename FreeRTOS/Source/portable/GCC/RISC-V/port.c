@@ -56,7 +56,12 @@ stack that was used by main before the scheduler was started for use as the
 interrupt stack after the scheduler has started. */
 #ifdef configISR_STACK_SIZE_WORDS
 	static __attribute__ ((aligned(16))) StackType_t xISRStack[ configISR_STACK_SIZE_WORDS ] = { 0 };
-	const StackType_t xISRStackTop = ( StackType_t ) &( xISRStack[ ( configISR_STACK_SIZE_WORDS & ~portBYTE_ALIGNMENT_MASK ) - 1 ] );
+  /* SSITH HOPE.  I don't think the configISR_STACK_SIZE_WORDS option had been
+     tested, because the previous version of this line resulted in an unaligned
+     stack that trips an assert later.  I now appropriately align the stack,
+     although I think it's overly conservative because the mask is wrt bytes and
+     the array is words.   A fix like this should probably be upstreamed.  */
+	const StackType_t xISRStackTop = ( StackType_t ) &( xISRStack[ ( ( configISR_STACK_SIZE_WORDS - 1 ) & ~portBYTE_ALIGNMENT_MASK ) ] );
 #else
 	extern const uint32_t __freertos_irq_stack_top[];
 	const StackType_t xISRStackTop = ( StackType_t ) __freertos_irq_stack_top;
@@ -179,13 +184,13 @@ extern void xPortStartFirstTask( void );
 
 void vPortEndScheduler( void )
 {
-   /* Not implemented. */
+	/* Not implemented. */
 	for( ;; );
 }
 
 void vPortHandleInterrupt( void )
 {
-   /* Not implemented. */
+	/* Not implemented. */
 }
 
 
