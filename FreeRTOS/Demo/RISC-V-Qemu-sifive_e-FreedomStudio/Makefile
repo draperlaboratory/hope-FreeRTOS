@@ -153,12 +153,13 @@ BUILD_DIRECTORIES = \
 
 LDFLAGS += -Wl,-Map,"$(BUILD_DIR)/$(PROJ_NAME).map"
 
-.PHONY: debug clean app_compile debug-app frtos_compile print-info out_elf sim-qemu gdb
+.PHONY: debug clean app_compile debug-app frtos_compile print-info out_elf sim-qemu gdb lib
 all: directories $(OUT_OBJS) $(OUT_ELF) $(OUT_LIB)
 directories: $(BUILD_DIRECTORIES)
 app_compile: directories $(APP_OBJS)
 frtos_compile: directories $(FREERTOS_OBJS)
 out_elf: directories $(OUT_ELF)
+lib: directories $(OUT_LIB)
 
 # Notes
 # Each "Module" needs
@@ -178,8 +179,6 @@ out_elf: directories $(OUT_ELF)
 $(APP_BUILD_DIR)/%.o : %.c
 	@echo "[APP Objects] : $@ ______________________________________________________________"
 	@echo "Building: $<"
-	mkdir -p $(BUILD_DIR)
-	mkdir -p $(APP_BUILD_DIR)
 	$(GCC) $(CFLAGS) $(APP_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
