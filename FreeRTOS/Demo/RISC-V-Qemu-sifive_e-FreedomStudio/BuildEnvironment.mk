@@ -23,7 +23,6 @@ ARCH_FLAGS = -march=rv32ima -mabi=ilp32 -mcmodel=medium
 ISP_CFLAGS  = -Wall -Wextra -O0 -g3 -std=gnu11
 ISP_CFLAGS += -ffunction-sections -fdata-sections -fno-builtin-printf
 ISP_CFLAGS += -DDONT_USE_PLIC -DDONT_USE_M_TIME -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
-#ISP_CFLAGS += -DUSE_PLIC -DUSE_M_TIME -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
 ISP_CFLAGS += -include sys/cdefs.h
 ISP_CFLAGS += $(ARCH_FLAGS)
 ISP_CFLAGS += -I ${ISP_PREFIX}/riscv32-unknown-elf/include

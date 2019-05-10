@@ -105,11 +105,7 @@ at the top of this file. */
 .extern xISRStackTop
 
 .extern global_exception_mc
-  
-ram_start: .word 0x80000000
 
-sp_scrogged:
-	j sp_scrogged
 /*-----------------------------------------------------------*/
 
 /* save cpu context to structure */	
@@ -196,7 +192,6 @@ sp_scrogged:
 .endm
 
 .align 8
-//.func
 freertos_risc_v_trap_handler:
 
   /* check for exception */
@@ -265,8 +260,6 @@ no_exception:
   addi sp, sp, 2 * portWORD_SIZE
 
 	/* beginning of regular trap handler. */
-  lw t1, ram_start
-  ble sp, t1, sp_scrogged
   addi sp, sp, -portCONTEXT_SIZE
   sw x1, 1 * portWORD_SIZE( sp )
   sw x5, 2 * portWORD_SIZE( sp )
@@ -430,11 +423,9 @@ processed_source:
 	addi sp, sp, portCONTEXT_SIZE
 
 	mret
-//	.endfunc
 /*-----------------------------------------------------------*/
 
 .align 8
-//.func
 xPortStartFirstTask:
 
 #if( portasmHAS_CLINT != 0 )
@@ -484,7 +475,6 @@ xPortStartFirstTask:
 	lw  x31, 28 * portWORD_SIZE( sp )	/* t6 */
 	addi	sp, sp, portCONTEXT_SIZE
 	ret
-//	.endfunc
 /*-----------------------------------------------------------*/
 
 /*
@@ -550,7 +540,6 @@ xPortStartFirstTask:
  * pxCode
  */
 .align 8
-//.func
 pxPortInitialiseStack:
 
 	csrr t0, mstatus					/* Obtain current mstatus value. */
@@ -575,5 +564,4 @@ chip_specific_stack_frame:				/* First add any chip specific registers to the st
 	addi a0, a0, -portWORD_SIZE
 	sw a1, 0(a0)						/* mret value (pxCode parameter) onto the stack. */
 	ret
-//	.endfunc
 /*-----------------------------------------------------------*/

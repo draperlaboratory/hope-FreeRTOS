@@ -319,7 +319,7 @@ int main( void )
     NEGATIVE_TEST();
     for(;;);
   #endif
-   
+
    printf("Init time.\n");
 	/* Miscellaneous initialisation including preparing the logging and seeding
 	the random number generator. */
@@ -608,11 +608,9 @@ static void prvSRand( UBaseType_t ulSeed )
 
 static void prvMiscInitialisation( void )
 {
-/* time_t xTimeNow; */
   uint32_t cpu_freq;
 
 	/* Seed the random number generator. */
-	/* time( &xTimeNow ); */
   cpu_freq = get_cpu_freq();
 	printf( "Seed for randomiser: %lu\n", cpu_freq );
 	prvSRand( cpu_freq );

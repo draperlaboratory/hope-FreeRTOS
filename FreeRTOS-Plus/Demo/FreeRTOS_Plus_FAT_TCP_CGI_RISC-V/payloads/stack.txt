@@ -1,1 +1,1 @@
-http://127.0.0.1:5555/search-results.html?condition=&firstname=Joe&lastname=&address=&type=abcdefghijDF%40+&loginsubmit=Search
+http://127.0.0.1:5555/search-results.html?condition=&firstname=Joe&lastname=&address=&type=abcdefghijDJ%40+&loginsubmit=Search

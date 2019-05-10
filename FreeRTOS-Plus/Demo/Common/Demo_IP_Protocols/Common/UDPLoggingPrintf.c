@@ -305,9 +305,9 @@ uint32_t ulSeconds, ulMilliSeconds, ulMicroSeconds;
 		ulMilliSeconds = ( uint32_t ) ( ullCurrentTime / 1000ull );
 		ulMicroSeconds = ( uint32_t ) ( ullCurrentTime % 1000ull );
 
-		//		xLength = ( size_t ) snprintf( xLogEntry.cMessage, sizeof( xLogEntry.cMessage ), "%4u.%03u.%03u [%-10s] ",
-		//			( unsigned int ) ulSeconds, ( unsigned int ) ulMilliSeconds, ( unsigned int ) ulMicroSeconds, pcTaskGetTaskName( NULL ) );
-		//		xLength += ( size_t ) vsnprintf( xLogEntry.cMessage + xLength, sizeof( xLogEntry.cMessage ) - xLength, pcFormatString, xArgs );
+		xLength = ( size_t ) snprintf( xLogEntry.cMessage, sizeof( xLogEntry.cMessage ), "%4u.%03u.%03u [%-10s] ",
+			( unsigned int ) ulSeconds, ( unsigned int ) ulMilliSeconds, ( unsigned int ) ulMicroSeconds, pcTaskGetTaskName( NULL ) );
+		xLength += ( size_t ) vsnprintf( xLogEntry.cMessage + xLength, sizeof( xLogEntry.cMessage ) - xLength, pcFormatString, xArgs );
 
 		xSpace = uxStreamBufferGetSpace( pxStreamBuffer );
 

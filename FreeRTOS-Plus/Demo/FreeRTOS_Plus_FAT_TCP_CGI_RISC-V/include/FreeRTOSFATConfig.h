@@ -301,7 +301,6 @@ number of clusters on a disk to determine the FAT type.
 
 Set to 0 to only look at the number of clusters on a disk to determine the
 FAT type. */
-// #define	ffconfigFAT_CHECK 1
 #define	ffconfigFAT_CHECK 0
 
 /* Sets the maximum length for file names, including the path.

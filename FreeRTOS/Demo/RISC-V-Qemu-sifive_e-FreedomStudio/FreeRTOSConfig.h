@@ -96,7 +96,6 @@
  *----------------------------------------------------------*/
 
 #define configCLINT_BASE_ADDRESS		CLINT_CTRL_ADDR
-// #define configUSE_PREEMPTION			1
 #define configUSE_PREEMPTION			0
 #define configUSE_IDLE_HOOK				0
 #define configUSE_TICK_HOOK				1
@@ -111,7 +110,7 @@
 #define configIDLE_SHOULD_YIELD			0
 #define configUSE_MUTEXES				1
 #define configQUEUE_REGISTRY_SIZE		8
-#define configCHECK_FOR_STACK_OVERFLOW	1 /* XXX: Change back to 2 */
+#define configCHECK_FOR_STACK_OVERFLOW	2
 #define configUSE_RECURSIVE_MUTEXES		1
 #define configUSE_MALLOC_FAILED_HOOK	1
 #define configUSE_APPLICATION_TASK_TAG	0
@@ -128,11 +127,6 @@
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 			0
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
-
-#define configUSE_HEAP_SECTION_NAME     1
-#if configUSE_HEAP_SECTION_NAME
-#define configHEAP_SECTION_NAME_STRING  ".freertos_heap"
-#endif
 
 /* Software timer definitions. */
 #define configUSE_TIMERS				1

@@ -2,7 +2,7 @@
 .PHONY: install
 .PHONY: clean
 
-ISP_PREFIX ?= /opt/isp/
+ISP_PREFIX ?= $(HOME)/.local/isp/
 
 RV_DEMO_DIR := FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio
 COMMON_DEMO_DIR := FreeRTOS/Demo/Common

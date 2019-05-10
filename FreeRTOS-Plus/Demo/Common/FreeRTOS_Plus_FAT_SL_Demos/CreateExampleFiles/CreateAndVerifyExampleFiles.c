@@ -132,13 +132,6 @@ static const char *pcDirectory1 = "SUB1", *pcDirectory2 = "SUB2", *pcFullPath = 
 
 void vCreateAndVerifyExampleFiles( const char *pcMountPath )
 {
-	/* Create and verify a few example files using both line based and character
-	based reads and writes. */
-	/* prvCreateDemoFilesUsing_ff_fwrite( pcMountPath ); */
-	/* prvVerifyDemoFileUsing_ff_fread(); */
-	/* prvCreateDemoFileUsing_ff_fputc( pcMountPath ); */
-	/* prvVerifyDemoFileUsing_ff_fgetc( pcMountPath ); */
-
 	#if( ipconfigUSE_HTTP == 1 )
 	{
 		prvCreateDefaultWebPage();
@@ -179,7 +172,6 @@ char *pcRAMBuffer, *pcFileName;
 		the	directory into which the file is being written. */
 		ff_getcwd( pcRAMBuffer, fsRAM_BUFFER_SIZE );
 		FF_PRINTF( "Creating file %s in %s\n", pcFileName, pcRAMBuffer );
-		printf( "Creating file %s in %s\n", pcFileName, pcRAMBuffer );
 
 		/* Open the file, creating the file if it does not already exist. */
 		pxFile = ff_fopen( pcFileName, "w" );
@@ -285,7 +277,6 @@ char *pcRAMBuffer, *pcFileName;
 	/* Obtain and print out the working directory. */
 	ff_getcwd( pcRAMBuffer, fsRAM_BUFFER_SIZE );
 	FF_PRINTF( "In directory %s\n", pcRAMBuffer );
-	printf( "In directory %s\n", pcRAMBuffer );
 
 	/* Create a sub directory. */
 	iReturn = ff_mkdir( pcDirectory1 );
@@ -320,7 +311,6 @@ char *pcRAMBuffer, *pcFileName;
 	/* Print out the file name and the directory into which the file is being
 	written. */
 	FF_PRINTF( "Writing file %s in %s\n", pcFileName, pcRAMBuffer );
-  printf( "Writing file %s in %s\n", pcFileName, pcRAMBuffer );
 
 	pxFile = ff_fopen( pcFileName, "w" );
 	configASSERT( pxFile );
@@ -432,7 +422,7 @@ char *pcRAMBuffer, *pcFileName;
 			defined in DefaultWebPages.h. */
 			for( x = 0; x < sizeof( xHTTPFilesToCopy ) / sizeof( xFileToCopy_t ); x++ )
 			{
-        printf("Creating file %s...\n", xHTTPFilesToCopy[x].pcFileName);
+        			printf("Creating file %s...\n", xHTTPFilesToCopy[x].pcFileName);
 				/* Create the file. */
 				pxFile = ff_fopen( xHTTPFilesToCopy[ x ].pcFileName, "w+" );
 
