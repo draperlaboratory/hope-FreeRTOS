@@ -239,9 +239,9 @@ clean-libxil:
 
 # Policy/Runtime Variables ______________________________________________________________
 POLICY_DIR = $(ISP_PREFIX)/kernels
-POLICY_RUNTIME ?= hifive
+POLICY_RUNTIME ?= bare
 POLICY ?= none
-ISP_PREFIX ?= /opt/isp
+ISP_PREFIX ?= $(HOME)/.local/isp/
 PROJ_NAME = web-server
 HTTP_PORT ?= 5555
 GDB_PORT ?= 3333
@@ -255,7 +255,7 @@ gen-tags: $(OUT_ELF)
 	@echo '___________________________________________________________________________________'
 	@echo 'Generating Tags for $^'
 	isp_run_app $^ \
-	-r hifive \
+	-r bare \
 	--policy none \
 	-o ./isp-output \
 	--tag-only
@@ -263,14 +263,14 @@ gen-tags: $(OUT_ELF)
 sim-qemu: sim-qemu-user
 
 sim-qemu-user: $(OUT_ELF)
-	isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos -o $(BUILD_DIR) \
+	isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r $(POLICY_RUNTIME) -o $(BUILD_DIR) \
 		-e "-net nic -net user,net=10.10.70.0,dhcpstart=10.10.70.1,hostfwd=tcp::$(HTTP_PORT)-:80" $(_QEMU_DEBUG)
 
 sim-qemu-tap: $(OUT_ELF)
-	sudo env PATH=$(PATH) ISP_PREFIX=$(ISP_PREFIX) isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r frtos -o $(BUILD_DIR) \
+	sudo env PATH=$(PATH) ISP_PREFIX=$(ISP_PREFIX) isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r $(POLICY_RUNTIME) -o $(BUILD_DIR) \
 		-e "-net nic -net tap,ifname=tap0,script=no,downscript=no" $(_QEMU_DEBUG)
 
-sim-gdb: $(OUT_ELF)
+sim-gdb:
 	isp_debug $(OUT_ELF) $(GDB_PORT)
 
 debug:
