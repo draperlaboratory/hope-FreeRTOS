@@ -1138,7 +1138,7 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB )
 		then it should run now. */
 		if( pxCurrentTCB->uxPriority < pxNewTCB->uxPriority )
 		{
-			taskYIELD_IF_USING_PREEMPTION(); 
+			taskYIELD_IF_USING_PREEMPTION();
 		}
 		else
 		{

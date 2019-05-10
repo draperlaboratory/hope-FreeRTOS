@@ -4,7 +4,6 @@ CROSS_COMPILE_PREFIX = riscv32-unknown-elf
 
 LINKER_SCRIPT = lscript.ld
 #-----------------------------------------------------------
-#GCC     = $(CROSS_COMPILE_PREFIX)-gcc
 GCC     = $(ISP_PREFIX)/bin/clang
 OBJCOPY = $(CROSS_COMPILE_PREFIX)-objcopy
 OBJDUMP = $(CROSS_COMPILE_PREFIX)-objdump
@@ -31,7 +30,6 @@ ASMFLAGS =
 ASMFLAGS += $(COMMON_FLAGS)
 ASMFLAGS += $(ARCH_FLAGS)
 ASMFLAGS += -DportasmHANDLE_INTERRUPT=handle_trap
-#ASMFLAGS += -x assembler-with-cpp
 
 LDFLAGS := -Xlinker --defsym=__stack_size=1K -O0 -g3
 LDFLAGS += -ffunction-sections -fdata-sections --specs=nano.specs -nostartfiles

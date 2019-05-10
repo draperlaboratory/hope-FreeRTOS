@@ -324,7 +324,6 @@ BlockLink_t *pxLink;
 	if( pv != NULL )
 	{
 		puc = ( uint8_t * ) dover_remove_tag(pv);
-
 		/* The memory being freed will have an BlockLink_t structure immediately
 		before it. */
 		puc -= heapSTRUCT_SIZE;
