@@ -12,8 +12,9 @@ INSTALL_DIR := $(ISP_PREFIX)/FreeRTOS
 DEMO_INSTALL_DIR := $(INSTALL_DIR)/Demo
 
 all:
+	$(MAKE) -C FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio lib
 
-install:
+install: all
 	mkdir -p $(INSTALL_DIR)
 	mkdir -p $(DEMO_INSTALL_DIR)
 	cp -rf $(RV_DEMO_DIR) $(COMMON_DEMO_DIR) $(DEMO_INSTALL_DIR)
