@@ -58,3 +58,10 @@
 4. To demonstrate the stack overflow, copy and paste the URL in `payloads/stack.txt` into the address bar and load the URL.
 5. The Search Results page should reload, returning 0 results. Navigate back to `login.html`.
 6. Log in with the credentials `misterhacker` and `password`.
+
+## Running the Negative Tests
+
+The negative tests simulate the behavior of the above exploits automatically. To run them:
+
+1. `make NEGATIVE_TEST=<Password/UserType/UserTypeOverwrite/PPACDoctor/PPACPatient/Stack>`
+2. `make sim-qemu`
