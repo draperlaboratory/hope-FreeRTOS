@@ -17,7 +17,15 @@ void uart0_init(void);
 bool uart1_rxready(void);
 char uart1_rxchar(void);
 char uart1_txchar(char c);
-int uart1_rxbuffer(char *ptr, int len);
+
+/**
+ *  Returns 0 if error happened, otherwise return the number of read characters
+ */
+//@ requires \valid (ptr + len);
+//@ ensures \result == 0 <=> // TODO: we are in the error state
+//@ ensures \result <= len;
+//@ modifies (ptr + (0..\result));
+uint8_t uart1_rxbuffer(char *buffer, uint8_t len);
 int uart1_txbuffer(char *ptr, int len);
 void uart1_init(void);
 #endif
