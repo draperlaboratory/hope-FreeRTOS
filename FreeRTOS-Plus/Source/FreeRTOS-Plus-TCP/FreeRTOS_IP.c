@@ -1366,6 +1366,7 @@ eFrameProcessingResult_t eReturned = eReleaseBuffer;
 	{
 		eReturned = ipCONSIDER_FRAME_FOR_PROCESSING( pxNetworkBuffer->pucEthernetBuffer );
 		pxEthernetHeader = ( EthernetHeader_t * )( pxNetworkBuffer->pucEthernetBuffer );
+
 		if( eReturned == eProcessBuffer )
 		{
 			/* Interpret the received Ethernet packet. */
@@ -1573,7 +1574,6 @@ uint8_t ucProtocol;
 			 */
 			vARPRefreshCacheEntry( &( pxIPPacket->xEthernetHeader.xSourceAddress ), pxIPHeader->ulSourceIPAddress );
 		}
-
 		switch( ucProtocol )
 		{
 			case ipPROTOCOL_ICMP :

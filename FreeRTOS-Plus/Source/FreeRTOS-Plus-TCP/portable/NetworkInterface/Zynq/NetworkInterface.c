@@ -199,8 +199,6 @@ const TickType_t xWaitLinkDelay = pdMS_TO_TICKS( 7000UL ), xWaitRelinkDelay = pd
 		to it.  The task's handle is stored in xEMACTaskHandle so interrupts can
 		notify the task when there is something to process. */
 		xTaskCreate( prvEMACHandlerTask, "EMAC", configEMAC_TASK_STACK_SIZE, NULL, niEMAC_HANDLER_TASK_PRIORITY, &xEMACTaskHandle );
-
-    printf("Done creating task\n");
 	}
 	else
 	{
@@ -212,7 +210,6 @@ const TickType_t xWaitLinkDelay = pdMS_TO_TICKS( 7000UL ), xWaitRelinkDelay = pd
 	DHCP process and all other communication will fail. */
 	xLinkStatus = xGetPhyLinkStatus();
 
-  printf("Returning from network initialization\n");
 	return ( xLinkStatus != pdFALSE );
 }
 /*-----------------------------------------------------------*/
