@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <title>Add Record</title>
+    <script src="helpers.js"></script>
+    <!--
+     Copyright © 2017-2019 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
+     All rights reserved.
+
+     Use and disclosure subject to the following license.
+
+     Permission is hereby granted, free of charge, to any person obtaining
+     a copy of this software and associated documentation files (the
+     "Software"), to deal in the Software without restriction, including
+     without limitation the rights to use, copy, modify, merge, publish,
+     distribute, sublicense, and/or sell copies of the Software, and to
+     permit persons to whom the Software is furnished to do so, subject to
+     the following conditions:
+
+     The above copyright notice and this permission notice shall be
+     included in all copies or substantial portions of the Software.
+
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+     LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+     OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+     WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    -->
+</head>
+
+<body>
+<h1>Add a Medical Record</h1>
+<div id="error-field" class="error"></div>
+<form id="add-record-form" action="javascript:add_record()">
+	<p><b>Condition: </b><input type="text" name="condition"></p>
+  <p><b>Treatment: </b><input type="text" name="treatment"></p>
+  <p><b>Dose: </b><input type="text" name="dose">
+  <select name="unit" multiple>
+    <option value="mg">mg</option>
+    <option value="mL">mL</option>
+    <option value="g">g</option>
+  </select>
+  </p>
+	<b>Notes: </b><textarea name="notes" rows=4 cols=40></textarea>
+	<input type=submit name="recordsubmit" value="submit">
+</form>
+<script type="text/javascript">
+  function add_record() {
+    var form = document.getElementById("add-record-form");
+    var valid = validate_update(form);
+
+    if (valid == true) {
+      submit_update(form);
+    }
+  }
+
+  function validate_update(form) {
+    if (form.condition.value.length == 0) {
+      alert("Condition field cannot be empty");
+      return false;
+    }
+    if (form.treatment.value.length == 0) {
+      alert("Treatment field cannot be empty");
+      return false;
+    }
+    if (form.dose.value.length == 0) {
+      alert("Dose field cannot be empty");
+      return false;
+    }
+    return true;
+  }
+
+  function submit_update(form) {
+    var sessionId = getCookieValue("sessionId");
+    var urlParams = new URLSearchParams(window.location.search);
+    var argStr = ",";
+
+    argStr += createArgStrPair(form.condition.value, "condition");
+    argStr += createArgStrPair(form.treatment.value, "treatment");
+    argStr += createArgStrPair(form.dose.value, "dose");
+    argStr += createArgStrPair(form.unit.value, "unit");
+    argStr += createArgStrPair(form.notes.value, "notes");
+    argStr += createArgStrPair(urlParams.get("patient"), "patient");
+    argStr += createArgStrPair(urlParams.get("doctor"), "doctor");
+    argStr += createArgStrPair(sessionId, "sessionId");
+
+    submitCgiForm(argStr, "add-record.cgi");
+  }
+</script>
+</body>
+</html>

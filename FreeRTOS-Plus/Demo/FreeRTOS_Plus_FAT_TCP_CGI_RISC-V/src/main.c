@@ -107,6 +107,10 @@
 //#include "TCPEchoClient_SingleTasks.h"
 //#include "SimpleTCPEchoServer.h"
 #include "cgi.h"
+#include "database.h"
+#include "auth.h"
+#include "medical.h"
+#include "negative_tests.h"
 
 /* Xilinx includes. */
 //#include "xil_cache.h"
@@ -194,6 +198,7 @@ root directory, and the RAM disk appears as a directory off the root. */
 that run the tests continuously. */
 #define mainRUN_STDIO_TESTS_IN_MULTIPLE_TASK 0
 
+
 /*-----------------------------------------------------------*/
 
 /*
@@ -218,7 +223,6 @@ static void prvCreateDiskAndExampleFiles( void );
  */
 static void prvServerWorkTask( void *pvParameters );
 
-/*
 /*
  * Register commands that can be used with FreeRTOS+CLI through the UDP socket.
  * The commands are defined in CLI-commands.c and File-related-CLI-commands.c
@@ -310,6 +314,12 @@ int main( void )
    write( STDOUT_FILENO, pcPassMessage, strlen( pcPassMessage ) );
    write( STDOUT_FILENO, pcPassMessage, strlen( pcPassMessage ) );
 
+  #ifdef NEGATIVE_TEST
+    printf("Starting negative test\n");
+    NEGATIVE_TEST();
+    for(;;);
+  #endif
+
    printf("Init time.\n");
 	/* Miscellaneous initialisation including preparing the logging and seeding
 	the random number generator. */
@@ -344,7 +354,15 @@ int main( void )
 	/* Start the RTOS scheduler. */
 	FreeRTOS_debug_printf( ("vTaskStartScheduler\n") );
 
-   printf("Everything Running.\n");
+  printf("App time.\n");
+  DatabaseInit();
+  AuthInit();
+
+  if( SampleConfiguration() == false) {
+    return false;
+  }
+
+  printf("Everything Running.\n");
 	vTaskStartScheduler();
 
 	/* If all is well, the scheduler will now be running, and the following
@@ -402,7 +420,9 @@ static const struct xSERVER_CONFIG xServerConfiguration[] =
 	( void ) xServerConfiguration;
 
 	/* Create the RAM disk used by the FTP and HTTP servers. */
+  printf("Creating ramdisk...\n");
 	prvCreateDiskAndExampleFiles();
+  printf("Ramdisk created\n");
 
 	/* The priority of this task can be raised now the disk has been
 	initialised. */
@@ -414,7 +434,9 @@ static const struct xSERVER_CONFIG xServerConfiguration[] =
 	TCPServer_t *pxTCPServer = NULL;
 
 		/* Setup CGI functions */
+    printf("Starting CGI setup...\n");
 		CgiSetup();
+    printf("CGI setup complete\n");
 
 		/* Wait until the network is up before creating the servers.  The
 		notification is given from the network event hook. */
@@ -528,20 +550,16 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
 		server. */
 		FreeRTOS_GetAddressConfiguration( &ulIPAddress, &ulNetMask, &ulGatewayAddress, &ulDNSServerAddress );
 		FreeRTOS_inet_ntoa( ulIPAddress, cBuffer );
-		FreeRTOS_printf( ( "IP Address: %s\r\n", cBuffer ) );
-      printf( ( "IP Address: %s\r\n", cBuffer ) );
+    printf( "IP Address: %s\r\n", cBuffer );
 
 		FreeRTOS_inet_ntoa( ulNetMask, cBuffer );
-		FreeRTOS_printf( ( "Subnet Mask: %s\r\n", cBuffer ) );
-      printf( ( "Subnet Mask: %s\r\n", cBuffer ) );
+    printf( "Subnet Mask: %s\r\n", cBuffer );
 
 		FreeRTOS_inet_ntoa( ulGatewayAddress, cBuffer );
-		FreeRTOS_printf( ( "Gateway Address: %s\r\n", cBuffer ) );
-      printf( ( "Gateway Address: %s\r\n", cBuffer ) );
+    printf( "Gateway Address: %s\r\n", cBuffer );
 
 		FreeRTOS_inet_ntoa( ulDNSServerAddress, cBuffer );
-		FreeRTOS_printf( ( "DNS Server Address: %s\r\n\r\n\r\n", cBuffer ) );
-      printf( ( "DNS Server Address: %s\r\n\r\n\r\n", cBuffer ) );
+    printf( "DNS Server Address: %s\r\n\r\n", cBuffer );
 	}
 }
 /*-----------------------------------------------------------*/
@@ -590,13 +608,13 @@ static void prvSRand( UBaseType_t ulSeed )
 
 static void prvMiscInitialisation( void )
 {
-time_t xTimeNow;
+  uint32_t cpu_freq;
 
 	/* Seed the random number generator. */
-	time( &xTimeNow );
-	FreeRTOS_debug_printf( ( "Seed for randomiser: %lu\n", xTimeNow ) );
-	prvSRand( ( uint32_t ) xTimeNow );
-	FreeRTOS_debug_printf( ( "Random numbers: %08X %08X %08X %08X\n", ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32() ) );
+  cpu_freq = get_cpu_freq();
+	printf( "Seed for randomiser: %lu\n", cpu_freq );
+	prvSRand( cpu_freq );
+	printf( "Random numbers: %08X %08X %08X %08X\n", ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32(), ipconfigRAND32() );
 
 //	Xil_DCacheEnable();
 }

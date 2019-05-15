@@ -20,21 +20,39 @@ VPATH += $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)
 
 # Set up application source, include, and object files for compilation: ______________________
 APP_SRC_DIR = ./src
+CGI_SRC_DIR = $(APP_SRC_DIR)/cgi-app
+MED_COMMON_DIR = $(APP_SRC_DIR)/med-common
+
 APP_SRC = \
 	$(APP_SRC_DIR)/cgi.c \
+	$(APP_SRC_DIR)/cgi-args.c \
+	$(APP_SRC_DIR)/cgi-util.c \
 	$(APP_SRC_DIR)/sleep.c \
-	$(APP_SRC_DIR)/cgi_leakage.c \
-	$(APP_SRC_DIR)/cgi_overflow.c \
-	$(APP_SRC_DIR)/cgi_permissions.c \
 	$(APP_SRC_DIR)/hr_gettime.c \
 	$(APP_SRC_DIR)/main.c \
 	$(APP_SRC_DIR)/memcpy.c \
 	$(APP_SRC_DIR)/platform.c \
-	$(APP_SRC_DIR)/uncached_memory.c
-
+	$(APP_SRC_DIR)/uncached_memory.c \
+	$(APP_SRC_DIR)/add-record.c \
+	$(APP_SRC_DIR)/dashboard.c \
+	$(APP_SRC_DIR)/login.c \
+	$(APP_SRC_DIR)/logout.c \
+	$(APP_SRC_DIR)/register.c \
+	$(APP_SRC_DIR)/search-results.c \
+	$(APP_SRC_DIR)/update-user.c \
+	$(APP_SRC_DIR)/user-details.c \
+	$(APP_SRC_DIR)/auth.c \
+	$(APP_SRC_DIR)/database.c \
+	$(APP_SRC_DIR)/hashtable.c \
+	$(APP_SRC_DIR)/medical.c \
+	$(APP_SRC_DIR)/sha1.c \
+	$(APP_SRC_DIR)/user.c \
+	$(APP_SRC_DIR)/sample.c \
+	$(APP_SRC_DIR)/negative_tests.c
 
 APP_INCLUDES = \
 	-I ./include \
+	-I ./include/med-common \
 	-I $(FREERTOS_INC) \
 	-I $(BSP_INC) \
 	-I $(BSP_INC)/devices \
@@ -58,6 +76,13 @@ APP_BUILD_DIR = $(BUILD_DIR)/app
 APP_OBJS := $(patsubst %.c,$(APP_BUILD_DIR)/%.o,$(notdir $(APP_SRC)))
 APP_OBJS += $(patsubst %.S,$(APP_BUILD_DIR)/%.o,$(notdir $(APP_ASM)))
 VPATH += $(APP_SRC_DIR)
+
+# Negative tests
+ifdef NEGATIVE_TEST
+	CFLAGS += -DNEGATIVE_TEST=NegativeTest$(NEGATIVE_TEST)
+endif
+
+WEBAPP_DEMO_GENERATED := $(FREERTOS_FAT_GENERATED_DIR)/.done
 
 # Need to tell FreeRTOS where to find the FreeRTOSConfig.h and bsp files ____________________
 FREERTOS_INCLUDES += \
@@ -94,7 +119,7 @@ BUILD_DIRECTORIES = \
 	$(FREERTOS_FAT_BUILD_DIR) \
 	$(SDK_BUILD_DIR)
 
-.PHONY: debug clean app_compile debug-app frtos_compile print-info frtos_p_util frtos_cli frtos_tcp frtos_fat freedom_sdk out_elf clean-libxil
+.PHONY: debug clean app_compile debug-app frtos_compile print-info frtos_p_util frtos_cli frtos_tcp frtos_fat freedom_sdk out_elf clean-libxil sim-qemu sim-qemu-debug sim-gdb
 all: directories $(OUT_OBJS) $(OUT_ELF)
 directories: $(BUILD_DIRECTORIES)
 app_compile: directories $(APP_OBJS)
@@ -163,11 +188,17 @@ $(FREERTOS_TCP_BUILD_DIR)/%.o: %.c
 	$(GCC) $(CFLAGS) -std=c11 $(FREERTOS_TCP_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
-$(FREERTOS_FAT_BUILD_DIR)/%.o: %.c
+$(FREERTOS_FAT_BUILD_DIR)/%.o: %.c $(WEBAPP_DEMO_GENERATED)
 	@echo "[FreeRTOS Plus FAT] : $@ _______________________________________________________"
 	@echo "Building: $<"
 	$(GCC) $(CFLAGS) $(FREERTOS_FAT_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
+
+$(WEBAPP_DEMO_GENERATED): $(FREERTOS_FAT_WEB_PAGES)
+	@echo "[FreeRTOS Plus FAT] : $@ _______________________________________________________"
+	@echo "Generating FAT web pages"
+	$(FREERTOS_FAT_DEMO_DIR)/makefs.py
+	@echo "Finished generating FAT web pages"
 
 $(SDK_BUILD_DIR)/%.o: %.c
 	@echo "[Freedom SDK] : $@ _____________________________________________________________"
@@ -187,7 +218,7 @@ include $(BSP_DIR)/libxil/libxil.mk
 $(OUT_ELF): $(OUT_OBJS) $(LINKER_SCRIPT) $(LINK_DEPS)
 	@echo 'Building target: $@'
 	@echo '_______________________________'
-	$(GCC) -o $@ $(OUT_OBJS) $(LDFLAGS) $(LDOPTS) -L$(BSP_DIR)/libxil/
+	$(GCC) $(CFLAGS) $(INCLUDES) $(OUT_OBJS) -o $@ $(LDFLAGS) $(LDOPTS) -L$(BSP_DIR)/libxil/
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -206,38 +237,41 @@ clean-libxil:
 	rm -fv $(CLEAN_OBJS)
 	rm -fv $(LIBXIL_DIR)/$(LIBXIL)
 
-# Policy Variables ___________________________________________
+# Policy/Runtime Variables ______________________________________________________________
 POLICY_DIR = $(ISP_PREFIX)/kernels
-POLICY_RUNTIME ?= hifive
+POLICY_RUNTIME ?= bare
 POLICY ?= none
-QEMU_GDB = -S -s
-QEMU_SERIAL = mon:stdio # Sometimes file:uart.log
-ISP_PREFIX ?= /opt/isp
+ISP_PREFIX ?= $(HOME)/.local/isp/
 PROJ_NAME = web-server
+HTTP_PORT ?= 5555
+GDB_PORT ?= 3333
+
+ifdef QEMU_DEBUG
+	_QEMU_DEBUG := -g $(GDB_PORT)
+endif
 
 # Generate ISP Tags _____________________________________________________________________
 gen-tags: $(OUT_ELF)
 	@echo '___________________________________________________________________________________'
 	@echo 'Generating Tags for $^'
 	isp_run_app $^ \
-	-r hifive \
+	-r bare \
 	--policy none \
 	-o ./isp-output \
 	--tag-only
 
-sim-qemu: $(OUT_ELF)
-	LD_LIBRARY_PATH=$(POLICY_DIR)/osv.$(POLICY_RUNTIME).main.$(POLICY) \
-	qemu-system-riscv32 -kernel $< \
-	-serial $(QEMU_SERIAL) -nographic \
-	-machine sifive_e \
-	-D status.log -d nochain \
-	-singlestep \
-	--policy-validator-cfg yaml-cfg=./isp-output/isp-run-FreeRTOS-$(PROJ_NAME).elf-$(POLICY)/validator_cfg.yml $(QEMU_GDB)
+sim-qemu: sim-qemu-user
 
-gdb-qemu: $(OUT_ELF)
-	$(GDB) -iex "set mem inaccessible-by-default off" -iex "set arch riscv:rv32" -iex "set riscv use-compressed-breakpoint off" -iex "source /opt/isp/gdb-scripts/qemu.gdb" -ex "target remote :1234" $(OUT_ELF)
+sim-qemu-user: $(OUT_ELF)
+	isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r $(POLICY_RUNTIME) -o $(BUILD_DIR) \
+		-e "-net nic -net user,net=10.10.70.0,dhcpstart=10.10.70.1,hostfwd=tcp::$(HTTP_PORT)-:80" $(_QEMU_DEBUG)
 
+sim-qemu-tap: $(OUT_ELF)
+	sudo env PATH=$(PATH) ISP_PREFIX=$(ISP_PREFIX) isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r $(POLICY_RUNTIME) -o $(BUILD_DIR) \
+		-e "-net nic -net tap,ifname=tap0,script=no,downscript=no" $(_QEMU_DEBUG)
 
+sim-gdb:
+	isp_debug $(OUT_ELF) $(GDB_PORT)
 
 debug:
 	@echo "Application Objects: ___________________________"

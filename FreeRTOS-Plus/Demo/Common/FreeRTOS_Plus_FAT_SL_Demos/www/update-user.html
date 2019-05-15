@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <title>Update User</title>
+    <script src="helpers.js"></script>
+    <!--
+     Copyright © 2017-2019 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
+     All rights reserved.
+
+     Use and disclosure subject to the following license.
+
+     Permission is hereby granted, free of charge, to any person obtaining
+     a copy of this software and associated documentation files (the
+     "Software"), to deal in the Software without restriction, including
+     without limitation the rights to use, copy, modify, merge, publish,
+     distribute, sublicense, and/or sell copies of the Software, and to
+     permit persons to whom the Software is furnished to do so, subject to
+     the following conditions:
+
+     The above copyright notice and this permission notice shall be
+     included in all copies or substantial portions of the Software.
+
+
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+     LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+     OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+     WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    -->
+</head>
+
+<body>
+<h1>Update Personal Info</h1>
+<div id="error-field" class="error"></div>
+<form id="update-form" action="javascript:update_user()">
+    <p>
+    <b>Home Address:</b>
+    <textarea name="address" rows="4" cols="40"></textarea>
+    </p>
+    <p>
+    <input type="submit" onclick="errorClear()" value="Update Info">
+    </p>
+</form>
+<script type="text/javascript">
+  function update_user() {
+    var form = document.getElementById("update-form");
+    var valid = validate_update(form);
+
+    if (valid == true) {
+      submit_update(form);
+    }
+  }
+
+  function validate_update(form) {
+    if (form.address.value.length == 0) {
+      alert("Address cannot be empty");
+      return false;
+    }
+    return true;
+  }
+
+  function submit_update(form) {
+    var sessionId = getCookieValue("sessionId");
+    var argStr = ",";
+
+    argStr += createArgStrPair(form.address.value, "address");
+    argStr += createArgStrPair(sessionId, "sessionId");
+
+    submitCgiForm(argStr, "update-user.cgi");
+  }
+</script>
+</body>
+</html>

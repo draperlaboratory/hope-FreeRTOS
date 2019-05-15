@@ -5,3 +5,4 @@ FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio/build
 *.d
 *.elf
 *.a
+*~

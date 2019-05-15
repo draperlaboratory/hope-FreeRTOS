@@ -1,0 +1,1 @@
+http://127.0.0.1:5555/add-record.html?patient=patient_user1&doctor=the_doctor

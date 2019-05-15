@@ -36,10 +36,12 @@
 #define CGI_REST_ARGS_DELIM_START "ARGS"
 #define CGI_REST_ARGS_DELIM_END "ENDARGS"
 #define CGI_RESPONSE_LEN_MAX 2048
-#define CGI_ARGS_LEN_MAX 128
+#define CGI_ARGS_LEN_MAX 512
+#define CGI_HEADER_LEN_MAX 256
 
 /* Types */
 typedef BaseType_t ( *pdCGI_CALLBACK)( char *pcWriteBuffer, size_t xWriteBufferLen,
+                                       char *pcHeaderBuffer, size_t xHeaderBufferLen,
                                        const char *pcCgiArgs );
 
 typedef struct xCGI_REGISTRY_ENTRY

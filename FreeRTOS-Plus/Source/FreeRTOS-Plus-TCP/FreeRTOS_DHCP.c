@@ -176,7 +176,8 @@ struct xDHCP_DATA
 	BaseType_t xUseBroadcast;
 	/* Maintains the DHCP state machine state. */
 	eDHCPState_t eDHCPState;
-	/* The UDP socket used for all incoming and outgoing DHCP traffic. */
+        char padding[3];
+        /* The UDP socket used for all incoming and outgoing DHCP traffic. */
 	Socket_t xDHCPSocket;
 };
 

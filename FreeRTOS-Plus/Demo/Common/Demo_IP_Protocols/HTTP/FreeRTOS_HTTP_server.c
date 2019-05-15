@@ -338,6 +338,7 @@ static BaseType_t prvOpenURL( HTTPClient_t *pxClient )
 {
 BaseType_t xRc;
 char pcSlash[ 2 ];
+char *pcQueryStringStart;
 
 	pxClient->bits.ulFlags = 0;
 
@@ -382,6 +383,12 @@ char pcSlash[ 2 ];
 		pcSlash,
 		pxClient->pcUrlData);
 
+  /* Truncate filename at query string delimiter */
+  pcQueryStringStart = strchr( pxClient->pcCurrentFilename, '?');
+  if( pcQueryStringStart != NULL ) {
+    *pcQueryStringStart = '\0';
+  }
+
 	pxClient->pxFileHandle = ff_fopen( pxClient->pcCurrentFilename, "rb" );
 
 	FreeRTOS_printf( ( "Open file '%s': %s\n", pxClient->pcCurrentFilename,
@@ -422,14 +429,14 @@ BaseType_t xRc = 0;
 
 	if( 0 == xRc )
 	{
-		DEBUG_PRINTF( "CGI exec successful" );
+		printf( "CGI exec successful" );
 		/* Send the response text */
 		pcResponse[CGI_RESPONSE_LEN_MAX - 1] = '\0';
 		xRc = prvSendText( pxClient, pcResponse );
 	}
 	else
 	{
-		DEBUG_PRINTF( "CGI exec FAILURE, code %d", (int)xRc );
+		printf( "CGI exec FAILURE, code %d", (int)xRc );
 		xRc = prvSendReplyAndClose( pxClient, xRc );
 	}
 

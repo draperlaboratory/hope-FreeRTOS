@@ -1,29 +1,26 @@
-/*
- * File: cgi.c
- *
- * Description:
- *   This file implements CGI setup functions.
- *
- * Copyright DornerWorks 2018
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- * 1.  Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- * 2.  Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation and/or
- * other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DORNERWORKS
- * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
- * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/* Copyright © 2017-2019 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc. */
+/* All rights reserved. */
+
+/* Use and disclosure subject to the following license. */
+
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the */
+/* "Software"), to deal in the Software without restriction, including */
+/* without limitation the rights to use, copy, modify, merge, publish, */
+/* distribute, sublicense, and/or sell copies of the Software, and to */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions: */
+
+/* The above copyright notice and this permission notice shall be */
+/* included in all copies or substantial portions of the Software. */
+
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND */
+/* NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE */
+/* LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION */
+/* OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION */
+/* WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 /* FreeRTOS includes. */
 #include "FreeRTOS.h"
@@ -35,19 +32,46 @@
 #include "cgi.h"
 
 /* Function declarations */
-extern BaseType_t CgiOverflow( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCgiArgs );
-extern BaseType_t CgiPermissions( char *pcWriteBuffer, size_t xWriteBufferLen,
-                                  const char *pcCgiArgs );
-extern BaseType_t CgiLeakage( char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCgiArgs );
+
+extern BaseType_t CgiAddRecord( char *pcWriteBuffer, size_t xWriteBufferLen,
+                    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+                    const char *pcCgiArgs );
+extern BaseType_t CgiDashboard( char *pcWriteBuffer, size_t xWriteBufferLen,
+                    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+                    const char *pcCgiArgs );
+extern BaseType_t CgiLogin( char *pcWriteBuffer, size_t xWriteBufferLen,
+                    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+                    const char *pcCgiArgs );
+extern BaseType_t CgiLogout( char *pcWriteBuffer, size_t xWriteBufferLen,
+                    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+                    const char *pcCgiArgs );
+extern BaseType_t CgiRegister( char *pcWriteBuffer, size_t xWriteBufferLen,
+                    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+                    const char *pcCgiArgs );
+extern BaseType_t CgiSearchResults( char *pcWriteBuffer, size_t xWriteBufferLen,
+                    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+                    const char *pcCgiArgs );
+extern BaseType_t CgiUpdateUser( char *pcWriteBuffer, size_t xWriteBufferLen,
+                    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+                    const char *pcCgiArgs );
+extern BaseType_t CgiUserDetails( char *pcWriteBuffer, size_t xWriteBufferLen,
+                    char *pcHeaderBuffer, size_t xHeaderBufferLen,
+                    const char *pcCgiArgs );
 
 static void CgiRegisterSingle( const char *pcUrl, pdCGI_CALLBACK pxFunc );
 
 /* Function definitions */
 void CgiSetup( void )
 {
-    CgiRegisterSingle( "/cgi-bin/overflow.cgi", CgiOverflow );
-    CgiRegisterSingle( "/cgi-bin/permissions.cgi", CgiPermissions );
-    CgiRegisterSingle( "/cgi-bin/leakage.cgi", CgiLeakage );
+    printf("Setting up CGI...\n");
+    CgiRegisterSingle( "/cgi-bin/add-record.cgi", CgiAddRecord );
+    CgiRegisterSingle( "/cgi-bin/dashboard.cgi", CgiDashboard );
+    CgiRegisterSingle( "/cgi-bin/login.cgi", CgiLogin );
+    CgiRegisterSingle( "/cgi-bin/logout.cgi", CgiLogout );
+    CgiRegisterSingle( "/cgi-bin/register.cgi", CgiRegister );
+    CgiRegisterSingle( "/cgi-bin/search-results.cgi", CgiSearchResults );
+    CgiRegisterSingle( "/cgi-bin/update-user.cgi", CgiUpdateUser );
+    CgiRegisterSingle( "/cgi-bin/user-details.cgi", CgiUserDetails );
 }
 
 static void CgiRegisterSingle( const char *pcUrl, pdCGI_CALLBACK pxFunc )
