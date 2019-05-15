@@ -33,6 +33,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "portmacro.h"
+#include "portexception.h"
 
 #ifndef configCLINT_BASE_ADDRESS
 	#warning configCLINT_BASE_ADDRESS must be defined in FreeRTOSConfig.h.  If the target chip includes a Core Local Interrupter (CLINT) then set configCLINT_BASE_ADDRESS to the CLINT base address.  Otherwise set configCLINT_BASE_ADDRESS to 0.
@@ -190,5 +191,106 @@ void vPortEndScheduler( void )
 
 void vPortHandleInterrupt( void )
 {
-	/* Not implemented. */
+   	/* Not implemented. */
+}
+
+/* exception debugging */
+void is_exception_print( uint32_t cause, uint32_t mepc, uint32_t status ) {
+    const char *privilege_levels[] = {"User", "Supervisor", "Reserved", "Machine"};
+    uint32_t *sp;
+    int i;
+
+    printf("\nEXCEPTION DETECTED\n  Type: ");
+    switch( global_exception_mc.mcause ) {
+
+      case portRV_INSTRUCTION_ADDRESS_MISALIGNED:
+          printf("instruction addr misaligned\n");
+          break;
+      case portRV_INSTRUCTION_ACCESS_FAULT:
+          printf("instruction access fault\n");
+          break;
+      case portRV_ILLEGAL_INSTRUCTION:
+          printf("illegal instruction\n");
+          break;
+      case portRV_LOAD_ADDRESS_MISALIGNED:
+          printf("load address misaligned\n");
+          break;
+      case portRV_LOAD_ACCESS_FAULT:
+          printf("load access fault\n");
+          break;
+      case portRV_STORE_ADDRESS_MISALIGNED:
+          printf("store/AMO addr misaligned\n");
+          break;
+      case portRV_STORE_ACCESS_FAULT:
+          printf("store/AMO access fualt\n");
+          break;
+      case portRV_INSTRUCTION_PAGE_FAULT:
+          printf("instruction page fault\n");
+          break;
+      case portRV_LOAD_PAGE_FAULT:
+          printf("load page fault\n");
+          break;
+      case portRV_STORE_PAGE_FAULT:
+          printf("store/AMO page fault\n");
+          break;
+      default:
+          printf("unknown\n");
+      }
+
+    printf("  MISA: 0x%x\n", global_exception_mc.misa);
+    printf("  MEPC: 0x%x\n", global_exception_mc.mepc);
+    printf("  MTVAL: 0x%x\n", global_exception_mc.mtval);
+
+    printf("  MSTATUS: 0x%x\n", global_exception_mc.mstatus);
+    printf("    Previous privilege mode: %s\n",
+        privilege_levels[((0x3 << 11) & global_exception_mc.mstatus) >> 11]);
+
+#if (configEXCEPTION_HANDLER_STACK_DUMP != 0)
+    printf("  Stack dump:\n");
+    printf("    (stack pointer = 0x%x)\n", global_exception_mc.x2);
+    sp = (uint32_t*)global_exception_mc.x2;
+    for ( i = 0; i < 32; i++, sp++ ) {
+        printf(    "    @ 0x%x: 0x%x", sp, *sp);
+        if ( !i )
+            printf(" (sp)");
+        printf("\n");
+    }
+#endif 
+
+#if (configEXCEPTION_HANDLER_REGISTER_DUMP != 0)
+    printf("  Register file:\n");
+    printf("    ra (x1): 0x%x\n", global_exception_mc.x1);
+    printf("    sp (x2): 0x%x\n", global_exception_mc.x2);
+    printf("    gp (x3): 0x%x\n", global_exception_mc.x3);
+    printf("    tp (x4): 0x%x\n", global_exception_mc.x4);
+    printf("    t0 (x5): 0x%x\n", global_exception_mc.x5);
+    printf("    t1 (x6): 0x%x\n", global_exception_mc.x6);
+    printf("    t2 (x7): 0x%x\n", global_exception_mc.x7);
+    printf("    t3 (x28): 0x%x\n", global_exception_mc.x28);
+    printf("    t4 (x29): 0x%x\n", global_exception_mc.x29);
+    printf("    t5 (x30): 0x%x\n", global_exception_mc.x30);
+    printf("    t6 (x31): 0x%x\n", global_exception_mc.x31);
+    printf("    s0/fp (x8): 0x%x\n", global_exception_mc.x8);
+    printf("    s1 (x9): 0x%x\n", global_exception_mc.x9);
+    printf("    s2 (x18): 0x%x\n", global_exception_mc.x18);
+    printf("    s3 (x19): 0x%x\n", global_exception_mc.x19);
+    printf("    s4 (x20): 0x%x\n", global_exception_mc.x20);
+    printf("    s5 (x21): 0x%x\n", global_exception_mc.x21);
+    printf("    s6 (x22): 0x%x\n", global_exception_mc.x22);
+    printf("    s7 (x23): 0x%x\n", global_exception_mc.x23);
+    printf("    s8 (x24): 0x%x\n", global_exception_mc.x24);
+    printf("    s9 (x25): 0x%x\n", global_exception_mc.x25);
+    printf("    s10 (x26): 0x%x\n", global_exception_mc.x26);
+    printf("    s11 (x27): 0x%x\n", global_exception_mc.x27);
+    printf("    a0 (x10): 0x%x\n", global_exception_mc.x10);
+    printf("    a1 (x11): 0x%x\n", global_exception_mc.x11);
+    printf("    a2 (x12): 0x%x\n", global_exception_mc.x12);
+    printf("    a3 (x13): 0x%x\n", global_exception_mc.x13);
+    printf("    a4 (x14): 0x%x\n", global_exception_mc.x14);
+    printf("    a5 (x15): 0x%x\n", global_exception_mc.x15);
+    printf("    a6 (x16): 0x%x\n", global_exception_mc.x16);
+    printf("    a7 (x17): 0x%x\n", global_exception_mc.x17);	 
+#endif
+
+    return;
 }
