@@ -31,9 +31,7 @@ void serLcdPrintf(char *str)
 
 
 #if LCD_USE_SPI
-    // preconditions for the arguments, no postconditions
     configASSERT(spi1_transmit(LCD_SPI_SLAVE_IDX, cmd_mode, sizeof(cmd_mode)) != -1);
-    // 
     vTaskDelay(pdMS_TO_TICKS(100));
     configASSERT(spi1_transmit(LCD_SPI_SLAVE_IDX, (uint8_t*)str, len) != -1);
 #else
