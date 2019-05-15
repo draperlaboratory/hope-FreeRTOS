@@ -307,6 +307,10 @@ http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/UDP_Echo_Clients.html */
 #define configECHO_SERVER_ADDR2 0
 #define configECHO_SERVER_ADDR3 15
 
+/* Debug options for logging extra state information in exception handler */
+#define configEXCEPTION_HANDLER_STACK_DUMP 0
+#define configEXCEPTION_HANDLER_REGISTER_DUMP 0
+
 #endif /* FREERTOS_CONFIG_H */
 
 
