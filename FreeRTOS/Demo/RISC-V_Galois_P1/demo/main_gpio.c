@@ -44,6 +44,8 @@
 #include "gpio.h"
 
 /*-----------------------------------------------------------*/
+#define MAIN_GPIO_DELAY_MS 100
+/*-----------------------------------------------------------*/
 
 /*
  * Called by main when PROG=main_gpio
@@ -53,97 +55,122 @@ void main_gpio(void);
 /*
  * The tasks as described in the comments at the top of this file.
  */
-static void vTestGPIO(void *pvParameters);
+static void vTestGPIO_output(void *pvParameters);
+static void vTestGPIO_input(void *pvParameters);
+static void vTestLED(void *pvParameters);
 
 /*-----------------------------------------------------------*/
 
 void main_gpio(void)
 {
     /* Create GPIO test */
-    xTaskCreate(vTestGPIO, "GPIO Test", 1000, NULL, 0, NULL);
+    xTaskCreate(vTestGPIO_output, "GPIO Output Test", 1000, NULL, 0, NULL);
+    xTaskCreate(vTestGPIO_input, "GPIO Input Test", 1000, NULL, 0, NULL);
+    xTaskCreate(vTestLED, "LED Test", 1000, NULL, 0, NULL);
 }
 /*-----------------------------------------------------------*/
 
-#define MAIN_GPIO_DELAY_MS 100
-void vTestGPIO(void *pvParameters)
+
+void vTestGPIO_input(void *pvParameters)
+{
+    (void)pvParameters;
+
+    // GPIO Input has a pull-up, it is high unless pulled to the ground
+    uint8_t input[4] = {1};
+    uint8_t input_last[4] = {1};
+
+    for (;;)
+    {
+        input[0] = gpio1_read(0);
+        input[1] = gpio1_read(1);
+        input[2] = gpio1_read(2);
+        input[3] = gpio1_read(3);
+
+        for (uint8_t idx = 0; idx < 4; idx++) {
+            if (input[idx] != input_last[idx]) {
+                printf("#%u changed: %u -> %u\r\n", idx, input_last[idx], input[idx]);
+                input_last[idx] = input[idx];
+            }
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+    }
+}
+
+void vTestGPIO_output(void *pvParameters)
 {
     /* vTestGPIO() tests the AXI GPIO on the VCU118 by 
-  testing that the output pins and the LEDs can be written to.
-  This should be verified by measuring the pins and looking
-  at the LEDs. */
+    testing that the output pins and the LEDs can be written to.
+    This should be verified by measuring the pins and looking
+    at the LEDs. */
 
     (void)pvParameters;
+
+    // Delay so the input thread can catch up
+    vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS*2));
 
     /* GPIO are already set in hardware to be outputs */
     for (;;)
     {
         /***** WRITE TO PINS *****/
-        /* Write to GPIO pin #0 */
-        gpio1_write(0);
-        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-
-        /* Write to GPIO pin #1 */
-        gpio1_write(1);
-        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-
-        /* Write to GPIO pin #2 */
-        gpio1_write(2);
-        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-
-        /* Write to GPIO pin #3*/
-        gpio1_write(3);
-        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-        
-        /* Clear GPIO pin #0 */
-        gpio1_clear(0);
-        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-
-        /* Clear GPIO pin #1 */
-        gpio1_clear(1);
-        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-
-        /* Clear GPIO pin #2 */
-        gpio1_clear(2);
-        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-
-        /* Clear GPIO pin #3 */
-        gpio1_clear(3);
-        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-
-        /* Write to every LED */
+        /* Write to GPIO_2 pin #0 */
         gpio2_write(0);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+
+        /* Write to GPIO_2 pin #1 */
         gpio2_write(1);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-        gpio2_write(2);
+
+        /* Clear GPIO_2 pin #0 */
+        gpio2_clear(0);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-        gpio2_write(3);
+
+        /* Clear GPIO_2 pin #1 */
+        gpio2_clear(1);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));   
+    }
+}
+
+void vTestLED(void *pvParameters)
+{
+    (void)pvParameters;
+
+    for(;;)
+    {
+        /* Write to every LED */
+        led_write(0);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-        gpio2_write(4);
+        led_write(1);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-        gpio2_write(5);
+        led_write(2);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-        gpio2_write(6);
+        led_write(3);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-        gpio2_write(7);
+        led_write(4);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        led_write(5);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        led_write(6);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+        led_write(7);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
 
         /* Clear every LED */
-        gpio2_clear(0);
+        led_clear(0);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-        gpio2_clear(1);
+        led_clear(1);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-        gpio2_clear(2);
+        led_clear(2);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-        gpio2_clear(3);
+        led_clear(3);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-        gpio2_clear(4);
+        led_clear(4);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-        gpio2_clear(5);
+        led_clear(5);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-        gpio2_clear(6);
+        led_clear(6);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
-        gpio2_clear(7);
+        led_clear(7);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
     }
 }

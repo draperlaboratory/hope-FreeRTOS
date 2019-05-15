@@ -147,10 +147,8 @@ ifeq ($(PROG),main_full)
 		$(APP_SOURCE_DIR)/StreamBufferInterrupt.c \
 		$(APP_SOURCE_DIR)/semtest.c
 else
-ifeq ($(PROG),main_drivers)
+ifeq ($(PROG),main_iic)
 	CFLAGS += -DmainDEMO_TYPE=3
-	DEMO_SRC += devices/vcnl4010.c
-	DEMO_SRC += devices/serLcd.c
 	INCLUDES += -I./demo
 	INCLUDES += -I./devices
 else
@@ -214,7 +212,6 @@ ifeq ($(PROG),main_udp)
 		demo/TCPEchoClient_SingleTasks.c \
 		demo/SimpleTCPEchoServer.c
 else
-
 ifeq ($(PROG),main_sd)
 	CFLAGS += -DmainDEMO_TYPE=6
 	DEMO_SRC += devices/ff.c
@@ -222,7 +219,13 @@ ifeq ($(PROG),main_sd)
 	INCLUDES += -I./demo
 	INCLUDES += -I./devices
 else
+ifeq ($(PROG),main_uart)
+	CFLAGS += -DmainDEMO_TYPE=7
+	INCLUDES += -I./demo
+	INCLUDES += -I./devices
+else
 	$(info unknown demo: $(PROG))
+endif
 endif
 endif
 endif

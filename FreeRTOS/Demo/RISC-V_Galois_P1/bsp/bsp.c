@@ -29,6 +29,11 @@ void prvSetupHardware(void)
     uart1_init();
 #endif
 
+#if BSP_USE_UART2
+    PLIC_set_priority(&Plic, PLIC_SOURCE_UART2, PLIC_PRIORITY_UART2);
+    uart2_init();
+#endif
+
 #if BSP_USE_ETHERNET
     configASSERT(BSP_USE_DMA);
     PLIC_set_priority(&Plic, PLIC_SOURCE_ETH, PLIC_PRIORITY_ETH);
@@ -41,14 +46,8 @@ void prvSetupHardware(void)
     iic0_init();
 #endif
 
-#if BSP_USE_IIC1
-    PLIC_set_priority(&Plic, PLIC_SOURCE_IIC1, PLIC_PRIORITY_IIC1);
-    iic1_init();
-#endif
-
 #if BSP_USE_SPI0
-    PLIC_set_priority(&Plic, PLIC_SOURCE_SPI0, PLIC_PRIORITY_SPI0);
-    spi0_init();
+#error "BSP_USE_SPI0 should never be set! The onboard flash already uses this device"
 #endif
 
 #if BSP_USE_SPI1

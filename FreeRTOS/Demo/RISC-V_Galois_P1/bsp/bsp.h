@@ -39,18 +39,18 @@
 #define PLIC_SOURCE_UART1 0x6
 #define PLIC_SOURCE_IIC0 0x7
 #define PLIC_SOURCE_SPI1 0x8
-#define PLIC_SOURCE_IIC1 0x9
+#define PLIC_SOURCE_UART2 0x9
 
 #define PLIC_PRIORITY_UART0 0x1
 #define PLIC_PRIORITY_ETH 0x2
 #define PLIC_PRIORITY_DMA_MM2S 0x3
 #define PLIC_PRIORITY_DMA_S2MM 0x3
-// GFE:
+
 #define PLIC_PRIORITY_SPI0 0x3
 #define PLIC_PRIORITY_UART1 0x1
 #define PLIC_PRIORITY_IIC0 0x3
 #define PLIC_PRIORITY_SPI1 0x2
-#define PLIC_PRIORITY_IIC1 0x3
+#define PLIC_PRIORITY_UART2 0x1
 
 extern plic_instance_t Plic;
 
@@ -61,7 +61,7 @@ void external_interrupt_handler(uint32_t cause);
  * UART defines
  */
 #define XPAR_UART_USE_POLLING_MODE 1
-#define XPAR_XUARTNS550_NUM_INSTANCES 2
+#define XPAR_XUARTNS550_NUM_INSTANCES 3
 #define XPAR_DEFAULT_BAUD_RATE 115200
 
 #define BSP_USE_UART0 1
@@ -70,11 +70,17 @@ void external_interrupt_handler(uint32_t cause);
 #define XPAR_UARTNS550_0_BASEADDR 0x62300000ULL
 #define XPAR_UARTNS550_0_CLOCK_HZ configPERIPH_CLOCK_HZ
 
-#define BSP_USE_UART1 0
+#define BSP_USE_UART1 1
 #define XPAR_UARTNS550_1_DEVICE_ID 1
 #define XPAR_UARTNS550_1_BAUD_RATE XPAR_DEFAULT_BAUD_RATE
 #define XPAR_UARTNS550_1_BASEADDR (0x62340000ULL)
 #define XPAR_UARTNS550_1_CLOCK_HZ configPERIPH_CLOCK_HZ
+
+#define BSP_USE_UART2 1
+#define XPAR_UARTNS550_2_DEVICE_ID 2
+#define XPAR_UARTNS550_2_BAUD_RATE XPAR_DEFAULT_BAUD_RATE
+#define XPAR_UARTNS550_2_BASEADDR (0x62360000ULL)
+#define XPAR_UARTNS550_2_CLOCK_HZ configPERIPH_CLOCK_HZ
 
 /**
  * DMA defines
@@ -161,19 +167,13 @@ void external_interrupt_handler(uint32_t cause);
 /**
  * IIC Defines
  */
-#define XPAR_XIIC_NUM_INSTANCES 2
+#define XPAR_XIIC_NUM_INSTANCES 1
 
-#define BSP_USE_IIC0 0
+#define BSP_USE_IIC0 1
 #define XPAR_IIC_0_DEVICE_ID 0
 #define XPAR_IIC_0_BASEADDR (0x62310000ULL)
 #define XPAR_IIC_0_TEN_BIT_ADR 0
 #define XPAR_IIC_0_GPO_WIDTH 32
-
-#define BSP_USE_IIC1 0
-#define XPAR_IIC_1_DEVICE_ID 1
-#define XPAR_IIC_1_BASEADDR (0x62350000ULL)
-#define XPAR_IIC_1_TEN_BIT_ADR 0
-#define XPAR_IIC_1_GPO_WIDTH 32
 
 /**
  * SPI defines
@@ -181,7 +181,7 @@ void external_interrupt_handler(uint32_t cause);
 #define XPAR_XSPI_NUM_INSTANCES 2
 #define XPAR_SPI_USE_POLLING_MODE 0
 
-#define BSP_USE_SPI0 0 /* SPI0 is Flash memory, we don't use it directly */
+#define BSP_USE_SPI0 0 /* SPI0 is Flash memory, don't use it directly */
 #define XPAR_SPI_0_DEVICE_ID 0
 #define XPAR_SPI_0_BASEADDR 0x4000000ULL
 #define XPAR_SPI_0_FIFO_EXIST 0
@@ -194,7 +194,7 @@ void external_interrupt_handler(uint32_t cause);
 #define XPAR_SPI_0_XIP_MODE 0
 #define XPAR_SPI_0_USE_STARTUP 0
 
-#define BSP_USE_SPI1 0 /* SPI1 is used for SD card (polled mode), and can be used for LCD screen (interrupt mode)*/ 
+#define BSP_USE_SPI1 1 /* SPI1 is used for SD card (polled mode), and can be used for LCD screen (interrupt mode)*/ 
 #define XPAR_SPI_1_DEVICE_ID 1
 #define XPAR_SPI_1_BASEADDR (0x62320000ULL)
 #define XPAR_SPI_1_FIFO_EXIST 1
@@ -210,8 +210,9 @@ void external_interrupt_handler(uint32_t cause);
 /**
  * GPIO defines
  */
-#define BSP_USE_GPIO 0
-#define XPAR_GPIO_BASEADDR (0x62330000ULL)
+#define BSP_USE_GPIO 1
+#define XPAR_GPIO_1_BASEADDR (0x62330000ULL)
+#define XPAR_GPIO_2_BASEADDR (0x62370000ULL)
 
 /**
  * Xilinx Drivers defines

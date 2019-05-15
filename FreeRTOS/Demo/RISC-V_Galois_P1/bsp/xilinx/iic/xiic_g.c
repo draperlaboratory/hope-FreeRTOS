@@ -75,12 +75,6 @@ XIic_Config XIic_ConfigTable[XPAR_XIIC_NUM_INSTANCES] = {
 	 XPAR_IIC_0_BASEADDR,	/* Base address */
 	 XPAR_IIC_0_TEN_BIT_ADR,/* Uses 10 bit addressing */
 	 XPAR_IIC_0_GPO_WIDTH	/* Number of bits in GPO register */
-	},
-	{
-	 XPAR_IIC_1_DEVICE_ID,	/* Device ID for instance */
-	 XPAR_IIC_1_BASEADDR,	/* Base address */
-	 XPAR_IIC_1_TEN_BIT_ADR,/* Uses 10 bit addressing */
-	 XPAR_IIC_1_GPO_WIDTH	/* Number of bits in GPO register */
 	}
 };
 /** @} */

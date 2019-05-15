@@ -44,20 +44,23 @@
 #pragma message "Demo type 1: Basic Blinky"
 extern void main_blinky(void);
 #elif mainDEMO_TYPE == 2
-#pragma message "Demo type 2: Full"
+#pragma message "Demo type 2: Full FreeRTOS API"
 extern void main_full(void);
 #elif mainDEMO_TYPE == 3
-#pragma message "Demo type 3: Drivers"
-extern void main_drivers(void);
+#pragma message "Demo type 3: IIC test"
+extern void main_iic(void);
 #elif mainDEMO_TYPE == 4
-#pragma message "Demo type 4: GPIO"
+#pragma message "Demo type 4: GPIO test"
 extern void main_gpio(void);
 #elif mainDEMO_TYPE == 5
-#pragma message "Demo type 5: TCP"
+#pragma message "Demo type 5: TCP/UDP test"
 extern void main_tcp(void);
 #elif mainDEMO_TYPE == 6
-#pragma message "Demo type 5: SD"
+#pragma message "Demo type 6: SD card test"
 extern void main_sd(void);
+#elif mainDEMO_TYPE == 7
+#pragma message "Demo type 7: UART test"
+extern void main_uart(void);
 #else
 #error "Unsupported demo type"
 #endif
@@ -132,7 +135,7 @@ int main(void)
 	}
 #elif mainDEMO_TYPE == 3
 	{
-		main_drivers();
+		main_iic();
 	}
 #elif mainDEMO_TYPE == 4
 	{
@@ -145,6 +148,10 @@ int main(void)
 #elif mainDEMO_TYPE == 6
 	{
 		main_sd();
+	}
+#elif mainDEMO_TYPE == 7
+	{
+		main_uart();
 	}
 #endif
 
