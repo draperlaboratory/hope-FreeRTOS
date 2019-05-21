@@ -179,7 +179,7 @@ void external_interrupt_handler(uint32_t cause);
  * SPI defines
  */
 #define XPAR_XSPI_NUM_INSTANCES 2
-#define XPAR_SPI_USE_POLLING_MODE 0
+#define XPAR_SPI_USE_POLLING_MODE 1
 
 #define BSP_USE_SPI0 0 /* SPI0 is Flash memory, don't use it directly */
 #define XPAR_SPI_0_DEVICE_ID 0
@@ -197,7 +197,7 @@ void external_interrupt_handler(uint32_t cause);
 #define BSP_USE_SPI1 1 /* SPI1 is used for SD card (polled mode), and can be used for LCD screen (interrupt mode)*/ 
 #define XPAR_SPI_1_DEVICE_ID 1
 #define XPAR_SPI_1_BASEADDR (0x62320000ULL)
-#define XPAR_SPI_1_FIFO_EXIST 1
+#define XPAR_SPI_1_FIFO_EXIST 0
 #define XPAR_SPI_1_SLAVE_ONLY 0
 #define XPAR_SPI_1_NUM_SS_BITS 1
 #define XPAR_SPI_1_NUM_TRANSFER_BITS 8

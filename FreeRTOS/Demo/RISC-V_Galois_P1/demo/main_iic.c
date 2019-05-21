@@ -45,6 +45,7 @@
 #define MPU925X_I2CADDR_DEFAULT 0x69 // AD0 = 1 (high)
 
 #define WHOAMI_REGISTER_ADDR 117
+#define WHOAMI_DEFAULT_RESPONSE 0x71
 
 void main_iic(void);
 
@@ -64,7 +65,7 @@ static void prvIicTestTask0(void *pvParameters)
 
 	printf("Starting prvIicTestTask0\r\n");
 	uint8_t cnt = 0;
-	uint8_t data[2] = {0};
+	uint8_t data = 0;
 
 	// Give the sensor time to power up
 	vTaskDelay(pdMS_TO_TICKS(100));
@@ -72,13 +73,13 @@ static void prvIicTestTask0(void *pvParameters)
 	for (;;)
 	{
 		data[0] = WHOAMI_REGISTER_ADDR;
-    	configASSERT(iic0_transmit(MPU925X_I2CADDR_DEFAULT, data, 1) != -1);
-		configASSERT(iic0_receive(MPU925X_I2CADDR_DEFAULT, data, 1) != -1);
-		configASSERT(data[0] == 0x71);
+    	configASSERT(iic0_transmit(MPU925X_I2CADDR_DEFAULT, &data, 1) != -1);
+		configASSERT(iic0_receive(MPU925X_I2CADDR_DEFAULT, &data, 1) != -1);
+		configASSERT(data == WHOAMI_DEFAULT_RESPONSE);
 
 		if (cnt > 2) {
 			// Run twice before printing the output
-			printf("Whoami: 0x%X\r\n",data[0]);
+			printf("Whoami: 0x%X\r\n",data);
 		}
 
 		cnt++;

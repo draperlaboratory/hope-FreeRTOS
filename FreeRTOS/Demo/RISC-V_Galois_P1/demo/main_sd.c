@@ -35,12 +35,8 @@
 #include "task.h"
 #include "bsp.h"
 
-#include "ff.h"		/* Declarations of FatFs API */
+#include "ff.h" /* Declarations of FatFs API */
 #include "diskio.h"
-
-#if !(BSP_USE_UART0 && BSP_USE_SPI1)
-#error "One or more peripherals are nor present, this test cannot be run"
-#endif 
 
 void main_sd(void);
 
@@ -48,44 +44,45 @@ static void prvSdTestTask0(void *pvParameters);
 
 void main_sd(void)
 {
-	xTaskCreate(prvSdTestTask0, "prvSdTestTask0", configMINIMAL_STACK_SIZE * 3U, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(prvSdTestTask0, "prvSdTestTask0", configMINIMAL_STACK_SIZE * 3U, NULL, tskIDLE_PRIORITY + 1, NULL);
 }
-/*-----------------------------------------------------------*/
 
 /**
  * This tasks controls GPIO and the connected motors
  */
 static void prvSdTestTask0(void *pvParameters)
 {
-	(void)pvParameters;
-		
-	FATFS FatFs;		/* FatFs work area needed for each volume */
-	FIL Fil;			/* File object needed for each open file */
-	UINT bw;
+    (void)pvParameters;
 
-	printf("Starting SD TEST ASK...\r\n");
+    FATFS FatFs; /* FatFs work area needed for each volume */
+    FIL Fil;     /* File object needed for each open file */
+    FILINFO FilInfo;
+    UINT bw;
+    DIR d;
 
-	uint8_t status = disk_initialize(0);
-	printf("status = %u\r\n",status);
+    
 
-	// printf("f_mount result = %i\r\n", f_mount(&FatFs, "", 0));		/* Give a work area to the default drive */
+    // if (f_open(&Fil, "newfile.txt", FA_WRITE | FA_CREATE_ALWAYS) == FR_OK) {	/* Create a file */
+    // 	f_write(&Fil, "It works!\r\n", 11, &bw);	/* Write data to the file */
+    //  	f_close(&Fil);								/* Close the file */
+    //  	if (bw == 11) {		/* Lights green LED if data written well */
+    //  		printf("data written sucessfully\r\n");
+    //  	} else {
+    //  		printf("data write error!\r\n");
+    //  	}
+      //} else {
+     // 	printf("f_mount error!\r\n");
+      //}
+    //printf(" disk_init = %u\r\n", disk_initialize(0));
+    //uint64_t data = 42;
+    //uint8_t res = disk_ioctl(0, GET_SECTOR_COUNT, &data);
+    //printf("disk_ioctl: res=%u, data=%llu\r\n", res, data);
+    uint8_t res;
+    res = f_mount(&FatFs, "", 1);
+    printf("f_mount result = %i\r\n", res);		/* Give a work area to the default drive */  
+    //uint8_t res = f_opendir(&d, "");
+    //printf("f-Open result: %u\r\n", res);
 
-	// if (f_open(&Fil, "newfile.txt", FA_WRITE | FA_CREATE_ALWAYS) == FR_OK) {	/* Create a file */
-
-	// 	f_write(&Fil, "It works!\r\n", 11, &bw);	/* Write data to the file */
-
-	// 	f_close(&Fil);								/* Close the file */
-
-	// 	if (bw == 11) {		/* Lights green LED if data written well */
-	// 		printf("data written sucessfully\r\n");
-	// 	} else {
-	// 		printf("data write error!\r\n");
-	// 	}
-	// } else {
-	// 	printf("f_mount error!\r\n");
-	// }
-
-
-	printf("terminating\r\n");
-	configASSERT(0);
+    printf("terminating\r\n");
+    //configASSERT(0);
 }
