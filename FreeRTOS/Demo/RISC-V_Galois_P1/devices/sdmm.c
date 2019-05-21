@@ -9,289 +9,347 @@
 /   personal, non-profit or commercial products UNDER YOUR RESPONSIBILITY.
 / * Redistributions of source code must retain the above copyright notice.
 /
-/-------------------------------------------------------------------------/
-  Features and Limitations:
-
-  * Easy to Port Bit-banging SPI
-    It uses only four GPIO pins. No complex peripheral needs to be used.
-
-  * Platform Independent
-    You need to modify only a few macros to control the GPIO port.
-
-  * Low Speed
-    The data transfer rate will be several times slower than hardware SPI.
-
-  * No Media Change Detection
-    Application program needs to perform a f_mount() after media change.
-
 /-------------------------------------------------------------------------*/
 
 
 #include "diskio.h"		/* Common include file for FatFs and disk I/O layer */
-#include <stdio.h>
+
 
 /*-------------------------------------------------------------------------*/
 /* Platform dependent macros and functions needed to be modified           */
 /*-------------------------------------------------------------------------*/
-
-#include "spi.h"			/* Include device specific declareation file here */
 #include "xspi.h"
-#define SDMM_SPI_SLAVE_IDX 1
+#include "spi.h"
+#include <stdio.h>
+#include <stdbool.h>
+#include "SdInfo.h"
 
-#include <string.h>
 /*--------------------------------------------------------------------------
 
    Module Private Functions
 
 ---------------------------------------------------------------------------*/
+static bool isTimedOut(uint16_t startMS, uint16_t timeoutMS);
+static bool waitNotBusy(uint16_t timeoutMS);
+static uint8_t cardCommand(uint8_t cmd, uint32_t arg);
+static uint8_t spiReceive(void);
+static uint8_t spiReceiveBuf(uint8_t *data, uint16_t len);
+static void spiSend(uint8_t data);
+static void spiSendBuf(uint8_t *data, uint16_t len);
+static uint8_t cardAcmd(uint8_t cmd, uint32_t arg);
+static void card_select(void);
+static void card_deselect(void);
+static bool readStart(uint32_t blockNumber);
+static bool readData(uint8_t* dst, size_t count);
+//static bool readBlock(uint32_t blockNumber, uint8_t* dst);
+static bool readStop(void);
+static uint8_t type(void);
+//static bool readCSD(union csd_t* csd);
+static bool readRegister(uint8_t cmd, void* buf);
+static bool isBusy(void);
+static bool writeStart(uint32_t blockNumber);
+static bool writeData(uint8_t* src);
+static bool writeDataBuf(uint8_t token, uint8_t* src);
+static bool writeStop(void);
 
-/* MMC/SD command (SPI mode) */
-#define CMD0	(0)			/* GO_IDLE_STATE */
-#define CMD1	(1)			/* SEND_OP_COND */
-#define	ACMD41	(0x80+41)	/* SEND_OP_COND (SDC) */
-#define CMD8	(8)			/* SEND_IF_COND */
-#define CMD9	(9)			/* SEND_CSD */
-#define CMD10	(10)		/* SEND_CID */
-#define CMD12	(12)		/* STOP_TRANSMISSION */
-#define CMD13	(13)		/* SEND_STATUS */
-#define ACMD13	(0x80+13)	/* SD_STATUS (SDC) */
-#define CMD16	(16)		/* SET_BLOCKLEN */
-#define CMD17	(17)		/* READ_SINGLE_BLOCK */
-#define CMD18	(18)		/* READ_MULTIPLE_BLOCK */
-#define CMD23	(23)		/* SET_BLOCK_COUNT */
-#define	ACMD23	(0x80+23)	/* SET_WR_BLK_ERASE_COUNT (SDC) */
-#define CMD24	(24)		/* WRITE_BLOCK */
-#define CMD25	(25)		/* WRITE_MULTIPLE_BLOCK */
-#define CMD32	(32)		/* ERASE_ER_BLK_START */
-#define CMD33	(33)		/* ERASE_ER_BLK_END */
-#define CMD38	(38)		/* ERASE */
-#define CMD55	(55)		/* APP_CMD */
-#define CMD58	(58)		/* READ_OCR */
+static uint8_t m_status = 0;
+static uint8_t m_type = 0;
+static uint8_t Stat = STA_NOINIT;	/* Disk status */
+//static uint8_t CardType;			/* b0:MMC, b1:SDv1, b2:SDv2, b3:Block addressing */
 
+static bool writeStart(uint32_t blockNumber) {
+  // use address if not SDHC card
+  if (type() != SD_CARD_TYPE_SDHC) {
+    blockNumber <<= 9;
+  }
+  if (cardCommand(CMD25, blockNumber)) {
+    printf("Error: SD_CARD_ERROR_CMD25\r\n");
+    return false;
+  }
+  return true;
+}
 
-static
-DSTATUS Stat = STA_NOINIT;	/* Disk status */
+static bool writeData(uint8_t* src) {
+  // wait for previous write to finish
+  if (!waitNotBusy(SD_WRITE_TIMEOUT)) {
+    printf("Error: SD_CARD_ERROR_WRITE_TIMEOUT\r\n");
+    return false;
+  }
 
-static
-BYTE CardType;			/* b0:MMC, b1:SDv1, b2:SDv2, b3:Block addressing */
+  if (!writeDataBuf((uint8_t)WRITE_MULTIPLE_TOKEN, src)) {
+    printf("Error: writeData(WRITE_MULTIPLE_TOKEN, src)\r\n");
+    return false;
+  }
+  return true;
+}
 
+// send one block of data for write block or write multiple blocks
+static bool writeDataBuf(uint8_t token, uint8_t* src) {
+  uint16_t crc = 0XFFFF;
+  spiSend(token);
+  spiSendBuf(src, 512);
+  spiSend(crc >> 8);
+  spiSend(crc & 0XFF);
 
-/*-----------------------------------------------------------------------*/
-/* Transmit bytes to the card (bitbanging)                               */
-/*-----------------------------------------------------------------------*/
+  m_status = spiReceive();
+  if ((m_status & DATA_RES_MASK) != DATA_RES_ACCEPTED) {
+    printf("Error: SD_CARD_ERROR_WRITE\r\n");
+    return false;
+  }
+  return true;
+}
 
-static
-void xmit_mmc (
-	const BYTE* buff,	/* Data to be sent */
-	UINT bc				/* Number of bytes to send */
-)
+static bool writeStop(void) {
+  if (!waitNotBusy(SD_WRITE_TIMEOUT)) {
+    printf("Error: SD_CARD_ERROR_STOP_TRAN\r\n");
+    return false;
+  }
+  spiSend(STOP_TRAN_TOKEN);
+  return true;
+}
+
+static bool isBusy(void)
 {
-    printf("xmit_mmc: {");
-    for (uint8_t idx =0; idx < bc; idx++) {
-        printf("0x%x,",buff[idx]);
+  bool rtn = true;
+  for (uint8_t i = 0; i < 8; i++) {
+    if (0XFF == spiReceive()) {
+      rtn = false;
+      break;
     }
-    printf("}\r\n");
-    configASSERT(spi1_transmit(SDMM_SPI_SLAVE_IDX, (BYTE*)buff, bc) != -1);
-    //XSpi_Transfer(&Spi1.Device, (BYTE*)buff, NULL, bc);
+  }
+  return rtn;
+}
+
+  /** Return the card type: SD V1, SD V2 or SDHC
+   * \return 0 - SD V1, 1 - SD V2, or 3 - SDHC.
+   */
+static uint8_t type(void) {
+    return m_type;
+  }
+
+  /**
+   * Read a card's CSD register. The CSD contains Card-Specific Data that
+   * provides information regarding access to the card's contents.
+   *
+   * \param[out] csd pointer to area for returned data.
+   *
+   * \return true for success or false for failure.
+   */
+  //static bool readCSD(union csd_t* csd) {
+   // return readRegister(CMD9, csd);
+  //}
+
+  /** read CID or CSR register */
+static bool readRegister(uint8_t cmd, void* buf) {
+  uint8_t* dst = (uint8_t*)(buf);
+
+  card_select();
+  if (cardCommand(cmd, 0)) {
+    printf("Error: SD_CARD_ERROR_READ_REG\r\n");
+    return false;
+  }
+  if (!readData(dst, 16)) {
+    printf("Error: readData(dst, 16)\r\n");
+    return false;
+  }
+  return true;
+}
+
+/*-----------------------------------------------------------------------*/
+/* Receive a single byte from the card	                                 */
+/*-----------------------------------------------------------------------*/
+static uint8_t spiReceive(void)
+{
+    uint8_t rx = 0xFF;
+    configASSERT(XSpi_Transfer(&Spi1.Device, &rx, &rx, 1) == 0);
+    return rx;
+}
+
+/*-----------------------------------------------------------------------*/
+/* Receive a buffer from the card	                                 */
+/*-----------------------------------------------------------------------*/
+static uint8_t spiReceiveBuf(uint8_t *data, uint16_t len)
+{
+    configASSERT(len > 0);
+    configASSERT(XSpi_Transfer(&Spi1.Device, data, data, len) == 0);
+    return 0;
 }
 
 
-
 /*-----------------------------------------------------------------------*/
-/* Receive bytes from the card (bitbanging)                              */
+/* Transmit a single byte to the card	                                 */
 /*-----------------------------------------------------------------------*/
-
-static
-void rcvr_mmc (
-	BYTE *buff,	/* Pointer to read buffer */
-	UINT bc		/* Number of bytes to receive */
-)
+static void spiSend(uint8_t data)
 {
-    memset(buff, 0xaa, bc);
-	//configASSERT(spi1_receive(SDMM_SPI_SLAVE_IDX, buff, bc) != -1);
-    //XSpi_Transfer(&Spi1.Device, buff, buff, bc);
-    spi1_receive(SDMM_SPI_SLAVE_IDX, buff, bc);
-    printf("rcvr_mmc: {");
-    for (uint8_t idx =0; idx < bc; idx++) {
-        printf("0x%x,",buff[idx]);
+    configASSERT(XSpi_Transfer(&Spi1.Device, &data, NULL, 1) == 0);
+}
+
+/*-----------------------------------------------------------------------*/
+/* Transmit a buffer to the card		                                 */
+/*-----------------------------------------------------------------------*/
+static void spiSendBuf(uint8_t *data, uint16_t len)
+{
+    configASSERT(XSpi_Transfer(&Spi1.Device, data, NULL, len) == 0);
+}
+
+
+/*-----------------------------------------------------------------------*/
+/* Check if a timeout occured			                                 */
+/*-----------------------------------------------------------------------*/
+static bool isTimedOut(uint16_t startMS, uint16_t timeoutMS)
+{
+    return (xTaskGetTickCount() - startMS) > timeoutMS;
+}
+
+/*-----------------------------------------------------------------------*/
+/* Wait for the card to become not busy                                  */
+/*-----------------------------------------------------------------------*/
+static bool waitNotBusy(uint16_t timeoutMS)
+{
+    uint16_t t0 = xTaskGetTickCount();
+    // Check not busy first since yield is not called in isTimedOut.
+    while (spiReceive() != 0XFF)
+    {
+        if (isTimedOut(t0, timeoutMS))
+        {
+            return false;
+        }
     }
-    printf("}\r\n");
+    return true;
 }
 
 
-
 /*-----------------------------------------------------------------------*/
-/* Wait for card ready                                                   */
+/* Send a command to the card				                             */
 /*-----------------------------------------------------------------------*/
-
-static
-int wait_ready (void)	/* 1:OK, 0:Timeout */
+static uint8_t cardCommand(uint8_t cmd, uint32_t arg)
 {
-	BYTE d;
-	UINT tmr;
-    printf("wait ready\r\n");
+    // wait if busy unless CMD0
+    if (cmd != CMD0)
+    {
+        waitNotBusy(SD_CMD_TIMEOUT);
+    }
 
-	for (tmr = 5; tmr; tmr--) {	/* Wait for ready in timeout of 500ms */
-		rcvr_mmc(&d, 1);
-		if (d == 0xFF) break;
-	}
+    // form message
+    uint8_t buf[6];
+    buf[0] = (uint8_t)0x40U | cmd;
+    buf[1] = (uint8_t)(arg >> 24U);
+    buf[2] = (uint8_t)(arg >> 16U);
+    buf[3] = (uint8_t)(arg >> 8U);
+    buf[4] = (uint8_t)arg;
+    buf[5] = cmd == CMD0 ? 0X95 : 0X87; //TODO: should be a CRC?
 
-	return tmr ? 1 : 0;
+    // send message
+    spiSendBuf(buf, 6);
+
+    // discard first fill byte to avoid MISO pull-up problem.
+    //printf("Dicarded byte: %u\r\n", spiReceive());
+
+    // there are 1-8 fill bytes before response.  fill bytes should be 0XFF.
+    for (uint8_t i = 0; ((m_status = spiReceive()) & 0X80) && i < 10; i++)
+    {
+        //printf("m_status = %u\r\n",m_status);
+    }
+
+    //printf("returning = %u\r\n",m_status);
+    return m_status;
 }
 
-
-
 /*-----------------------------------------------------------------------*/
-/* Deselect the card and release SPI bus                                 */
+/* Send ACMD							                                 */
 /*-----------------------------------------------------------------------*/
-
-static
-void deselect (void)
+static uint8_t cardAcmd(uint8_t cmd, uint32_t arg)
 {
-    BYTE d;
-    printf("deselect\r\n");
-	/* Deselect slave */
-    //configASSERT(XSpi_SetSlaveSelect(&Spi1.Device, 0) == XST_SUCCESS);	/* Set CS# high */
-	//rcvr_mmc(&d, 1);	/* Dummy clock (force DO hi-z for multiple slave SPI) */
-    
+    cardCommand(CMD55, 0);
+    return cardCommand(cmd, arg);
 }
 
-
-
 /*-----------------------------------------------------------------------*/
-/* Select the card and wait for ready                                    */
+/* Select slave							                                 */
 /*-----------------------------------------------------------------------*/
-
-static
-int x_select (void)	/* 1:OK, 0:Timeout */
+static void card_select(void)
 {
-    printf("select\r\n");
-    //configASSERT(XSpi_SetSlaveSelect(&Spi1.Device, 1) == XST_SUCCESS);	/* Set CS# high */
-
-	if (wait_ready()) return 1;	/* Wait for card ready */
-
-    deselect();
-	return 0;			/* Failed */
+	configASSERT(XSpi_SetSlaveSelect(&Spi1.Device, 1) == 0);
 }
 
-
+/*-----------------------------------------------------------------------*/
+/* Deselect slave						                                 */
+/*-----------------------------------------------------------------------*/
+static void card_deselect(void)
+{
+	configASSERT(XSpi_SetSlaveSelect(&Spi1.Device, 0) == 0);
+}
 
 /*-----------------------------------------------------------------------*/
 /* Receive a data packet from the card                                   */
 /*-----------------------------------------------------------------------*/
-
-static
-int rcvr_datablock (	/* 1:OK, 0:Failed */
-	BYTE *buff,			/* Data buffer to store received data */
-	UINT btr			/* Byte count */
-)
-{
-	BYTE d[2];
-	UINT tmr;
-
-
-	for (tmr = 1000; tmr; tmr--) {	/* Wait for data packet in timeout of 100ms */
-		rcvr_mmc(d, 1);
-		if (d[0] != 0xFF) break;
-		// dly_us(100);
-	}
-	if (d[0] != 0xFE) return 0;		/* If not valid data token, return with error */
-
-	rcvr_mmc(buff, btr);			/* Receive the data block into buffer */
-	rcvr_mmc(d, 2);					/* Discard CRC */
-
-	return 1;						/* Return with success */
-}
-
-
-
-/*-----------------------------------------------------------------------*/
-/* Send a data packet to the card                                        */
-/*-----------------------------------------------------------------------*/
-
-static
-int xmit_datablock (	/* 1:OK, 0:Failed */
-	const BYTE *buff,	/* 512 byte data block to be transmitted */
-	BYTE token			/* Data/Stop token */
-)
-{
-	BYTE d[2];
-
-
-	if (!wait_ready()) return 0;
-
-	d[0] = token;
-	xmit_mmc(d, 1);				/* Xmit a token */
-	if (token != 0xFD) {		/* Is it data token? */
-		xmit_mmc(buff, 512);	/* Xmit the 512 byte data block to MMC */
-		rcvr_mmc(d, 2);			/* Xmit dummy CRC (0xFF,0xFF) */
-		rcvr_mmc(d, 1);			/* Receive data response */
-		if ((d[0] & 0x1F) != 0x05)	/* If not accepted, return with error */
-			return 0;
-	}
-
-	return 1;
-}
-
-
-
-/*-----------------------------------------------------------------------*/
-/* Send a command packet to the card                                     */
-/*-----------------------------------------------------------------------*/
-
-static
-BYTE send_cmd (		/* Returns command response (bit7==1:Send failed)*/
-	BYTE cmd,		/* Command byte */
-	DWORD arg		/* Argument */
-)
-{
-	BYTE n, d, buf[6];
-
-    printf("Send cmd: 0x%x\r\n",cmd);
-
-	if (cmd & 0x80) {	/* ACMD<n> is the command sequense of CMD55-CMD<n> */
-        printf("send cmd CMD55\r\n");
-		cmd &= 0x7F;
-		n = send_cmd(CMD55, 0);
-		if (n > 1) return n;
-	}
-
-	/* Select the card and wait for ready except to stop multiple block read */
-	// if (cmd != CMD12) {
-    //     printf("send != CMD12\r\n");
-	// 	deselect();
-	// 	if (!x_select()) return 0xFF;
-	// }
-
-	/* Send a command packet */
-	buf[0] = 0x40 | cmd;			/* Start + Command index */
-	buf[1] = (BYTE)(arg >> 24);		/* Argument[31..24] */
-	buf[2] = (BYTE)(arg >> 16);		/* Argument[23..16] */
-	buf[3] = (BYTE)(arg >> 8);		/* Argument[15..8] */
-	buf[4] = (BYTE)arg;				/* Argument[7..0] */
-	n = 0x01;						/* Dummy CRC + Stop */
-	if (cmd == CMD0) n = 0x95;		/* (valid CRC for CMD0(0)) */
-	if (cmd == CMD8) n = 0x87;		/* (valid CRC for CMD8(0x1AA)) */
-	buf[5] = n;
-	xmit_mmc(buf, 6);
-
-	/* Receive command response */
-	if (cmd == CMD12) {
-        rcvr_mmc(&d, 1);	/* Skip a stuff byte when stop reading */
+static bool readData(uint8_t* dst, size_t count) {
+  // wait for start block token
+  uint16_t t0 = xTaskGetTickCount();
+  while ((m_status = spiReceive()) == 0XFF) {
+    if (isTimedOut(t0, SD_READ_TIMEOUT)) {
+      printf("Error: SD_CARD_ERROR_READ_TIMEOUT\r\n");
+      return false;
     }
-    
-	n = 10;								/* Wait for a valid response in timeout of 10 attempts */
-	do
-		rcvr_mmc(&d, 1);
-	while ((d & 0x80) && --n);
+  }
+  if (m_status != DATA_START_BLOCK) {
+    printf("Error: SD_CARD_ERROR_READ\r\n");
+    return false;
+  }
+  // transfer data
+  if ((m_status = spiReceiveBuf(dst, count))) {
+    printf("Error: SD_CARD_ERROR_DMA\r\n");
+    return false;
+  }
 
-    printf("send cmd response val=0x%x\r\n",d);
-
-	return d;			/* Return with the response value */
+  // discard crc
+  spiReceive();
+  spiReceive();
+  return true;
 }
 
+/*-----------------------------------------------------------------------*/
+/* Read block from the card                                              */
+/*-----------------------------------------------------------------------*/
+// static bool readBlock(uint32_t blockNumber, uint8_t* dst)
+// {
+//   printf("Read Block: %lu\r\n", blockNumber);
+//   // use address if not SDHC card
+//   if (m_type != SD_CARD_TYPE_SDHC) {
+//     blockNumber <<= 9;
+//   }
+  
+//   if (cardCommand(CMD17, blockNumber)) {
+//     printf("Error: SD_CARD_ERROR_CMD17\r\n");
+//     return false;
+//   }
+//   if (!readData(dst, 512)) {
+//     printf("Error: fail reading data\r\n");
+//     return false;
+//   }
+//   return true;
+// }
 
+static bool readStart(uint32_t blockNumber)
+{
+  printf("Read Start: %lu\r\n", blockNumber);
+  if (type() != SD_CARD_TYPE_SDHC) {
+    blockNumber <<= 9;
+  }
+  if (cardCommand(CMD18, blockNumber)) {
+    printf("Error: SD_CARD_ERROR_CMD18\r\n");
+    return false;
+  }
+  return true;
+}
 
+static bool readStop(void) {
+  if (cardCommand(CMD12, 0)) {
+    printf("Error: SD_CARD_ERROR_CMD12\r\n");
+    return false;
+  }
+  return true;
+}
 /*--------------------------------------------------------------------------
 
    Public Functions
@@ -319,89 +377,107 @@ DSTATUS disk_status (
 /*-----------------------------------------------------------------------*/
 
 DSTATUS disk_initialize (
-	BYTE drv		/* Physical drive nmuber (0) */
+	uint8_t drv		/* Physical drive nmuber (0) */
 )
 {
-	BYTE n, ty, cmd, buf[4];
-	UINT tmr;
-	DSTATUS s;
+	(void) drv;
+    uint16_t t0 = xTaskGetTickCount();
 
-    // Power ON or card insersion
-    XSpi_SetSlaveSelect(&Spi1.Device, 0);
-    uint8_t tmp[11] = {0};
-    Spi1.task_handle = xTaskGetCurrentTaskHandle();
-    XSpi_Transfer(&Spi1.Device, tmp, NULL, sizeof(tmp));
-    xTaskNotifyWait(0, 0, NULL, pdMS_TO_TICKS(1000));
+    // must supply min of 74 clock cycles with CS high.
+    card_deselect();
+    uint8_t tmp = 0xFF;
+    for (uint8_t i = 0; i < 10; i++)
+    {
+        spiSend(tmp);
+    }
+    card_select();
 
-    vTaskDelay(pdMS_TO_TICKS(100));
-    XSpi_SetSlaveSelect(&Spi1.Device, 1);
-    vTaskDelay(pdMS_TO_TICKS(100));
+    // command to go idle in SPI mode
+    for (uint8_t i = 1;; i++)
+    {
+        if (cardCommand(CMD0, 0) == R1_IDLE_STATE)
+        {
+            printf("Card is idle\r\n");
+            break;
+        }
+        else
+        {
+            printf("CMD0 #%u fails\r\n", i);
+        }
+        if (i == SD_CMD0_RETRY)
+        {
+            printf("Error! SD_CARD_ERROR_CMD0\r\n");
+            return STA_NOINIT;
+        }
+        // stop multi-block write
+        spiSend(STOP_TRAN_TOKEN);
+        // finish block transfer
+        for (int k = 0; k < 520; k++)
+        {
+            spiReceive();
+        }
+    }
 
-    
-    /* Enter Idle state */
-    n = send_cmd(CMD0, 0);
-    printf("CMD0 response: 0x%x\r\n", n);
-    vTaskDelay(pdMS_TO_TICKS(100));
+    // check SD version
+    if (cardCommand(CMD8, 0x1AA) == (R1_ILLEGAL_COMMAND | R1_IDLE_STATE))
+    {
+        printf("m_type = SD_CARD_TYPE_SD1\r\n");
+        m_type = SD_CARD_TYPE_SD1;
+    }
+    else
+    {
+        for (uint8_t i = 0; i < 4; i++)
+        {
+            m_status = spiReceive();
+        }
+        if (m_status == 0XAA)
+        {
+            printf("m_type = SD_CARD_TYPE_SD2\r\n");
+            m_type = SD_CARD_TYPE_SD2;
+        }
+        else
+        {
+            printf("Error! SD_CARD_ERROR_CMD8\r\n");
+            return STA_NOINIT;
+        }
+    }
 
-    n = send_cmd(CMD8, 0x1AA);
-    printf("CMD8 response: 0x%x\r\n", n);
-    
-    rcvr_mmc(buf, 4);							/* Get trailing return value of R7 resp */
-    vTaskDelay(pdMS_TO_TICKS(100));
+    // initialize card and send host supports SDHC if SD2
+    uint32_t arg = m_type == SD_CARD_TYPE_SD2 ? 0X40000000 : 0;
 
-    n = send_cmd(CMD1, 0);
-    printf("CMD1 response: 0x%x\r\n", n);
-    do {
-        vTaskDelay(pdMS_TO_TICKS(1));
-        rcvr_mmc(buf, 10);
-    } while (buf[0] != 1);
-    printf("init complete\r\n");
+    while (cardAcmd(ACMD41, arg) != R1_READY_STATE)
+    {
+        // check for timeout
+        if (isTimedOut(t0, SD_INIT_TIMEOUT))
+        {
+            printf("Error! SD_CARD_ERROR_ACMD41\r\n");
+            return STA_NOINIT;
+        }
+    }
+    // if SD2 read OCR register to check for SDHC card
+    if (m_type == SD_CARD_TYPE_SD2)
+    {
+        if (cardCommand(CMD58, 0))
+        {
+            printf("Error! SD_CARD_ERROR_CMD58\r\n");
+            return STA_NOINIT;
+        }
+        if ((spiReceive() & 0XC0) == 0XC0)
+        {
+            m_type = SD_CARD_TYPE_SDHC;
+            printf("m_type = SD_CARD_TYPE_SDHC\r\n");
+        }
+        // Discard rest of ocr - contains allowed voltage range.
+        for (uint8_t i = 0; i < 3; i++)
+        {
+            spiReceive();
+        }
+    }
 
-
-	// if (drv) return RES_NOTRDY;
-
-	// for (n = 10; n; n--) rcvr_mmc(buf, 1);	/* Apply 80 dummy clocks and the card gets ready to receive command */
-
-	// ty = 0;
-	// if (send_cmd(CMD0, 0) == 1) {			/* Enter Idle state */
-    //     printf("Idle state\r\n");
-	// 	if (send_cmd(CMD8, 0x1AA) == 1) {	/* SDv2? */
-    //         printf("SDv2\r\n");
-	// 		rcvr_mmc(buf, 4);							/* Get trailing return value of R7 resp */
-	// 		if (buf[2] == 0x01 && buf[3] == 0xAA) {		/* The card can work at vdd range of 2.7-3.6V */
-    //             printf("The card can work at vdd range of 2.7-3.6V\r\n");
-	// 			for (tmr = 10; tmr; tmr--) {			/* Wait for leaving idle state (ACMD41 with HCS bit) */
-    //                 printf("Wait for leaving idle state (ACMD41 with HCS bit)\r\n");
-	// 				if (send_cmd(ACMD41, 1UL << 30) == 0) break;
-	// 			}
-	// 			if (tmr && send_cmd(CMD58, 0) == 0) {	/* Check CCS bit in the OCR */
-	// 				rcvr_mmc(buf, 4);
-	// 				ty = (buf[0] & 0x40) ? CT_SD2 | CT_BLOCK : CT_SD2;	/* SDv2 */
-	// 			}
-	// 		}
-	// 	} else {							/* SDv1 or MMCv3 */
-    //         printf("SDv1 or MMCv3\r\n");
-	// 		if (send_cmd(ACMD41, 0) <= 1) 	{
-	// 			ty = CT_SD1; cmd = ACMD41;	/* SDv1 */
-    //             printf("SDv1\r\n");
-	// 		} else {
-	// 			ty = CT_MMC; cmd = CMD1;	/* MMCv3 */
-    //             printf("MMCv3\r\n");
-	// 		}
-	// 		for (tmr = 1000; tmr; tmr--) {			/* Wait for leaving idle state */
-	// 			if (send_cmd(cmd, 0) == 0) break;
-	// 		}
-	// 		if (!tmr || send_cmd(CMD16, 512) != 0)	/* Set R/W block length to 512 */
-	// 			ty = 0;
-	// 	}
-	// }
-	// CardType = ty;
-	// s = ty ? 0 : STA_NOINIT;
-	// Stat = s;
-
-	// deselect();
-
-	// return s;
+    printf("All well in the universe...\r\n");
+	Stat = 0;
+	//card_deselect(); // Keep card seletcted
+	return 0;
 }
 
 
@@ -411,29 +487,29 @@ DSTATUS disk_initialize (
 /*-----------------------------------------------------------------------*/
 
 DRESULT disk_read (
-	BYTE drv,			/* Physical drive nmuber (0) */
+	uint8_t drv,			/* Physical drive nmuber (0) */
 	BYTE *buff,			/* Pointer to the data buffer to store read data */
 	DWORD sector,		/* Start sector number (LBA) */
 	UINT count			/* Sector count (1..128) */
 )
 {
-	BYTE cmd;
+    if (disk_status(drv) & STA_NOINIT) return RES_NOTRDY;
 
-
-	if (disk_status(drv) & STA_NOINIT) return RES_NOTRDY;
-	if (!(CardType & CT_BLOCK)) sector *= 512;	/* Convert LBA to byte address if needed */
-
-	cmd = count > 1 ? CMD18 : CMD17;			/*  READ_MULTIPLE_BLOCK : READ_SINGLE_BLOCK */
-	if (send_cmd(cmd, sector) == 0) {
-		do {
-			if (!rcvr_datablock(buff, 512)) break;
-			buff += 512;
-		} while (--count);
-		if (cmd == CMD18) send_cmd(CMD12, 0);	/* STOP_TRANSMISSION */
-	}
-	deselect();
-
-	return count ? RES_ERROR : RES_OK;
+    if (!readStart(sector)) {
+        printf("Error: readStart(sector)");
+        return false;
+    }
+    for (uint16_t b = 0; b < count; b++, buff += 512) {
+        if (!readData(buff, 512)) {
+            printf("Error: readData(buff, 512)");
+            return false;
+        }
+    }
+    if (readStop()) {
+        return RES_OK;
+    } else {
+        return RES_ERROR;
+    }
 }
 
 
@@ -450,27 +526,22 @@ DRESULT disk_write (
 )
 {
 	if (disk_status(drv) & STA_NOINIT) return RES_NOTRDY;
-	if (!(CardType & CT_BLOCK)) sector *= 512;	/* Convert LBA to byte address if needed */
 
-	if (count == 1) {	/* Single block write */
-		if ((send_cmd(CMD24, sector) == 0)	/* WRITE_BLOCK */
-			&& xmit_datablock(buff, 0xFE))
-			count = 0;
-	}
-	else {				/* Multiple block write */
-		if (CardType & CT_SDC) send_cmd(ACMD23, count);
-		if (send_cmd(CMD25, sector) == 0) {	/* WRITE_MULTIPLE_BLOCK */
-			do {
-				if (!xmit_datablock(buff, 0xFC)) break;
-				buff += 512;
-			} while (--count);
-			if (!xmit_datablock(0, 0xFD))	/* STOP_TRAN token */
-				count = 1;
-		}
-	}
-	deselect();
-
-	return count ? RES_ERROR : RES_OK;
+    if (!writeStart(sector)) {
+        printf("Error: writeStart(sector)");
+        return false;
+    }
+    for (size_t b = 0; b < count; b++, buff += 512) {
+        if (!writeData((uint8_t*)buff)) {
+            printf("Error: writeData(buff)");
+            return false;
+        }
+    }
+    if (writeStop()) {
+        return RES_OK;
+    } else {
+        return RES_ERROR;
+    }
 }
 
 
@@ -484,21 +555,23 @@ DRESULT disk_ioctl (
 	void *buff		/* Buffer to send/receive control data */
 )
 {
+    if (disk_status(drv) & STA_NOINIT) return RES_NOTRDY;	/* Check if card is in the socket */
+
 	DRESULT res;
 	BYTE n, csd[16];
 	DWORD cs;
 
-
-	if (disk_status(drv) & STA_NOINIT) return RES_NOTRDY;	/* Check if card is in the socket */
-
-	res = RES_ERROR;
+    res = RES_ERROR;
 	switch (ctrl) {
 		case CTRL_SYNC :		/* Make sure that no pending write process */
-			if (x_select()) res = RES_OK;
+			if (!isBusy()) {
+                res = RES_OK;
+            }
 			break;
 
 		case GET_SECTOR_COUNT :	/* Get number of sectors on the disk (DWORD) */
-			if ((send_cmd(CMD9, 0) == 0) && rcvr_datablock(csd, 16)) {
+            configASSERT( readRegister(CMD9, csd) );
+			//if ((send_cmd(CMD9, 0) == 0) && rcvr_datablock(csd, 16)) {
 				if ((csd[0] >> 6) == 1) {	/* SDC ver 2.00 */
 					cs = csd[9] + ((WORD)csd[8] << 8) + ((DWORD)(csd[7] & 63) << 16) + 1;
 					*(DWORD*)buff = cs << 10;
@@ -508,7 +581,7 @@ DRESULT disk_ioctl (
 					*(DWORD*)buff = cs << (n - 9);
 				}
 				res = RES_OK;
-			}
+			//}
 			break;
 
 		case GET_BLOCK_SIZE :	/* Get erase block size in unit of sector (DWORD) */
@@ -520,9 +593,6 @@ DRESULT disk_ioctl (
 			res = RES_PARERR;
 	}
 
-	deselect();
-
 	return res;
 }
-
 
