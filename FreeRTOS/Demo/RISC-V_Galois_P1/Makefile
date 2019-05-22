@@ -214,8 +214,9 @@ ifeq ($(PROG),main_udp)
 else
 ifeq ($(PROG),main_sd)
 	CFLAGS += -DmainDEMO_TYPE=6
-	DEMO_SRC += devices/ff.c
 	DEMO_SRC += devices/sdmm.c
+	DEMO_SRC += devices/ff.c
+	#DEMO_SRC += devices/ffunicode.c
 	INCLUDES += -I./demo
 	INCLUDES += -I./devices
 else

@@ -244,6 +244,7 @@ static uint8_t cardCommand(uint8_t cmd, uint32_t arg)
 
     // discard first fill byte to avoid MISO pull-up problem.
     //printf("Dicarded byte: %u\r\n", spiReceive());
+    spiReceive();
 
     // there are 1-8 fill bytes before response.  fill bytes should be 0XFF.
     for (uint8_t i = 0; ((m_status = spiReceive()) & 0X80) && i < 10; i++)
@@ -308,27 +309,6 @@ static bool readData(uint8_t* dst, size_t count) {
   return true;
 }
 
-/*-----------------------------------------------------------------------*/
-/* Read block from the card                                              */
-/*-----------------------------------------------------------------------*/
-// static bool readBlock(uint32_t blockNumber, uint8_t* dst)
-// {
-//   printf("Read Block: %lu\r\n", blockNumber);
-//   // use address if not SDHC card
-//   if (m_type != SD_CARD_TYPE_SDHC) {
-//     blockNumber <<= 9;
-//   }
-  
-//   if (cardCommand(CMD17, blockNumber)) {
-//     printf("Error: SD_CARD_ERROR_CMD17\r\n");
-//     return false;
-//   }
-//   if (!readData(dst, 512)) {
-//     printf("Error: fail reading data\r\n");
-//     return false;
-//   }
-//   return true;
-// }
 
 static bool readStart(uint32_t blockNumber)
 {
@@ -496,12 +476,12 @@ DRESULT disk_read (
     if (disk_status(drv) & STA_NOINIT) return RES_NOTRDY;
 
     if (!readStart(sector)) {
-        printf("Error: readStart(sector)");
+        printf("Error: readStart(sector)\r\n");
         return false;
     }
     for (uint16_t b = 0; b < count; b++, buff += 512) {
         if (!readData(buff, 512)) {
-            printf("Error: readData(buff, 512)");
+            printf("Error: readData(buff, 512)\r\n");
             return false;
         }
     }

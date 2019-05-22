@@ -36,7 +36,6 @@
 #include "bsp.h"
 
 #include "ff.h" /* Declarations of FatFs API */
-#include "diskio.h"
 
 void main_sd(void);
 
@@ -80,9 +79,6 @@ static void prvSdTestTask0(void *pvParameters)
     uint8_t res;
     res = f_mount(&FatFs, "", 1);
     printf("f_mount result = %i\r\n", res);		/* Give a work area to the default drive */  
-    //uint8_t res = f_opendir(&d, "");
-    //printf("f-Open result: %u\r\n", res);
-
     printf("terminating\r\n");
     //configASSERT(0);
 }
