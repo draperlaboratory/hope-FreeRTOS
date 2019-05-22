@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "SdInfo.h"
+#include <string.h>
 
 /*--------------------------------------------------------------------------
 
@@ -336,7 +337,6 @@ static bool readStop(void) {
 
 ---------------------------------------------------------------------------*/
 
-
 /*-----------------------------------------------------------------------*/
 /* Get Disk Status                                                       */
 /*-----------------------------------------------------------------------*/
@@ -456,7 +456,7 @@ DSTATUS disk_initialize (
 
     printf("All well in the universe...\r\n");
 	Stat = 0;
-	//card_deselect(); // Keep card seletcted
+	card_deselect(); // Keep card seletcted
 	return 0;
 }
 
@@ -473,8 +473,11 @@ DRESULT disk_read (
 	UINT count			/* Sector count (1..128) */
 )
 {
-    if (disk_status(drv) & STA_NOINIT) return RES_NOTRDY;
+    printf("disk_read: drv: %u, sector: %llu, count: %lu\r\n", drv, sector, count);
+    memset(buff, 0xFF, 512*count);
 
+    if (disk_status(drv) & STA_NOINIT) return RES_NOTRDY;
+    card_select();
     if (!readStart(sector)) {
         printf("Error: readStart(sector)\r\n");
         return false;
@@ -486,8 +489,10 @@ DRESULT disk_read (
         }
     }
     if (readStop()) {
+        card_deselect();
         return RES_OK;
     } else {
+        card_deselect();
         return RES_ERROR;
     }
 }
@@ -507,19 +512,22 @@ DRESULT disk_write (
 {
 	if (disk_status(drv) & STA_NOINIT) return RES_NOTRDY;
 
+    card_select();
     if (!writeStart(sector)) {
-        printf("Error: writeStart(sector)");
+        printf("Error: writeStart(sector)\r\n");
         return false;
     }
     for (size_t b = 0; b < count; b++, buff += 512) {
         if (!writeData((uint8_t*)buff)) {
-            printf("Error: writeData(buff)");
+            printf("Error: writeData(buff)\r\n");
             return false;
         }
     }
     if (writeStop()) {
+        card_deselect();
         return RES_OK;
     } else {
+        card_deselect();
         return RES_ERROR;
     }
 }
@@ -560,6 +568,7 @@ DRESULT disk_ioctl (
 					cs = (csd[8] >> 6) + ((WORD)csd[7] << 2) + ((WORD)(csd[6] & 3) << 10) + 1;
 					*(DWORD*)buff = cs << (n - 9);
 				}
+        printf("Get sector count: %llu\r\n", cs);
 				res = RES_OK;
 			//}
 			break;
