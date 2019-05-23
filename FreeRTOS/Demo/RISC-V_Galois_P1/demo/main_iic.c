@@ -72,7 +72,7 @@ static void prvIicTestTask0(void *pvParameters)
 
 	for (;;)
 	{
-		data[0] = WHOAMI_REGISTER_ADDR;
+		data = WHOAMI_REGISTER_ADDR;
     	configASSERT(iic0_transmit(MPU925X_I2CADDR_DEFAULT, &data, 1) != -1);
 		configASSERT(iic0_receive(MPU925X_I2CADDR_DEFAULT, &data, 1) != -1);
 		configASSERT(data == WHOAMI_DEFAULT_RESPONSE);
