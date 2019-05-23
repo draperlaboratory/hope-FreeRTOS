@@ -39,7 +39,7 @@ FREERTOS_SRC = \
 	$(FREERTOS_SOURCE_DIR)/timers.c \
 	$(FREERTOS_SOURCE_DIR)/event_groups.c \
 	$(FREERTOS_SOURCE_DIR)/stream_buffer.c \
-	$(FREERTOS_SOURCE_DIR)/portable/MemMang/heap_4.c # TODO TEST
+	$(FREERTOS_SOURCE_DIR)/portable/MemMang/heap_4.c
 
 APP_SOURCE_DIR	= ../Common/Minimal
 
@@ -216,6 +216,7 @@ ifeq ($(PROG),main_sd)
 	CFLAGS += -DmainDEMO_TYPE=6
 	DEMO_SRC += devices/sdmm.c
 	DEMO_SRC += devices/ff.c
+	DEMO_SRC += devices/ffsystem.c
 	DEMO_SRC += devices/ffunicode.c
 	INCLUDES += -I./demo
 	INCLUDES += -I./devices
