@@ -22,13 +22,4 @@ int uart1_txbuffer(char *ptr, int len);
 void uart1_init(void);
 #endif
 
-#if BSP_USE_UART2
-bool uart2_rxready(void);
-char uart2_rxchar(void);
-char uart2_txchar(char c);
-int uart2_rxbuffer(char *ptr, int len);
-int uart2_txbuffer(char *ptr, int len);
-void uart2_init(void);
-#endif
-
 #endif

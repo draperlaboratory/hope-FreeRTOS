@@ -65,11 +65,6 @@ static XUartNs550 UartNs550_1;
 struct UartDriver Uart1;
 #endif
 
-#if BSP_USE_UART2
-static XUartNs550 UartNs550_2;
-struct UartDriver Uart2;
-#endif
-
 /*****************************************************************************/
 /* Peripheral specific definitions */
 #if BSP_USE_UART0
@@ -173,58 +168,6 @@ int uart1_rxbuffer(char *ptr, int len)
 }
 #endif /* BSP_USE_UART1 */
 
-#if BSP_USE_UART2
-/**
- * Initialize UART 2 peripheral
- */
-void uart2_init(void)
-{
-    uart_init(&Uart2, XPAR_UARTNS550_2_DEVICE_ID, PLIC_SOURCE_UART2);
-}
-
-/**
- * Return 1 if UART2 has at leas 1 byte in the RX FIFO
- */
-bool uart2_rxready(void)
-{
-    return uart_rxready(&Uart2);
-}
-
-/**
- * Receive a single byte.
- */
-char uart2_rxchar(void)
-{
-    return (char)uart_rxchar(&Uart2);
-}
-
-/**
- * Transmit a buffer. Waits indefinitely for a UART TX mutex,
- * returns number of transferred bytes or -1 in case of an error.
- * Synchronous API.
- */
-int uart2_txbuffer(char *ptr, int len)
-{
-    return uart_txbuffer(&Uart2, (uint8_t *)ptr, len);
-}
-
-/**
- * Transmit a single byte.
- */
-char uart2_txchar(char c)
-{
-    return (char)uart_txchar(&Uart2, (uint8_t)c);
-}
-
-/**
- * Transmit buffer.
- */
-int uart2_rxbuffer(char *ptr, int len)
-{
-    return uart_rxbuffer(&Uart2, (uint8_t *)ptr, len);
-}
-#endif /* BSP_USE_UART2 */
-
 /*****************************************************************************/
 /* Driver specific defintions */
 
@@ -251,11 +194,6 @@ static void uart_init(struct UartDriver *Uart, uint8_t device_id, uint8_t plic_s
 #if BSP_USE_UART1
     case 1:
         Uart->Device = UartNs550_1;
-        break;
-#endif
-#if BSP_USE_UART2
-    case 2:
-        Uart->Device = UartNs550_2;
         break;
 #endif
     default:
