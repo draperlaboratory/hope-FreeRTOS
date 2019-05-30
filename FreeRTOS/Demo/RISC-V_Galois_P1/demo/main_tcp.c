@@ -217,21 +217,24 @@ void vApplicationIPNetworkEventHook(eIPCallbackEvent_t eNetworkEvent)
 			demo tasks. */
 #if (mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS == 1)
 			{
-				printf("\r\nmainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS=1\r\n");
+				printf("\r\n");
+				printf("mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS=1\r\n");
 				vStartSimpleUDPClientServerTasks(mainSIMPLE_UDP_CLIENT_SERVER_STACK_SIZE, mainSIMPLE_UDP_CLIENT_SERVER_PORT, mainSIMPLE_UDP_CLIENT_SERVER_TASK_PRIORITY);
 			}
 #endif /* mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS */
 
 #if (mainCREATE_TCP_ECHO_TASKS_SINGLE == 1)
 			{
-				printf("\r\mainCREATE_TCP_ECHO_TASKS_SINGLE=1\r\n");
+				printf("\r\n");
+				printf("mainCREATE_TCP_ECHO_TASKS_SINGLE=1\r\n");
 				vStartTCPEchoClientTasks_SingleTasks(mainECHO_CLIENT_TASK_STACK_SIZE, mainECHO_CLIENT_TASK_PRIORITY);
 			}
 #endif /* mainCREATE_TCP_ECHO_TASKS_SINGLE */
 
 #if (mainCREATE_TCP_ECHO_SERVER_TASK == 1)
 			{
-				printf("\r\mainCREATE_TCP_ECHO_SERVER_TASK=1\r\n");
+				printf("\r\n");
+				printf("mainCREATE_TCP_ECHO_SERVER_TASK=1\r\n");
 				vStartSimpleTCPServerTasks(mainECHO_SERVER_TASK_STACK_SIZE, mainECHO_SERVER_TASK_PRIORITY);
 			}
 #endif
