@@ -231,8 +231,7 @@ static void prvSimpleZeroCopyServerTask(void *pvParameters)
 		/* Print the received characters. */
 		if (lBytes > 0)
 		{
-			FreeRTOS_printf(("prvSimpleZeroCopyServerTask: received %lu bytes, expected %u\r\n", lBytes,
-				   strlen((const char *)pucUDPPayloadBuffer) + 1));
+			FreeRTOS_printf(("prvSimpleZeroCopyServerTask: received %lu bytes\r\n", lBytes));
 			/* It is expected to receive one more byte than the string length as
 			the NULL terminator is also transmitted. */
 			//configASSERT( lBytes == ( ( BaseType_t ) strlen( ( const char * ) pucUDPPayloadBuffer ) + 1 ) );
