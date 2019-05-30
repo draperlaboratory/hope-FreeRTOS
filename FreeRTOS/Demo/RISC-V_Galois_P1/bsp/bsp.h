@@ -61,7 +61,7 @@ void external_interrupt_handler(uint32_t cause);
  * UART defines
  */
 #define XPAR_UART_USE_POLLING_MODE 1
-#define XPAR_XUARTNS550_NUM_INSTANCES 3
+#define XPAR_XUARTNS550_NUM_INSTANCES 2
 #define XPAR_DEFAULT_BAUD_RATE 115200
 
 #define BSP_USE_UART0 1
@@ -76,11 +76,6 @@ void external_interrupt_handler(uint32_t cause);
 #define XPAR_UARTNS550_1_BASEADDR (0x62340000ULL)
 #define XPAR_UARTNS550_1_CLOCK_HZ configPERIPH_CLOCK_HZ
 
-#define BSP_USE_UART2 1
-#define XPAR_UARTNS550_2_DEVICE_ID 2
-#define XPAR_UARTNS550_2_BAUD_RATE XPAR_DEFAULT_BAUD_RATE
-#define XPAR_UARTNS550_2_BASEADDR (0x62360000ULL)
-#define XPAR_UARTNS550_2_CLOCK_HZ configPERIPH_CLOCK_HZ
 
 /**
  * DMA defines
