@@ -11,6 +11,7 @@ include FreeRTOS.mk
 # Platform spcific settings for this application _____________________________________________
 
 CFLAGS := $(ISP_CFLAGS)
+CFLAGS += $(CONFIG_CFLAGS)
 ASMFLAGS := $(ISP_ASMFLAGS)
 LDFLAGS := $(ISP_LDFLAGS)
 
