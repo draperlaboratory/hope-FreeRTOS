@@ -125,7 +125,6 @@ OUT_LIB = $(BUILD_DIR)/libfreertos.a
 
 # Need to tell FreeRTOS where to find the FreeRTOSConfig.h __________________________________
 FREERTOS_INCLUDES += \
-	-I ./ \
 	-I $(ARCH_PORTABLE_INC) \
 	-I $(SDK_DIR)/include \
 	-I $(SDK_DIR)/env/freedom-e300-hifive1 \
