@@ -99,6 +99,12 @@ APP_SRC = \
 	bsp/xilinx/spi/xspi_sinit.c \
 	bsp/xilinx/spi/xspi_selftest.c \
 	bsp/xilinx/spi/xspi_options.c \
+	bsp/xilinx/gpio/xgpio.c \
+	bsp/xilinx/gpio/xgpio_extra.c \
+	bsp/xilinx/gpio/xgpio_g.c \
+	bsp/xilinx/gpio/xgpio_intr.c \
+	bsp/xilinx/gpio/xgpio_selftest.c \
+	bsp/xilinx/gpio/xgpio_sinit.c \
 	bsp/xilinx/common/xbasic_types.c \
 	bsp/xilinx/common/xil_io.c \
 	bsp/xilinx/common/xil_assert.c
@@ -113,6 +119,7 @@ INCLUDES = \
 	-I./bsp/xilinx/uartns550 \
 	-I./bsp/xilinx/iic \
 	-I./bsp/xilinx/spi \
+	-I./bsp/xilinx/gpio \
 	-I$(FREERTOS_SOURCE_DIR)/include \
 	-I../Common/include \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V
@@ -226,7 +233,20 @@ ifeq ($(PROG),main_uart)
 	INCLUDES += -I./demo
 	INCLUDES += -I./devices
 else
+ifeq ($(PROG),main_ballot_box)
+	CFLAGS += -DmainDEMO_TYPE=8
+	INCLUDES += -I./demo
+	INCLUDES += -I./devices
+	INCLUDES += -I./demo/sbb
+	APP_SRC += ./devices/serLcd.c
+	APP_SRC += ./demo/sbb/sbb.c
+	APP_SRC += devices/sdmm.c
+	APP_SRC += devices/ff.c
+	APP_SRC += devices/ffsystem.c
+	APP_SRC += devices/ffunicode.c
+else
 	$(info unknown demo: $(PROG))
+endif
 endif
 endif
 endif

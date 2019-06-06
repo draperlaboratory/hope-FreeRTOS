@@ -43,6 +43,8 @@
 /* Demo includes. */
 #include "gpio.h"
 
+#include "uart.h"
+
 /*-----------------------------------------------------------*/
 #define MAIN_GPIO_DELAY_MS 100
 /*-----------------------------------------------------------*/
@@ -70,23 +72,34 @@ void main_gpio(void)
 }
 /*-----------------------------------------------------------*/
 
-
+#define GPIO_INPUTS 4
+#define GPIO_IN_4 4
+#define GPIO_IN_5 5
+#define GPIO_IN_6 6
+#define GPIO_IN_7 7
 void vTestGPIO_input(void *pvParameters)
 {
     (void)pvParameters;
 
+    printf("vTestGPIO_input starting\r\n");
+
     // GPIO Input has a pull-up, it is high unless pulled to the ground
-    uint8_t input[4] = {1};
-    uint8_t input_last[4] = {1};
+    uint8_t input[GPIO_INPUTS] = {1};
+    uint8_t input_last[GPIO_INPUTS] = {1};
+
+    gpio_set_as_input(GPIO_IN_4);
+    gpio_set_as_input(GPIO_IN_5);
+    gpio_set_as_input(GPIO_IN_6);
+    gpio_set_as_input(GPIO_IN_7);
 
     for (;;)
     {
-        input[0] = gpio1_read(0);
-        input[1] = gpio1_read(1);
-        input[2] = gpio1_read(2);
-        input[3] = gpio1_read(3);
+        input[0] = gpio_read(GPIO_IN_4);
+        input[1] = gpio_read(GPIO_IN_5);
+        input[2] = gpio_read(GPIO_IN_6);
+        input[3] = gpio_read(GPIO_IN_7);
 
-        for (uint8_t idx = 0; idx < 4; idx++) {
+        for (uint8_t idx = 0; idx < GPIO_INPUTS; idx++) {
             if (input[idx] != input_last[idx]) {
                 printf("#%u changed: %u -> %u\r\n", idx, input_last[idx], input[idx]);
                 input_last[idx] = input[idx];
@@ -97,43 +110,59 @@ void vTestGPIO_input(void *pvParameters)
     }
 }
 
+#define GPIO_OUT_0 0
+#define GPIO_OUT_1 1
+#define GPIO_OUT_2 2
+#define GPIO_OUT_3 3
 void vTestGPIO_output(void *pvParameters)
 {
-    /* vTestGPIO() tests the AXI GPIO on the VCU118 by 
-    testing that the output pins and the LEDs can be written to.
-    This should be verified by measuring the pins and looking
-    at the LEDs. */
-
     (void)pvParameters;
 
+    printf("vTestGPIO_output starting\r\n");
+
     // Delay so the input thread can catch up
-    vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS*2));
+    vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+
+    gpio_set_as_output(GPIO_OUT_0);
+    gpio_set_as_output(GPIO_OUT_1);
+    gpio_set_as_output(GPIO_OUT_2);
+    gpio_set_as_output(GPIO_OUT_3);
 
     /* GPIO are already set in hardware to be outputs */
     for (;;)
     {
         /***** WRITE TO PINS *****/
-        /* Write to GPIO_2 pin #0 */
-        gpio2_write(0);
+        gpio_write(GPIO_OUT_0);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
 
-        /* Write to GPIO_2 pin #1 */
-        gpio2_write(1);
+        gpio_write(GPIO_OUT_1);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
 
-        /* Clear GPIO_2 pin #0 */
-        gpio2_clear(0);
+        gpio_write(GPIO_OUT_2);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
 
-        /* Clear GPIO_2 pin #1 */
-        gpio2_clear(1);
-        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));   
+        gpio_write(GPIO_OUT_3);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+
+        gpio_write(GPIO_OUT_0);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+
+        gpio_write(GPIO_OUT_1);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+
+        gpio_write(GPIO_OUT_2);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
+
+        gpio_write(GPIO_OUT_3);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
     }
 }
 
 void vTestLED(void *pvParameters)
 {
     (void)pvParameters;
+
+    printf("vTestLED starting\r\n");
 
     for(;;)
     {

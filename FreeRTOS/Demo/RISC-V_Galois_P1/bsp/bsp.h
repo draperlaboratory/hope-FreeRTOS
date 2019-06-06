@@ -34,12 +34,11 @@
 #define PLIC_SOURCE_ETH 0x2
 #define PLIC_SOURCE_DMA_MM2S 0x3
 #define PLIC_SOURCE_DMA_S2MM 0x4
-// GFE:
+
 #define PLIC_SOURCE_SPI0 0x5
 #define PLIC_SOURCE_UART1 0x6
 #define PLIC_SOURCE_IIC0 0x7
 #define PLIC_SOURCE_SPI1 0x8
-#define PLIC_SOURCE_UART2 0x9
 
 #define PLIC_PRIORITY_UART0 0x1
 #define PLIC_PRIORITY_ETH 0x2
@@ -50,7 +49,6 @@
 #define PLIC_PRIORITY_UART1 0x1
 #define PLIC_PRIORITY_IIC0 0x3
 #define PLIC_PRIORITY_SPI1 0x2
-#define PLIC_PRIORITY_UART2 0x1
 
 extern plic_instance_t Plic;
 
@@ -206,8 +204,11 @@ void external_interrupt_handler(uint32_t cause);
  * GPIO defines
  */
 #define BSP_USE_GPIO 1
-#define XPAR_GPIO_1_BASEADDR (0x62330000ULL)
-#define XPAR_GPIO_2_BASEADDR (0x62370000ULL)
+#define XPAR_XGPIO_NUM_INSTANCES 1
+#define XPAR_GPIO_0_DEVICE_ID 0
+#define XPAR_GPIO_0_BASEADDR 0x62330000ULL
+#define XPAR_GPIO_0_INTERRUPT_PRESENT 0
+#define XPAR_GPIO_0_IS_DUAL 1
 
 /**
  * Xilinx Drivers defines

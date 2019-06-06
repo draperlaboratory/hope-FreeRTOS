@@ -1,57 +1,45 @@
+#ifndef __GPIO_H__
+#define __GPIO_H__
+
 #include <stdint.h>
 #include "bsp.h"
 
 #if BSP_USE_GPIO
-/* Struct for GPIO register space */
-struct __attribute__((aligned(4))) gpio_reg_str
-{
-	/* 0x00 -- Channel 1 GPIO data register */
-	volatile uint8_t gpio1_data __attribute__((aligned(4)));
 
-	/* 0x04 -- Channel 1 GPIO 3-state control register */
-	volatile uint8_t gpio1_tri __attribute__((aligned(4)));
+/**
+ * Initialize GPIO driver
+ */
+void gpio_init(void);
 
-	/* 0x08 -- Channel 2 GPIO data register */
-	volatile uint8_t gpio2_data __attribute__((aligned(4)));
+/**
+ * Set GPIO_1 index `i` as output
+ * @assert 0 <= i <= 7
+ */
+void gpio_set_as_output(uint8_t i);
 
-	/* 0x0C -- Channel 2 GPIO 3-state control register */
-	volatile uint8_t gpio2_tri __attribute__((aligned(4)));
-};
+/**
+ * Set GPIO_1 index `i` as input
+ * @assert 0 <= i <= 7
+ */
+void gpio_set_as_input(uint8_t i);
 
 /**
  * Set GPIO_1 index `i`
- * GPIO_1 has only bank 1, bank_2 is for onboard LED control
- * @assert 0 <= i <= 3
+ * @assert 0 <= i <= 7
  */
-void gpio1_write(uint8_t i);
+void gpio_write(uint8_t i);
 
 /**
  * Clear GPIO_1 index `i`
- * GPIO_1 has only bank 1, bank_2 is for onboard LED control
- * @assert 0 <= i <= 3
+ * @assert 0 <= i <= 7
  */
-void gpio1_clear(uint8_t i);
+void gpio_clear(uint8_t i);
 
 /**
  * Read GPIO_1 index `i`
- * Reads from bank_1 only
- * @assert 0 <= i <= 3
+ * @assert 0 <= i <= 7
  */
-uint8_t gpio1_read(uint8_t i);
-
-/**
- * Set GPIO_2 index `i`
- * GPIO_2 has only bank 1
- * @assert 0 <= i <= 1
- */
-void gpio2_write(uint8_t i);
-
-/**
- * Clear GPIO_2 index `i`
- * GPIO_2 has only bank 1
- * @assert 0 <= i <= 1
- */
-void gpio2_clear(uint8_t i);
+uint8_t gpio_read(uint8_t i);
 
 /**
  * Turn on LED 0-7
@@ -65,3 +53,5 @@ void led_write(uint8_t i);
  */
 void led_clear(uint8_t i);
 #endif
+
+#endif /* __GPIO_H__ */

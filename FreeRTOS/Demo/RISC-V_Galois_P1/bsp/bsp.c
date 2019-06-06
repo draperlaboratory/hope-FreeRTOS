@@ -1,6 +1,7 @@
 #include "bsp.h"
 #include "uart.h"
 #include "iic.h"
+#include "gpio.h"
 #include "spi.h"
 #include "plic_driver.h"
 
@@ -29,10 +30,6 @@ void prvSetupHardware(void)
     uart1_init();
 #endif
 
-#if BSP_USE_UART2
-    PLIC_set_priority(&Plic, PLIC_SOURCE_UART2, PLIC_PRIORITY_UART2);
-    uart2_init();
-#endif
 
 #if BSP_USE_ETHERNET
     configASSERT(BSP_USE_DMA);
@@ -53,6 +50,10 @@ void prvSetupHardware(void)
 #if BSP_USE_SPI1
     PLIC_set_priority(&Plic, PLIC_SOURCE_SPI1, PLIC_PRIORITY_SPI1);
     spi1_init();
+#endif
+
+#if BSP_USE_GPIO
+    gpio_init();
 #endif
 }
 

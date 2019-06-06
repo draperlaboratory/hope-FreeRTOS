@@ -49,9 +49,7 @@ void main_uart(void);
  * The tasks as described in the comments at the top of this file.
  */
 static void vTestUART1Tx(void *pvParameters);
-static void vTestUART2Tx(void *pvParameters);
 static void vTestUART1Rx(void *pvParameters);
-static void vTestUART2Rx(void *pvParameters);
 
 /*-----------------------------------------------------------*/
 
@@ -59,9 +57,7 @@ void main_uart(void)
 {
     /* Create GPIO test */
     xTaskCreate(vTestUART1Tx, "UART1 Tx Test", 1000, NULL, 0, NULL);
-    xTaskCreate(vTestUART2Tx, "UART2 Tx Test", 1000, NULL, 0, NULL);
     xTaskCreate(vTestUART1Rx, "UART1 Rx Test", 1000, NULL, 0, NULL);
-    xTaskCreate(vTestUART2Rx, "UART2 Rx Test", 1000, NULL, 0, NULL);
 }
 /*-----------------------------------------------------------*/
 
@@ -89,44 +85,10 @@ static void vTestUART1Rx(void *pvParameters)
 	for (;;)
 	{
         configASSERT( uart1_rxbuffer(&str[idx], 1) != -1);
+        printf("UART1 RX: %c\r\n", str[idx]);
         if (str[idx] == '\n') { // End character received
              str[idx] = '\0'; // proper termination
              printf("UART1 RX: %s\r\n", str);
-             idx=0;
-        } else {
-            idx++;
-            idx %= sizeof(str);
-        }
-	}
-}
-
-static void vTestUART2Tx(void *pvParameters)
-{
-	(void)pvParameters;
-
-    char* msg = "Hello from UART2\n";
-
-	printf("Starting vTestUART2 Tx\r\n");
-	for (;;)
-	{
-		configASSERT(uart2_txbuffer(msg, strlen(msg)) != -1);
-		vTaskDelay(pdMS_TO_TICKS(1000));
-	}
-}
-
-static void vTestUART2Rx(void *pvParameters)
-{
-	(void)pvParameters;
-	char str[20];
-    uint8_t idx = 0;
-
-	printf("Starting vTestUART2 Rx\r\n");
-	for (;;)
-	{
-        configASSERT( uart2_rxbuffer(&str[idx], 1) != -1);
-        if (str[idx] == '\n') { // End character received
-             str[idx] = '\0'; // proper termination
-             printf("UART2 RX: %s\r\n", str);
              idx=0;
         } else {
             idx++;
