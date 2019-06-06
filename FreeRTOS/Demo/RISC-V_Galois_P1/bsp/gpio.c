@@ -1,52 +1,98 @@
+#if !BSP_USE_GPIO
 #include "gpio.h"
+#include "xgpio.h"
+#include "bsp.h"
 
-#if BSP_USE_GPIO
-
-#define GPIO1_MAX 3
-#define GPIO2_MAX 1
+#define GPIO1_MAX 7
 #define LED_MAX 7
+#define GPIO_CHANNEL 1
+#define LED_CHANNEL 2
 
-static struct gpio_reg_str *gpio_reg_1 = (void *)XPAR_GPIO_1_BASEADDR;
-static struct gpio_reg_str *gpio_reg_2 = (void *)XPAR_GPIO_2_BASEADDR;
+XGpio Device; /* Xilinx GPIO driver */
 
-void led_write(uint8_t i)
-{
-	configASSERT(i <= LED_MAX);
-	gpio_reg_1->gpio2_data |= (1 << i);
+/**
+ * Initialize GPIO driver
+ */
+void gpio_init(void) {
+	configASSERT(XGpio_Initialize(&Device, XPAR_GPIO_0_DEVICE_ID) == XST_SUCCESS);
 }
 
-void led_clear(uint8_t i)
-{
-	configASSERT(i <= LED_MAX);
-	gpio_reg_1->gpio2_data &= ~(1 << i);
-}
-
-uint8_t gpio1_read(uint8_t i)
-{
-	return ((gpio_reg_1->gpio1_data >> i) & 0x1);
-}
-
-void gpio1_write(uint8_t i)
-{
+/**
+ * Set GPIO_1 index `i` as output
+ * Bits set to 0 are output
+ * @assert 0 <= i <= 7
+ */
+void gpio_set_as_output(uint8_t i) {
 	configASSERT(i <= GPIO1_MAX);
-	gpio_reg_1->gpio1_data |= (1 << i);
+	uint32_t mask = XGpio_GetDataDirection(&Device, GPIO_CHANNEL);
+	mask &= ~(1 << i);
+	XGpio_SetDataDirection(&Device, GPIO_CHANNEL, mask);
 }
 
-void gpio1_clear(uint8_t i)
-{
+/**
+ * Set GPIO_1 index `i` as input
+ * Bits set to 1 are input
+ * @assert 0 <= i <= 7
+ */
+void gpio_set_as_input(uint8_t i) {
 	configASSERT(i <= GPIO1_MAX);
-	gpio_reg_1->gpio1_data &= ~(1 << i);
+	uint32_t mask = XGpio_GetDataDirection(&Device, GPIO_CHANNEL);
+	mask |= (1 << i);
+	XGpio_SetDataDirection(&Device, GPIO_CHANNEL, mask);
 }
 
-void gpio2_write(uint8_t i)
-{
-	configASSERT(i <= GPIO2_MAX);
-	gpio_reg_2->gpio1_data |= (1 << i);
+/**
+ * Set GPIO_1 index `i`
+ * @assert 0 <= i <= 7
+ */
+void gpio_write(uint8_t i) {
+	configASSERT(i <= GPIO1_MAX);
+	uint32_t mask = XGpio_DiscreteRead(&Device, GPIO_CHANNEL);
+	mask |= (1 << i);
+	XGpio_DiscreteWrite(&Device, GPIO_CHANNEL, mask);
 }
 
-void gpio2_clear(uint8_t i)
-{
-	configASSERT(i <= GPIO2_MAX);
-	gpio_reg_2->gpio1_data &= ~(1 << i);
+/**
+ * Clear GPIO_1 index `i`
+ * @assert 0 <= i <= 7
+ */
+void gpio_clear(uint8_t i) {
+	configASSERT(i <= GPIO1_MAX);
+	uint32_t mask = XGpio_DiscreteRead(&Device, GPIO_CHANNEL);
+	mask &= ~(1 << i);
+	XGpio_DiscreteWrite(&Device, GPIO_CHANNEL, mask);
 }
+
+/**
+ * Read GPIO_1 index `i`
+ * @assert 0 <= i <= 7
+ */
+uint8_t gpio_read(uint8_t i) {
+	configASSERT(i <= GPIO1_MAX);
+	uint32_t value = XGpio_DiscreteRead(&Device, GPIO_CHANNEL);
+	return (value >> i) & 0x1;
+}
+
+/**
+ * Turn on LED 0-7
+ * Onboard LEDs are on GPIO_1 bank 2
+ */
+void led_write(uint8_t i) {
+	configASSERT(i <= LED_MAX);
+	uint32_t mask = XGpio_DiscreteRead(&Device, LED_CHANNEL);
+	mask |= (1 << i);
+	XGpio_DiscreteWrite(&Device, LED_CHANNEL, mask);
+}
+
+/**
+ * Turn off LED 0-7
+ * Onboard LEDs are on GPIO_1 bank 2
+ */
+void led_clear(uint8_t i) {
+	configASSERT(i <= LED_MAX);
+	uint32_t mask = XGpio_DiscreteRead(&Device, LED_CHANNEL);
+	mask &= ~(1 << i);
+	XGpio_DiscreteWrite(&Device, LED_CHANNEL, mask);
+}
+
 #endif
