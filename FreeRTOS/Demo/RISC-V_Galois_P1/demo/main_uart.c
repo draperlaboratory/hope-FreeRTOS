@@ -85,7 +85,6 @@ static void vTestUART1Rx(void *pvParameters)
 	for (;;)
 	{
         configASSERT( uart1_rxbuffer(&str[idx], 1) != -1);
-        printf("UART1 RX: %c\r\n", str[idx]);
         if (str[idx] == '\n') { // End character received
              str[idx] = '\0'; // proper termination
              printf("UART1 RX: %s\r\n", str);
