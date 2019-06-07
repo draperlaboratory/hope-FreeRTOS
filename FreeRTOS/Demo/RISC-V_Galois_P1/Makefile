@@ -233,20 +233,7 @@ ifeq ($(PROG),main_uart)
 	INCLUDES += -I./demo
 	INCLUDES += -I./devices
 else
-ifeq ($(PROG),main_ballot_box)
-	CFLAGS += -DmainDEMO_TYPE=8
-	INCLUDES += -I./demo
-	INCLUDES += -I./devices
-	INCLUDES += -I./demo/sbb
-	APP_SRC += ./devices/serLcd.c
-	APP_SRC += ./demo/sbb/sbb.c
-	APP_SRC += devices/sdmm.c
-	APP_SRC += devices/ff.c
-	APP_SRC += devices/ffsystem.c
-	APP_SRC += devices/ffunicode.c
-else
 	$(info unknown demo: $(PROG))
-endif
 endif
 endif
 endif
