@@ -15,7 +15,7 @@
 
 #define UART_TX_DELAY pdMS_TO_TICKS(500)
 #define UART_RX_DELAY pdMS_TO_TICKS(10000)
-#define UART_BUFFER_SIZE 64
+#define UART_BUFFER_SIZE 254
 
 /*****************************************************************************/
 /* Structs */
