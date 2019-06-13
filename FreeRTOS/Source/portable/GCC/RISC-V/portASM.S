@@ -315,8 +315,16 @@ handle_asynchronous:
 		j processed_source
 
 	test_if_external_interrupt:			/* If there is a CLINT and the mtimer interrupt is not pending then check to see if an external interrupt is pending. */
-		addi t1, t1, 4					/* 0x80000007 + 4 = 0x8000000b == Machine external interrupt. */
-		bne a0, t1, as_yet_unhandled	/* Something as yet unhandled. */
+		addi t1, t1, 4				/* 0x80000007 + 4 = 0x8000000b == Machine external interrupt. */
+	        bne a0, t1, test_if_machine_software_interrupt 	/* Could be a machine software interrupt */
+
+        test_if_machine_software_interrupt:
+	        addi t1, t0, 3                         /* 0x80000003 == machine software interrupt.*/
+	        bne a0, t1, as_yet_unhandled
+	        lw sp, xISRStackTop
+	        jal portasmMSI_HANDLER
+	        j processed_source
+
 
 #endif /* portasmHAS_CLINT */
 

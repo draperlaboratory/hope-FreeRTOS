@@ -17,6 +17,7 @@ AR      = $(CROSS_COMPILE_PREFIX)-ar
 RANLIB  = $(CROSS_COMPILE_PREFIX)-ranlib
 GDB     = $(CROSS_COMPILE_PREFIX)-gdb
 
+MSI_HANDLER = as_yet_unhandled
 # if using the multi-arch (riscv64-unknown-elf-gcc):
 ARCH_FLAGS = -march=rv32ima -mabi=ilp32 -mcmodel=medium
 # Basic ISP_CFLAGS:
@@ -31,6 +32,7 @@ ISP_CFLAGS += -I ${ISP_PREFIX}/riscv32-unknown-elf/include
 ISP_ASMFLAGS =  -O0 -g3
 ISP_ASMFLAGS += $(ARCH_FLAGS)
 ISP_ASMFLAGS += -DportasmHANDLE_INTERRUPT=handle_trap
+ISP_ASMFLAGS += -DportasmMSI_HANDLER=$(MSI_HANDLER)
 ISP_ASMFLAGS += -ffunction-sections -fdata-sections
 ISP_ASMFLAGS += -x assembler-with-cpp
 
