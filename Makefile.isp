@@ -1,6 +1,7 @@
 .PHONY: all
 .PHONY: install
 .PHONY: clean
+.PHONY: install-source
 
 ISP_PREFIX ?= $(HOME)/.local/isp/
 
@@ -15,6 +16,12 @@ all:
 	$(MAKE) -C FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio lib
 
 install: all
+	mkdir -p $(INSTALL_DIR)
+	mkdir -p $(DEMO_INSTALL_DIR)
+	cp -rf $(RV_DEMO_DIR) $(COMMON_DEMO_DIR) $(DEMO_INSTALL_DIR)
+	cp -rf $(SOURCE_DIR) $(INSTALL_DIR)
+
+install-source:
 	mkdir -p $(INSTALL_DIR)
 	mkdir -p $(DEMO_INSTALL_DIR)
 	cp -rf $(RV_DEMO_DIR) $(COMMON_DEMO_DIR) $(DEMO_INSTALL_DIR)
