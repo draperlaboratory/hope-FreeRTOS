@@ -234,7 +234,7 @@ void is_exception_print( uint32_t cause, uint32_t mepc, uint32_t status ) {
           printf("store/AMO page fault\n");
           break;
       default:
-          printf("unknown\n");
+          printf("Unknown MCAUSE: 0x%x\n", global_exception_mc.mcause);
       }
 
     printf("  MISA: 0x%x\n", global_exception_mc.misa);

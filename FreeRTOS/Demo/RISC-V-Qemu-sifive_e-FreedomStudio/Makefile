@@ -11,7 +11,9 @@ include FreeRTOS.mk
 # Platform spcific settings for this application _____________________________________________
 
 CFLAGS := $(ISP_CFLAGS)
+CFLAGS += $(CONFIG_CFLAGS)
 ASMFLAGS := $(ISP_ASMFLAGS)
+ASMFLAGS += $(CONFIG_ASMFLAGS)
 LDFLAGS := $(ISP_LDFLAGS)
 
 ARCH = RISC-V
@@ -125,7 +127,6 @@ OUT_LIB = $(BUILD_DIR)/libfreertos.a
 
 # Need to tell FreeRTOS where to find the FreeRTOSConfig.h __________________________________
 FREERTOS_INCLUDES += \
-	-I ./ \
 	-I $(ARCH_PORTABLE_INC) \
 	-I $(SDK_DIR)/include \
 	-I $(SDK_DIR)/env/freedom-e300-hifive1 \
@@ -153,8 +154,8 @@ BUILD_DIRECTORIES = \
 
 LDFLAGS += -Wl,-Map,"$(BUILD_DIR)/$(PROJ_NAME).map"
 
-.PHONY: debug clean app_compile debug-app frtos_compile print-info out_elf sim-qemu gdb lib
-all: directories $(OUT_OBJS) $(OUT_ELF) $(OUT_LIB)
+.PHONY: debug clean app_compile debug-app frtos_compile print-info out_elf sim-qemu gdb lib clean-libfreertos-objs
+all: directories $(OUT_OBJS) $(OUT_ELF) $(OUT_LIB) $(BUILD_DIR)/libfreertos%.a
 directories: $(BUILD_DIRECTORIES)
 app_compile: directories $(APP_OBJS)
 frtos_compile: directories $(FREERTOS_OBJS)
@@ -216,11 +217,19 @@ $(OUT_ELF): $(OUT_OBJS) $(TEST_OBJS)
 	@echo ' '
 
 # Generate lib___________________________________________________________________________
-$(OUT_LIB): $(LIB_OBJS)
+$(OUT_LIB): directories $(LIB_OBJS)
 	@echo '___________________________________________________________________________________'
 	@echo 'Building target: $@'
 	@echo '_______________________________'
-	$(AR) rcs $@ $^
+	$(AR) rcs $@ $(LIB_OBJS)
+	@echo 'Finished building target: $@'
+	@echo ' '
+
+$(BUILD_DIR)/libfreertos%.a: directories $(LIB_OBJS)
+	@echo '___________________________________________________________________________________'
+	@echo 'Building libfreertos variant target: $@'
+	@echo '_______________________________'
+	$(AR) rcs $@ $(LIB_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -231,6 +240,10 @@ $(BUILD_DIRECTORIES):
 
 clean:
 	rm -rf $(BUILD_DIR)
+
+clean-libfreertos-objs:
+	@echo "Cleaning libfreertos objects"
+	rm -rfv $(LIB_OBJS)
 
 sim-qemu: $(OUT_ELF)
 	qemu-system-riscv32 -kernel $^  -S -s -machine sifive_e -nographic

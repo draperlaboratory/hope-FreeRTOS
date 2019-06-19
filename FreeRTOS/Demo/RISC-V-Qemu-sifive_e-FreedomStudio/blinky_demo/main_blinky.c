@@ -91,7 +91,7 @@ find the queue full. */
 
 /* Enable ISP hooks */
 #define ISP_SUPPORT						( 1 )
-
+xTaskHandle xIspTask;
 /*-----------------------------------------------------------*/
 
 /*
@@ -120,7 +120,7 @@ static QueueHandle_t xQueue = NULL;
 #if (ISP_SUPPORT == 1)
 void main_blinky( void )
 {
-	xTaskCreate(isp_main_task, "Main task", 1000, NULL, 1, NULL);
+	xTaskCreate(isp_main_task, "Main task", 1000, NULL, 1, &xIspTask);
 
 	vTaskStartScheduler();
 
