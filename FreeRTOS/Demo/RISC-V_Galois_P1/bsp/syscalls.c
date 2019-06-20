@@ -3,6 +3,8 @@
 #include <sys/times.h>
 #include <sys/time.h>
 #include "uart.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 void *_sbrk(int nbytes);
 int _write(int file, char *ptr, int len);
@@ -13,6 +15,11 @@ int _read(int fd, void *buffer, unsigned int count);
 int _isatty(int fd);
 int _kill(int pid, int sig);
 int _getpid(int n);
+void _exit(int n);
+
+void _exit(int n) {
+    configASSERT(0);
+}
 
 void *_sbrk(int nbytes)
 {
