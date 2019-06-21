@@ -29,9 +29,9 @@ uint8_t go_to_line_2[] = {
 
 void serLcdPrintf(char *str, uint8_t len)
 {
-    if (len > LCD_MAX_STRLEN)
+    if (len > LCD_MAX_LINELEN)
     {
-        len = LCD_MAX_STRLEN;
+        len = LCD_MAX_LINELEN;
     }
 #if LCD_USE_SPI
     configASSERT(spi1_transmit(LCD_SPI_SLAVE_IDX, cmd_mode, sizeof(cmd_mode)) != -1);
@@ -46,13 +46,13 @@ void serLcdPrintf(char *str, uint8_t len)
 
 void serLcdPrintTwoLines(char* line_1, uint8_t len_1, char* line_2, uint8_t len_2) 
 {
-    if (len_1 > LCD_MAX_STRLEN)
+    if (len_1 > LCD_MAX_LINELEN)
     {
-    	len_1 = LCD_MAX_STRLEN;    
+    	len_1 = LCD_MAX_LINELEN;    
     }
-    if (len_2 > LCD_MAX_STRLEN)
+    if (len_2 > LCD_MAX_LINELEN)
     {
-    	len_2 = LCD_MAX_STRLEN;
+    	len_2 = LCD_MAX_LINELEN;
     }
 #if LCD_USE_SPI
     configASSERT(spi1_transmit(LCD_SPI_SLAVE_IDX, cmd_mode, sizeof(cmd_mode)) != -1);
