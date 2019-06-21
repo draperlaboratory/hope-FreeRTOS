@@ -170,7 +170,7 @@ void isp_main_task(void *argument)
   result = (unsigned long)isp_main();
   vTaskDelay(1);
 
-  printf("\nMain task has completed with code: 0x%08x\n", result);
+  t_printf("\nMain task has completed with code: 0x%08x\n", result);
 
   for( ;; );
 
