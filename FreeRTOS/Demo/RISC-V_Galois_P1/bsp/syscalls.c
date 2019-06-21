@@ -18,6 +18,7 @@ int _getpid(int n);
 void _exit(int n);
 
 void _exit(int n) {
+    (void)n;
     configASSERT(0);
 }
 
