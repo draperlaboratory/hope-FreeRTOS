@@ -15,7 +15,7 @@
 
 #define LCD_MAX_LINELEN 16        // Max length of the text
 #define LCD_COMMAND_CODE 254      // Code to send before changing line
-#define LCD_LINE_2_CODE 64
+#define LCD_LINE_2_CODE 192		  // Code to change to line 2.
 
 uint8_t cmd_mode[] = {
     '|',
