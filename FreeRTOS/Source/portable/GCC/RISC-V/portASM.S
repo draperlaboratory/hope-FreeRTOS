@@ -101,6 +101,9 @@ at the top of this file. */
 #define MC_MTVAL_OFF 38
 #define MC_MISA_OFF 39
 
+#define SIFIVE_TEST_ADDR 0x00100000
+#define FINISHER_FAIL 0x3333
+
 .global xPortStartFirstTask
 .global freertos_risc_v_trap_handler
 .global pxPortInitialiseStack
@@ -115,6 +118,9 @@ at the top of this file. */
 
 .extern global_exception_mc
 
+/*-----------------------------------------------------------*/
+test_dev_addr: .word SIFIVE_TEST_ADDR
+finish_val: .word FINISHER_FAIL
 /*-----------------------------------------------------------*/
 
 /* save cpu context to structure */	
@@ -364,6 +370,16 @@ external_interrupt:
 handle_synchronous:
 	addi a1, a1, 4						/* Synchronous so updated exception return address to the instruction after the instruction that generated the exeption. */
 	STORE a1, 0( sp )					/* Save updated exception return address. */
+
+test_if_invalid:
+	li t0, 0x11 							/* 17 == policy violation. */
+	bne a0, t0, test_if_environment_call
+   jal end_test_print
+   lw t0, test_dev_addr
+   lw t1, finish_val
+   sw t1, 0(t0)
+finish_loop:
+   j finish_loop
 
 test_if_environment_call:
 	li t0, 11 							/* 11 == environment call. */

@@ -224,6 +224,9 @@ void is_exception_print( uint32_t cause, uint32_t mepc, uint32_t status ) {
       case portRV_STORE_ACCESS_FAULT:
           printf("store/AMO access fualt\n");
           break;
+      case portRV_POLICY_VIOLATION_FAULT:
+          printf("policy violation fault\n");
+          break;
       case portRV_INSTRUCTION_PAGE_FAULT:
           printf("instruction page fault\n");
           break;
@@ -291,6 +294,13 @@ void is_exception_print( uint32_t cause, uint32_t mepc, uint32_t status ) {
     printf("    a6 (x16): 0x%x\n", global_exception_mc.x16);
     printf("    a7 (x17): 0x%x\n", global_exception_mc.x17);	 
 #endif
+
+    return;
+}
+
+void end_test_print() {
+    printf("FreeRTOS PIPE Violation.\n");
+    printf("MSG: End test.\n");
 
     return;
 }
