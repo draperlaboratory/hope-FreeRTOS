@@ -274,13 +274,13 @@ static int uart_txbuffer(struct UartDriver *Uart, uint8_t *ptr, int len)
     int idx = 0;
     int remaining = len;
     int sent = 0;
-    while (remaining > 0 ) {
+    while (remaining > 0) {
         sent = XUartNs550_Send(&Uart->Device, &ptr[idx], remaining);
-        configASSERT(sent > 0);
+        configASSERT(sent >= 0);
         remaining -= sent;
         idx += sent;
     }
-    returnval = len;
+    returnval = idx;
 #else
     /* Get current task handle */
     Uart->tx_task = xTaskGetCurrentTaskHandle();
