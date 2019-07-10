@@ -61,6 +61,10 @@ extern void main_sd(void);
 #elif mainDEMO_TYPE == 7
 #pragma message "Demo type 7: UART test"
 extern void main_uart(void);
+#elif mainDEMO_TYPE == 9
+#pragma message "Demo type 9: HTTP peek/poke test"
+extern void main_peekpoke(void);
+
 #else
 #error "Unsupported demo type"
 #endif
@@ -152,6 +156,10 @@ int main(void)
 #elif mainDEMO_TYPE == 7
 	{
 		main_uart();
+	}
+#elif mainDEMO_TYPE == 9
+	{
+		main_peekpoke();
 	}
 #endif
 
