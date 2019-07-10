@@ -186,7 +186,7 @@ void main_full(void)
 	vStartTaskNotifyTask();
 	vCreateAbortDelayTasks();
 	vStartCountingSemaphoreTasks();
-	vStartMessageBufferTasks(configMINIMAL_STACK_SIZE); // fails in malloc
+	vStartMessageBufferTasks(configMINIMAL_STACK_SIZE*2);
 	vStartStreamBufferTasks();
 	vStartStreamBufferInterruptDemo();
 
