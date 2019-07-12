@@ -23,6 +23,7 @@ $(info $$PROG is [${PROG}])
 FREERTOS_SOURCE_DIR	= ../../Source
 FREERTOS_PLUS_SOURCE_DIR = ../../../FreeRTOS-Plus/Source
 FREERTOS_TCP_SOURCE_DIR = $(FREERTOS_PLUS_SOURCE_DIR)/FreeRTOS-Plus-TCP
+FREERTOS_PROTOCOLS_DIR = ./protocols
 
 WARNINGS= -Wall -Wextra -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wsign-compare \
 		-Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wunused
@@ -191,6 +192,43 @@ ifeq ($(PROG),main_tcp)
 		demo/TCPEchoClient_SingleTasks.c \
 		demo/SimpleTCPEchoServer.c
 else
+ifeq ($(PROG),main_peekpoke)
+	CFLAGS += -DmainDEMO_TYPE=9
+	CFLAGS += -DmainCREATE_PEEKPOKE_SERVER_TASK=1
+	CFLAGS += -DmainCREATE_HTTP_SERVER=1
+	CFLAGS += -DipconfigUSE_HTTP=1
+	CFLAGS += '-DconfigHTTP_ROOT="/notused"'
+	CFLAGS += -DffconfigMAX_FILENAME=4096
+	INCLUDES += \
+		-I./demo \
+		-I$(FREERTOS_TCP_SOURCE_DIR) \
+		-I$(FREERTOS_TCP_SOURCE_DIR)/include \
+		-I$(FREERTOS_PROTOCOLS_DIR)/include \
+		-I$(FREERTOS_TCP_SOURCE_DIR)/portable/Compiler/GCC
+	FREERTOS_SRC += \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_IP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_ARP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DHCP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DNS.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Sockets.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_IP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_UDP_IP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_WIN.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Stream_Buffer.c \
+		$(FREERTOS_PROTOCOLS_DIR)/Common/FreeRTOS_TCP_server.c \
+		$(FREERTOS_PROTOCOLS_DIR)/HTTP/FreeRTOS_HTTP_server.c \
+		$(FREERTOS_PROTOCOLS_DIR)/HTTP/FreeRTOS_HTTP_commands.c \
+		$(FREERTOS_PROTOCOLS_DIR)/HTTP/peekpoke.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/BufferManagement/BufferAllocation_2.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/riscv_hal_eth.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c	
+	APP_SRC += \
+		bsp/rand.c
+	DEMO_SRC += \
+		demo/SimpleUDPClientAndServer.c \
+		demo/TCPEchoClient_SingleTasks.c \
+		demo/SimpleTCPEchoServer.c
+else
 ifeq ($(PROG),main_udp)
 	CFLAGS += -DmainDEMO_TYPE=5
 	CFLAGS += -DmainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS=1
@@ -234,6 +272,7 @@ ifeq ($(PROG),main_uart)
 	INCLUDES += -I./devices
 else
 	$(info unknown demo: $(PROG))
+endif
 endif
 endif
 endif
