@@ -77,6 +77,10 @@ definitions. */
 	#error portasmHANDLE_INTERRUPT must be defined to the function to be called to handle external/peripheral interrupts.  portasmHANDLE_INTERRUPT can be defined on the assmbler command line or in the appropriate freertos_risc_v_chip_specific_extensions.h header file.
 #endif
 
+#ifndef portasmMSI_HANDLER
+        #define portasmMSI_HANDLER as_yet_unhandled
+#endif
+
 /* Only the standard core registers are stored by default.  Any additional
 registers must be saved by the portasmSAVE_ADDITIONAL_REGISTERS and
 portasmRESTORE_ADDITIONAL_REGISTERS macros - which can be defined in a chip
