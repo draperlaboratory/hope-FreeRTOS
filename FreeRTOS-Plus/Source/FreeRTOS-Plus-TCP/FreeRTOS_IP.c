@@ -910,6 +910,7 @@ NetworkBufferDescriptor_t *pxResult;
 			/* The following statement may trigger a:
 			warning: cast increases required alignment of target type [-Wcast-align].
 			It has been confirmed though that the alignment is suitable. */
+			#pragma GCC diagnostic ignored "-Wcast-align"
 			pxResult = * ( ( NetworkBufferDescriptor_t ** ) pucBuffer );
 		}
 		else
