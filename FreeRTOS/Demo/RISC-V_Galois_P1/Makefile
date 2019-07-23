@@ -271,7 +271,7 @@ ifeq ($(PROG),main_uart)
 	INCLUDES += -I./demo
 	INCLUDES += -I./devices
 else
-	$(info unknown demo: $(PROG))
+$(error unknown demo: $(PROG))
 endif
 endif
 endif
