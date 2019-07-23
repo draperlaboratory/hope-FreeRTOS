@@ -129,6 +129,25 @@ ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions \
 	-DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
+FREERTOS_IP_SRC = \
+	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_IP.c \
+	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_ARP.c \
+	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DHCP.c \
+	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DNS.c \
+	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Sockets.c \
+	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_IP.c \
+	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_UDP_IP.c \
+	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_WIN.c \
+	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Stream_Buffer.c \
+	$(FREERTOS_TCP_SOURCE_DIR)/portable/BufferManagement/BufferAllocation_2.c \
+	$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/riscv_hal_eth.c \
+	$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c
+
+FREERTOS_IP_INCLUDE = \
+	-I$(FREERTOS_TCP_SOURCE_DIR) \
+	-I$(FREERTOS_TCP_SOURCE_DIR)/include \
+	-I$(FREERTOS_TCP_SOURCE_DIR)/portable/Compiler/GCC
+
 ifeq ($(PROG),main_blinky)
 	CFLAGS += -DmainDEMO_TYPE=1
 else 
@@ -169,22 +188,9 @@ ifeq ($(PROG),main_tcp)
 	CFLAGS += -DmainCREATE_TCP_ECHO_SERVER_TASK=1
 	INCLUDES += \
 		-I./demo \
-		-I$(FREERTOS_TCP_SOURCE_DIR) \
-		-I$(FREERTOS_TCP_SOURCE_DIR)/include \
-		-I$(FREERTOS_TCP_SOURCE_DIR)/portable/Compiler/GCC
+		$(FREERTOS_IP_INCLUDE)
 	FREERTOS_SRC += \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_IP.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_ARP.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DHCP.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DNS.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Sockets.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_IP.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_UDP_IP.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_WIN.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Stream_Buffer.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/portable/BufferManagement/BufferAllocation_2.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/riscv_hal_eth.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c	
+		$(FREERTOS_IP_SRC)
 	APP_SRC += \
 		bsp/rand.c
 	DEMO_SRC += \
@@ -234,22 +240,9 @@ ifeq ($(PROG),main_udp)
 	CFLAGS += -DmainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS=1
 	INCLUDES += \
 		-I./demo \
-		-I$(FREERTOS_TCP_SOURCE_DIR) \
-		-I$(FREERTOS_TCP_SOURCE_DIR)/include \
-		-I$(FREERTOS_TCP_SOURCE_DIR)/portable/Compiler/GCC
+		$(FREERTOS_IP_INCLUDE)
 	FREERTOS_SRC += \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_IP.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_ARP.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DHCP.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DNS.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Sockets.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_IP.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_UDP_IP.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_WIN.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Stream_Buffer.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/portable/BufferManagement/BufferAllocation_2.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/riscv_hal_eth.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c	
+		$(FREERTOS_IP_SRC)
 	APP_SRC += \
 		bsp/rand.c
 	DEMO_SRC += \
