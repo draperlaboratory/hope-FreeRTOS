@@ -54,7 +54,9 @@ INCLUDES = \
 	-I../Common/include \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V
 
-ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
+ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy \
+	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions \
+	-DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
 CFLAGS = $(WARNINGS) $(INCLUDES)
 CFLAGS += -O0 -g3 $(ARCH) $(ABI) -mcmodel=medany
@@ -123,7 +125,8 @@ INCLUDES = \
 	-I./bsp/xilinx/gpio \
 	-I$(FREERTOS_SOURCE_DIR)/include \
 	-I../Common/include \
-	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V
+	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V \
+	-I./demo
 
 ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions \
@@ -141,12 +144,18 @@ FREERTOS_IP_SRC = \
 	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Stream_Buffer.c \
 	$(FREERTOS_TCP_SOURCE_DIR)/portable/BufferManagement/BufferAllocation_2.c \
 	$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/riscv_hal_eth.c \
-	$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c
+	$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c \
+	bsp/rand.c
 
 FREERTOS_IP_INCLUDE = \
 	-I$(FREERTOS_TCP_SOURCE_DIR) \
 	-I$(FREERTOS_TCP_SOURCE_DIR)/include \
 	-I$(FREERTOS_TCP_SOURCE_DIR)/portable/Compiler/GCC
+
+FREERTOS_IP_DEMO_SRC = \
+	demo/SimpleUDPClientAndServer.c \
+	demo/TCPEchoClient_SingleTasks.c \
+	demo/SimpleTCPEchoServer.c
 
 ifeq ($(PROG),main_blinky)
 	CFLAGS += -DmainDEMO_TYPE=1
@@ -176,7 +185,6 @@ ifeq ($(PROG),main_full)
 else
 ifeq ($(PROG),main_iic)
 	CFLAGS += -DmainDEMO_TYPE=3
-	INCLUDES += -I./demo
 	INCLUDES += -I./devices
 else
 ifeq ($(PROG),main_gpio)
@@ -186,17 +194,10 @@ else
 ifeq ($(PROG),main_tcp)
 	CFLAGS += -DmainDEMO_TYPE=5
 	CFLAGS += -DmainCREATE_TCP_ECHO_SERVER_TASK=1
-	INCLUDES += \
-		-I./demo \
-		$(FREERTOS_IP_INCLUDE)
-	FREERTOS_SRC += \
-		$(FREERTOS_IP_SRC)
-	APP_SRC += \
-		bsp/rand.c
-	DEMO_SRC += \
-		demo/SimpleUDPClientAndServer.c \
-		demo/TCPEchoClient_SingleTasks.c \
-		demo/SimpleTCPEchoServer.c
+	INCLUDES += $(FREERTOS_IP_INCLUDE)
+	FREERTOS_SRC += $(FREERTOS_IP_SRC)
+	DEMO_SRC += $(FREERTOS_IP_DEMO_SRC)
+		
 else
 ifeq ($(PROG),main_peekpoke)
 	CFLAGS += -DmainDEMO_TYPE=9
@@ -206,49 +207,22 @@ ifeq ($(PROG),main_peekpoke)
 	CFLAGS += '-DconfigHTTP_ROOT="/notused"'
 	CFLAGS += -DffconfigMAX_FILENAME=4096
 	INCLUDES += \
-		-I./demo \
-		-I$(FREERTOS_TCP_SOURCE_DIR) \
-		-I$(FREERTOS_TCP_SOURCE_DIR)/include \
-		-I$(FREERTOS_PROTOCOLS_DIR)/include \
-		-I$(FREERTOS_TCP_SOURCE_DIR)/portable/Compiler/GCC
+		$(FREERTOS_IP_INCLUDE) \
+		-I$(FREERTOS_PROTOCOLS_DIR)/include
 	FREERTOS_SRC += \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_IP.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_ARP.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DHCP.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DNS.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Sockets.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_IP.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_UDP_IP.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_WIN.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Stream_Buffer.c \
+		$(FREERTOS_IP_SRC) \
 		$(FREERTOS_PROTOCOLS_DIR)/Common/FreeRTOS_TCP_server.c \
 		$(FREERTOS_PROTOCOLS_DIR)/HTTP/FreeRTOS_HTTP_server.c \
 		$(FREERTOS_PROTOCOLS_DIR)/HTTP/FreeRTOS_HTTP_commands.c \
-		$(FREERTOS_PROTOCOLS_DIR)/HTTP/peekpoke.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/portable/BufferManagement/BufferAllocation_2.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/riscv_hal_eth.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c	
-	APP_SRC += \
-		bsp/rand.c
-	DEMO_SRC += \
-		demo/SimpleUDPClientAndServer.c \
-		demo/TCPEchoClient_SingleTasks.c \
-		demo/SimpleTCPEchoServer.c
+		$(FREERTOS_PROTOCOLS_DIR)/HTTP/peekpoke.c
+	DEMO_SRC += $(FREERTOS_IP_DEMO_SRC)
 else
 ifeq ($(PROG),main_udp)
 	CFLAGS += -DmainDEMO_TYPE=5
 	CFLAGS += -DmainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS=1
-	INCLUDES += \
-		-I./demo \
-		$(FREERTOS_IP_INCLUDE)
-	FREERTOS_SRC += \
-		$(FREERTOS_IP_SRC)
-	APP_SRC += \
-		bsp/rand.c
-	DEMO_SRC += \
-		demo/SimpleUDPClientAndServer.c \
-		demo/TCPEchoClient_SingleTasks.c \
-		demo/SimpleTCPEchoServer.c
+	INCLUDES += $(FREERTOS_IP_INCLUDE)
+	FREERTOS_SRC += $(FREERTOS_IP_SRC)
+	DEMO_SRC += $(FREERTOS_IP_DEMO_SRC)
 else
 ifeq ($(PROG),main_sd)
 	CFLAGS += -DmainDEMO_TYPE=6
@@ -256,12 +230,10 @@ ifeq ($(PROG),main_sd)
 	DEMO_SRC += devices/ff.c
 	DEMO_SRC += devices/ffsystem.c
 	DEMO_SRC += devices/ffunicode.c
-	INCLUDES += -I./demo
 	INCLUDES += -I./devices
 else
 ifeq ($(PROG),main_uart)
 	CFLAGS += -DmainDEMO_TYPE=7
-	INCLUDES += -I./demo
 	INCLUDES += -I./devices
 else
 $(error unknown demo: $(PROG))
