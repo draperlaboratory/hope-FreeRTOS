@@ -660,7 +660,7 @@ int AxiEthernetSetupIntrSystem(plic_instance_t *IntcInstancePtr,
 				u16 DmaRxIntrId,
 				u16 DmaTxIntrId)
 {
-    printf("AxiEthernetSetupIntrSystem\r\n");
+    xaxi_debug_printf("AxiEthernetSetupIntrSystem\r\n");
 	XAxiDma_BdRing * TxRingPtr = XAxiDma_GetTxRing(DmaInstancePtr);
 	XAxiDma_BdRing * RxRingPtr = XAxiDma_GetRxRing(DmaInstancePtr);
 	int Status;
