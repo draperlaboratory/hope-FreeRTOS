@@ -64,6 +64,9 @@ extern void main_uart(void);
 #elif mainDEMO_TYPE == 9
 #pragma message "Demo type 9: HTTP peek/poke test"
 extern void main_peekpoke(void);
+#elif mainDEMO_TYPE == 10
+#pragma message "Demo type 10: RTC test"
+extern void main_rtc(void);
 
 #else
 #error "Unsupported demo type"
@@ -160,6 +163,10 @@ int main(void)
 #elif mainDEMO_TYPE == 9
 	{
 		main_peekpoke();
+	}
+#elif mainDEMO_TYPE == 10
+	{
+		main_rtc();
 	}
 #endif
 

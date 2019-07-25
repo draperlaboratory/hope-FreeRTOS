@@ -236,16 +236,22 @@ ifeq ($(PROG),main_uart)
 	CFLAGS += -DmainDEMO_TYPE=7
 	INCLUDES += -I./devices
 else
+ifeq ($(PROG),main_rtc)
+	CFLAGS += -DmainDEMO_TYPE=10
+	INCLUDES += -I./devices
+	DEMO_SRC += devices/ds1338rtc.c
+else
 $(error unknown demo: $(PROG))
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
-endif
+endif # main_rtc
+endif # main_uart
+endif # main_sd
+endif # main_udp
+endif # main_peekpoke
+endif # main_tcp
+endif # main_gpio
+endif # main_iic
+endif # main_full
+endif # main_blinky
 
 ARFLAGS=crsv
 
