@@ -117,7 +117,9 @@ volatile int FramesRx;	  /* Num of frames that have been received */
 volatile int FramesTx;	  /* Num of frames that have been sent */
 volatile int DeviceErrors; /* Num of errors detected in the device */
 
-char AxiEthernetMAC[6] = { configMAC_ADDR0, configMAC_ADDR1, configMAC_ADDR2, configMAC_ADDR3, configMAC_ADDR4, configMAC_ADDR5 };
+
+// @mpodhradsky: "Declaring AxiEthernetMAC as weak, so it can be overriden in the user app"
+char AxiEthernetMAC[6]  __attribute__((weak)) = { configMAC_ADDR0, configMAC_ADDR1, configMAC_ADDR2, configMAC_ADDR3, configMAC_ADDR4, configMAC_ADDR5 };
 
 
 uint8_t* AxiEthernetGetTxBuffer(void) {
