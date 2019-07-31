@@ -107,10 +107,10 @@ purpose of ensuring parameters are passed into tasks correctly. */
 comments at the top of this file.  This is surprisingly large as it calls
 the logging library's print function, which allocates a 128 byte buffer on its
 stack. */
-#define mainCHECK_TASK_STACK_SIZE_WORDS 200
+#define mainCHECK_TASK_STACK_SIZE_WORDS configMINIMAL_STACK_SIZE*2
 
 /* Size of the stacks to allocated for the register check tasks. */
-#define mainREG_TEST_STACK_SIZE_WORDS 512
+#define mainREG_TEST_STACK_SIZE_WORDS configMINIMAL_STACK_SIZE*2
 
 /*-----------------------------------------------------------*/
 
@@ -187,7 +187,7 @@ void main_full(void)
 	vCreateAbortDelayTasks();
 	vStartCountingSemaphoreTasks();
 	vStartMessageBufferTasks(configMINIMAL_STACK_SIZE*2);
-	vStartStreamBufferTasks();
+	//vStartStreamBufferTasks();
 	vStartStreamBufferInterruptDemo();
 
 	/* Create the register check tasks, as described at the top of this	file.
@@ -390,7 +390,7 @@ void vFullDemoTickHook(void)
 
 	/* Writes to stream buffer byte by byte to test the stream buffer trigger
 	level functionality. */
-	vPeriodicStreamBufferProcessing();
+	//vPeriodicStreamBufferProcessing();
 
 	/* Writes a string to a string buffer four bytes at a time to demonstrate
 	a stream being sent from an interrupt to a task. */

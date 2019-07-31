@@ -72,8 +72,8 @@
 
 OUTPUT_ARCH( "riscv" )
 
-_STACK_SIZE = DEFINED(_STACK_SIZE) ? _STACK_SIZE : 0x4000;
-_HEAP_SIZE = DEFINED(_HEAP_SIZE) ? _HEAP_SIZE : 0x4000;
+_STACK_SIZE = DEFINED(_STACK_SIZE) ? _STACK_SIZE : 2K;
+_HEAP_SIZE = DEFINED(_HEAP_SIZE) ? _HEAP_SIZE : 256K;
 
 /*****************************************************************************
  * Define memory layout
@@ -154,17 +154,11 @@ SECTIONS {
        __bss_end = .;
     } > dmem
 
-    /* Generate Stack and Heap definitions */
-
-    .heap : {
-       . = ALIGN(8);
-       _heap = .;
-       _heap_start = .;
-       . += _HEAP_SIZE;
-       _heap_end = .;
-    } > dmem
-
-    .stack : {
+   /* Generate Stack and Heap definitions
+    * Stack is used by the ISR and the main() for initialization
+    * Stack grows downwards
+    */
+   .stack : {
        _stack_end = .;
        . += _STACK_SIZE;
        . = ALIGN(8);
@@ -172,6 +166,14 @@ SECTIONS {
        __stack = _stack;
        __freertos_irq_stack_top = .;
     } > dmem
-    
+
+   /* Heap grows upwards */
+    .heap : {
+       . = ALIGN(8);
+       _heap = .;
+       _heap_start = .;
+       . += _HEAP_SIZE;
+       _heap_end = .;
+    } > dmem    
     _end = .;
 }

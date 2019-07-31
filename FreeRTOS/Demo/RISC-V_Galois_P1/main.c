@@ -84,7 +84,7 @@ uint64_t get_cycle_count(void);
 
 #if configGENERATE_RUN_TIME_STATS
 /* Buffer and a task for displaying runtime stats */
-char statsBuffer[1024];
+char statsBuffer[2048];
 static void prvStatsTask(void *pvParameters);
 #endif /* configGENERATE_RUN_TIME_STATS */
 /*-----------------------------------------------------------*/
@@ -171,7 +171,7 @@ int main(void)
 #endif
 
 #if configGENERATE_RUN_TIME_STATS
-	xTaskCreate(prvStatsTask, "prvStatsTask", configMINIMAL_STACK_SIZE * 2, NULL, tskIDLE_PRIORITY, NULL);
+	xTaskCreate(prvStatsTask, "prvStatsTask", configMINIMAL_STACK_SIZE * 10, NULL, tskIDLE_PRIORITY, NULL);
 #endif
 
 	/* If all is well, the scheduler will now be running, and the following
@@ -187,18 +187,54 @@ int main(void)
 /*-----------------------------------------------------------*/
 
 #if configGENERATE_RUN_TIME_STATS
+
+// Returns percentage utilization of the ISR stack
+#include "portmacro.h"
+extern const StackType_t xISRStackTop;
+extern const uint32_t _stack_end[];
+const StackType_t xISRStackEnd = ( StackType_t ) _stack_end;
+
+static uint8_t prvIsrStackUtilization(void)
+{
+	uint8_t percent = 0;
+	uint32_t idx;
+	uint32_t stack_len = (xISRStackTop - xISRStackEnd)/4; // # words
+	uint32_t *stack_ptr = (uint32_t*) xISRStackEnd;
+
+	//printf("xISRStackTop: 0x%lx\r\n",xISRStackTop);
+	//printf("xISRStackEnd 0x%lx\r\n", xISRStackEnd);
+	//printf("Stack len %lu\r\n",stack_len);
+
+	for (idx=0; idx<stack_len; idx++) {
+		//printf("stack ptr addr %p\r\n", stack_ptr);
+		//printf("stack ptr val 0x%lx\r\n", *stack_ptr);
+		if (*stack_ptr != 0xabababab) {
+			//printf("end of usable region\r\n");
+			break;
+		}
+		stack_ptr++;
+	}
+	//printf("idx = %lu\r\n",idx);
+
+	percent = 100 - idx*100/stack_len;
+
+	return percent;
+}
+
 static void prvStatsTask(void *pvParameters)
 {
 	(void)pvParameters;
 	printf(("prvStatsTask: starting\r\n"));
+	vTaskDelay(pdMS_TO_TICKS(1000));
 
 	for (;;)
 	{
-		vTaskDelay(pdMS_TO_TICKS(10000));
 		vTaskGetRunTimeStats(statsBuffer);
 		printf("prvStatsTask: xPortGetFreeHeapSize() = %u\r\n", xPortGetFreeHeapSize());
-		printf("prvStatsTask: Run-time stats\r\nTask\tAbsTime\tpercent_time\r\n");
+		printf("prvStatsTask: prvIsrStackUtilization() = %u\r\n", prvIsrStackUtilization());
+		printf("prvStatsTask: Run-time stats\r\nTask\t\tAbsTime\t\t%%time\tStackHighWaterMark\r\n");
 		printf("%s\r\n", statsBuffer);
+		vTaskDelay(pdMS_TO_TICKS(10000));
 	}
 }
 #endif /* configGENERATE_RUN_TIME_STATS */

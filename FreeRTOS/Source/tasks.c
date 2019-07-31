@@ -4494,7 +4494,11 @@ TCB_t *pxTCB;
 						{
 							/* sizeof( int ) == sizeof( long ) so a smaller
 							printf() library can be used. */
+							#ifdef INCLUDE_uxTaskGetStackHighWaterMark
+							sprintf( pcWriteBuffer, "\t%u\t\t%u%%\t%u\r\n", ( unsigned int ) pxTaskStatusArray[ x ].ulRunTimeCounter, ( unsigned int ) ulStatsAsPercentage, pxTaskStatusArray[ x ].usStackHighWaterMark ); /*lint !e586 sprintf() allowed as this is compiled with many compilers and this is a utility function only - not part of the core kernel implementation. */
+							#else
 							sprintf( pcWriteBuffer, "\t%u\t\t%u%%\r\n", ( unsigned int ) pxTaskStatusArray[ x ].ulRunTimeCounter, ( unsigned int ) ulStatsAsPercentage ); /*lint !e586 sprintf() allowed as this is compiled with many compilers and this is a utility function only - not part of the core kernel implementation. */
+							#endif /* INCLUDE_uxTaskGetStackHighWaterMark */
 						}
 						#endif
 					}
@@ -4510,7 +4514,11 @@ TCB_t *pxTCB;
 						{
 							/* sizeof( int ) == sizeof( long ) so a smaller
 							printf() library can be used. */
+							#ifdef INCLUDE_uxTaskGetStackHighWaterMark
+							sprintf( pcWriteBuffer, "\t%u\t\t<1%%\t%u\r\n", ( unsigned int ) pxTaskStatusArray[ x ].ulRunTimeCounter, pxTaskStatusArray[ x ].usStackHighWaterMark ); /*lint !e586 sprintf() allowed as this is compiled with many compilers and this is a utility function only - not part of the core kernel implementation. */
+							#else
 							sprintf( pcWriteBuffer, "\t%u\t\t<1%%\r\n", ( unsigned int ) pxTaskStatusArray[ x ].ulRunTimeCounter ); /*lint !e586 sprintf() allowed as this is compiled with many compilers and this is a utility function only - not part of the core kernel implementation. */
+							#endif /* INCLUDE_uxTaskGetStackHighWaterMark */
 						}
 						#endif
 					}
