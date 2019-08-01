@@ -101,16 +101,16 @@ purpose of ensuring parameters are passed into tasks correctly. */
 #define mainREG_TEST_TASK_2_PARAMETER ((void *)0x87654321)
 
 /* The base period used by the timer test tasks. */
-#define mainTIMER_TEST_PERIOD (50)
+#define mainTIMER_TEST_PERIOD (150)
 
 /* The size of the stack allocated to the check task (as described in the
 comments at the top of this file.  This is surprisingly large as it calls
 the logging library's print function, which allocates a 128 byte buffer on its
 stack. */
-#define mainCHECK_TASK_STACK_SIZE_WORDS configMINIMAL_STACK_SIZE*2
+#define mainCHECK_TASK_STACK_SIZE_WORDS configMINIMAL_STACK_SIZE*5
 
 /* Size of the stacks to allocated for the register check tasks. */
-#define mainREG_TEST_STACK_SIZE_WORDS configMINIMAL_STACK_SIZE*2
+#define mainREG_TEST_STACK_SIZE_WORDS configMINIMAL_STACK_SIZE*5
 
 /*-----------------------------------------------------------*/
 
@@ -186,8 +186,8 @@ void main_full(void)
 	vStartTaskNotifyTask();
 	vCreateAbortDelayTasks();
 	vStartCountingSemaphoreTasks();
-	vStartMessageBufferTasks(configMINIMAL_STACK_SIZE*2);
-	//vStartStreamBufferTasks();
+	vStartMessageBufferTasks(configMINIMAL_STACK_SIZE*5);
+	vStartStreamBufferTasks();
 	vStartStreamBufferInterruptDemo();
 
 	/* Create the register check tasks, as described at the top of this	file.
@@ -390,7 +390,7 @@ void vFullDemoTickHook(void)
 
 	/* Writes to stream buffer byte by byte to test the stream buffer trigger
 	level functionality. */
-	//vPeriodicStreamBufferProcessing();
+	vPeriodicStreamBufferProcessing();
 
 	/* Writes a string to a string buffer four bytes at a time to demonstrate
 	a stream being sent from an interrupt to a task. */
