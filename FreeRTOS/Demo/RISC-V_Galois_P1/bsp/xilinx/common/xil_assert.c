@@ -49,6 +49,10 @@
 #include "xil_assert.h"
 #include <stdio.h>
 
+#if AXI_DEBUG_PRINT
+#pragma message "AXI_DEBUG_PRINT defined"
+#endif
+
 /************************** Constant Definitions *****************************/
 
 /**************************** Type Definitions *******************************/
