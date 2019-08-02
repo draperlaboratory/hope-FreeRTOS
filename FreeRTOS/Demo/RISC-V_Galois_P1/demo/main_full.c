@@ -186,9 +186,9 @@ void main_full(void)
 	vStartTaskNotifyTask();
 	vCreateAbortDelayTasks();
 	vStartCountingSemaphoreTasks();
-	vStartMessageBufferTasks(configMINIMAL_STACK_SIZE*5);
-	vStartStreamBufferTasks();
-	vStartStreamBufferInterruptDemo();
+	//vStartMessageBufferTasks(configMINIMAL_STACK_SIZE*5);
+	//vStartStreamBufferTasks();
+	//vStartStreamBufferInterruptDemo();
 
 	/* Create the register check tasks, as described at the top of this	file.
 	Use xTaskCreateStatic() to create a task using only statically allocated
@@ -298,20 +298,20 @@ static void prvCheckTask(void *pvParameters)
 			pcStatusMessage = "ERROR: Suicide tasks.\r\n";
 		}
 
-		if (xAreMessageBufferTasksStillRunning() == pdFALSE)
-		{
-			pcStatusMessage = "ERROR: Message buffer.\r\n";
-		}
+		//if (xAreMessageBufferTasksStillRunning() == pdFALSE)
+		//{
+		//	pcStatusMessage = "ERROR: Message buffer.\r\n";
+		//}
 
-		if (xAreStreamBufferTasksStillRunning() == pdFALSE)
-		{
-			pcStatusMessage = "ERROR: Stream buffer.\r\n";
-		}
+		//if (xAreStreamBufferTasksStillRunning() == pdFALSE)
+		//{
+		//	pcStatusMessage = "ERROR: Stream buffer.\r\n";
+		//}
 
-		if (xIsInterruptStreamBufferDemoStillRunning() == pdFALSE)
-		{
-			pcStatusMessage = "ERROR: Stream buffer interrupt.\r\n";
-		}
+		//if (xIsInterruptStreamBufferDemoStillRunning() == pdFALSE)
+		//{
+		//	pcStatusMessage = "ERROR: Stream buffer interrupt.\r\n";
+		//}
 
 		/* Check that the register test 1 task is still running. */
 		if (ulLastRegTest1Value == ulRegTest1LoopCounter)
@@ -390,11 +390,11 @@ void vFullDemoTickHook(void)
 
 	/* Writes to stream buffer byte by byte to test the stream buffer trigger
 	level functionality. */
-	vPeriodicStreamBufferProcessing();
+	//vPeriodicStreamBufferProcessing();
 
 	/* Writes a string to a string buffer four bytes at a time to demonstrate
 	a stream being sent from an interrupt to a task. */
-	vBasicStreamBufferSendFromISR();
+	//vBasicStreamBufferSendFromISR();
 
 	/* Called from vApplicationTickHook() when the project is configured to
 	build the full test/demo applications. */
