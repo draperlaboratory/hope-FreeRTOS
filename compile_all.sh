@@ -1,4 +1,5 @@
 #!/bin/bash
+cd FreeRTOS/Demo/RISC-V_Galois_P1/
 for use_clang in no yes
 do
     export USE_CLANG=$use_clang
@@ -17,3 +18,4 @@ do
     done
 done
 make clean
+cd -
