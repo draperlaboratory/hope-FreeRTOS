@@ -5,5 +5,5 @@
 #-----------------------------------------------------------------------------#
 CompileAll:
   script:
-    - nix-shell --run './compile_all.sh'
+    - nix-shell /var/lib/gitlab-runner/shell.nix --run './compile_all.sh'
   tags: ["freertos"]
