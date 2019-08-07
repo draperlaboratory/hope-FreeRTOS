@@ -1,3 +1,6 @@
+# For debugging
+$(info $$PROG is [${PROG}])
+
 RISCV_XLEN ?= 32
 RISCV_LIB  ?= elf
 CCPATH =
@@ -7,18 +10,29 @@ ABI 		= -mabi=ilp32
 
 TARGET=$(CCPATH)riscv${RISCV_XLEN}-unknown-${RISCV_LIB}
 
-GCC		= $(TARGET)-gcc
-OBJCOPY	= $(TARGET)-objcopy
-OBJDUMP	= $(TARGET)-objdump
-AR		= $(TARGET)-ar
-RANLIB	= $(TARGET)-ranlib
+# Decide which compiler to use
+ifeq ($(USE_CLANG),yes)
+	CC		= clang --target=riscv32
+	# LLVM doesn't support linking RISC-V files yet,
+	# so we have to use GCC linker to do so
+	GCC		= $(TARGET)-gcc
+	OBJCOPY	= llvm-objcopy
+	OBJDUMP	= llvm-objdump
+	AR		= llvm-ar
+	RANLIB	= llvm-ranlib
+else
+	CC		= $(TARGET)-gcc
+	GCC		= $(CC)
+	OBJCOPY	= $(TARGET)-objcopy
+	OBJDUMP	= $(TARGET)-objdump
+	AR		= $(TARGET)-ar
+	RANLIB	= $(TARGET)-ranlib
+	COMPILER_FLAGS = -mcmodel=medany
+endif
 
 # Use main_blinky as demo source and target file name if not specified
 PROG 	?= main_blinky
 CRT0	= bsp/boot.S
-
-# For debugging
-$(info $$PROG is [${PROG}])
 
 FREERTOS_SOURCE_DIR	= ../../Source
 FREERTOS_PLUS_SOURCE_DIR = ../../../FreeRTOS-Plus/Source
@@ -59,7 +73,7 @@ ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy \
 	-DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
 CFLAGS = $(WARNINGS) $(INCLUDES)
-CFLAGS += -O0 -g3 $(ARCH) $(ABI) -mcmodel=medany
+CFLAGS += -O0 -g3 $(ARCH) $(ABI) $(COMPILER_FLAGS)
 
 DEMO_SRC = main.c \
 	demo/$(PROG).c
@@ -92,6 +106,7 @@ APP_SRC = \
 	bsp/xilinx/axiethernet/xaxiethernet_sinit.c \
 	bsp/xilinx/iic/xiic.c \
 	bsp/xilinx/iic/xiic_g.c \
+	bsp/xilinx/iic/xiic_l.c \
 	bsp/xilinx/iic/xiic_sinit.c \
 	bsp/xilinx/iic/xiic_selftest.c \
 	bsp/xilinx/iic/xiic_master.c \
@@ -277,11 +292,11 @@ $(info ARFLAGS=$(ARFLAGS))
 
 %.o: %.c
 	@echo "    CC $<"
-	@$(GCC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -o $@ $<
 
 %.o: %.S
 	@echo "    CC $<"
-	@$(GCC) $(ASFLAGS) -c $(CFLAGS) -o $@ $<
+	@$(CC) $(ASFLAGS) -c $(CFLAGS) -o $@ $<
 
 all: $(PROG).elf
 

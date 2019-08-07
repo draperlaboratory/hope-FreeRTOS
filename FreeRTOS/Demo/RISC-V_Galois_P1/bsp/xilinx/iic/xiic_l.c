@@ -94,7 +94,7 @@
 
 /***************************** Include Files *******************************/
 
-#include <sleep.h>
+#include "bsp.h"
 #include "xil_types.h"
 #include "xil_assert.h"
 #include "xiic_l.h"
@@ -1089,7 +1089,7 @@ u32 XIic_WaitBusFree(UINTPTR BaseAddress)
 		if (BusyCount++ > 10000) {
 			return XST_FAILURE;
 		}
-		usleep(100);
+		msleep(0.1);
 	}
 
 	return XST_SUCCESS;
