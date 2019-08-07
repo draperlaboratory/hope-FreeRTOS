@@ -132,7 +132,11 @@ u32 XAxiDma_BdSetBufAddr(XAxiDma_Bd* BdPtr, UINTPTR Addr)
 
 	if (Addr & (WordLen - 1)) {
 		if ((HasDRE & XAXIDMA_BD_HAS_DRE_MASK) == 0) {
+			#if defined(__clang__)
+			printf("Error set buf addr %x with %x and %x,"
+			#else
 			printf("Error set buf addr %x with %lx and %x,"
+			#endif
 			" %x\r\n",Addr, HasDRE, (WordLen - 1),
 			Addr & (WordLen - 1));
 

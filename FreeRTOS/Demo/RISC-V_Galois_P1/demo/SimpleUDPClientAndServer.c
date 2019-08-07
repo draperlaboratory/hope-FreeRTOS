@@ -136,13 +136,18 @@ static void prvSimpleZeroCopyUDPClientTask(void *pvParameters)
 			} while ((pucUDPPayloadBuffer = (uint8_t *)FreeRTOS_GetUDPPayloadBuffer(xStringLength, portMAX_DELAY)) == NULL);
 
 			FreeRTOS_debug_printf(("prvSimpleZeroCopyUDPClientTask: got a buffer at %p\r\n", pucUDPPayloadBuffer));
+			
 			/* A buffer was successfully obtained.  Create the string that is
 			sent to the server.  First the string is filled with zeros as this will
 			effectively be the null terminator when the string is received at the other
 			end.  Note that the string is being written directly into the buffer
 			obtained from the IP stack above. */
 			memset((void *)pucUDPPayloadBuffer, 0x00, xStringLength);
+			#if defined(__clang__)
+			sprintf((char *)pucUDPPayloadBuffer, "%s%u\r\n", pcStringToSend, ulCount);
+			#else
 			sprintf((char *)pucUDPPayloadBuffer, "%s%lu\r\n", pcStringToSend, ulCount);
+			#endif
 
 			/* Pass the buffer into the send function.  ulFlags has the
 			FREERTOS_ZERO_COPY bit set so the IP stack will take control of the
@@ -231,7 +236,11 @@ static void prvSimpleZeroCopyServerTask(void *pvParameters)
 		/* Print the received characters. */
 		if (lBytes > 0)
 		{
+			#if defined(__clang__)
+			FreeRTOS_printf(("prvSimpleZeroCopyServerTask: received %u bytes\r\n", lBytes));
+			#else
 			FreeRTOS_printf(("prvSimpleZeroCopyServerTask: received %lu bytes\r\n", lBytes));
+			#endif
 			/* It is expected to receive one more byte than the string length as
 			the NULL terminator is also transmitted. */
 			//configASSERT( lBytes == ( ( BaseType_t ) strlen( ( const char * ) pucUDPPayloadBuffer ) + 1 ) );
@@ -241,7 +250,11 @@ static void prvSimpleZeroCopyServerTask(void *pvParameters)
 									 FREERTOS_ZERO_COPY,							/* ulFlags with the FREERTOS_ZERO_COPY bit set. */
 									 &xClient,										/* Where the data is being sent. */
 									 sizeof(xClientLength));
+			#if defined(__clang__)
+			FreeRTOS_printf(("prvSimpleZeroCopyServerTask: FreeRTOS_sendto returned %u\r\n", lBytes));
+			#else
 			FreeRTOS_printf(("prvSimpleZeroCopyServerTask: FreeRTOS_sendto returned %lu\r\n", lBytes));
+			#endif
 		}
 
 		if (lBytes >= 0)

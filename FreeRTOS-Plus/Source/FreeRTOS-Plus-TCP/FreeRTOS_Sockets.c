@@ -3417,7 +3417,11 @@ void vSocketWakeUpUser( FreeRTOS_Socket_t *pxSocket )
 					configASSERT( copied_len >= 0 );
 					configASSERT( copied_len < (int32_t) sizeof( ucChildText ) );
 				}
+				#if defined(__clang__)
+				FreeRTOS_printf( ( "TCP %5d %-16xip:%5d %d/%d %-13.13s %6u %6u%s\n",
+				#else
 				FreeRTOS_printf( ( "TCP %5d %-16lxip:%5d %d/%d %-13.13s %6lu %6u%s\n",
+				#endif
 					pxSocket->usLocalPort,		/* Local port on this machine */
 					pxSocket->u.xTCP.ulRemoteIP,	/* IP address of remote machine */
 					pxSocket->u.xTCP.usRemotePort,	/* Port on remote machine */
@@ -3442,7 +3446,11 @@ void vSocketWakeUpUser( FreeRTOS_Socket_t *pxSocket )
 				count++;
 			}
 
+			#if defined(__clang__)
+			FreeRTOS_printf( ( "FreeRTOS_netstat: %u sockets %u < %u < %d buffers free\n",
+			#else
 			FreeRTOS_printf( ( "FreeRTOS_netstat: %lu sockets %lu < %lu < %d buffers free\n",
+			#endif
 				count,
 				uxGetMinimumFreeNetworkBuffers( ),
 				uxGetNumberOfFreeNetworkBuffers( ),

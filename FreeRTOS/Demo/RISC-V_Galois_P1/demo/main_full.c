@@ -408,5 +408,5 @@ static void prvSetupPeripheralTimers(void)
 
 void vSendString(const char *const pcString)
 {
-	printf(pcString);
+	printf("%s\r\n",pcString);
 }

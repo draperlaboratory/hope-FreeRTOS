@@ -26,7 +26,7 @@
  */
 
 #ifndef SIMPLE_UDP_CLIENT_AND_SERVER_H
-#define SIMPLE_UDPCLIENT_AND_SERVER_H
+#define SIMPLE_UDP_CLIENT_AND_SERVER_H
 
 void vStartSimpleUDPClientServerTasks(uint16_t usStackSize, uint32_t ulsPort, UBaseType_t uxPriority);
 

@@ -39,7 +39,7 @@ FREERTOS_PLUS_SOURCE_DIR = ../../../FreeRTOS-Plus/Source
 FREERTOS_TCP_SOURCE_DIR = $(FREERTOS_PLUS_SOURCE_DIR)/FreeRTOS-Plus-TCP
 FREERTOS_PROTOCOLS_DIR = ./protocols
 
-WARNINGS= -Wall -Wextra -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wsign-compare \
+WARNINGS= -Werror -Wall -Wextra -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wsign-compare \
 		-Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wunused
 
 

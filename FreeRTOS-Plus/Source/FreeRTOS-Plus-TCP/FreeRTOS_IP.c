@@ -1847,8 +1847,14 @@ uint8_t ucProtocol;
 		{
 			return ipINVALID_LENGTH;
 		}
-
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Waddress-of-packed-member"
+		#endif
 		pusChecksum = ( uint16_t * ) ( &( pxProtPack->xUDPPacket.xUDPHeader.usChecksum ) );
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 		#if( ipconfigHAS_DEBUG_PRINTF != 0 )
 		{
 			pcType = "UDP";
@@ -1861,8 +1867,14 @@ uint8_t ucProtocol;
 		{
 			return ipINVALID_LENGTH;
 		}
-
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Waddress-of-packed-member"
+		#endif
 		pusChecksum = ( uint16_t * ) ( &( pxProtPack->xTCPPacket.xTCPHeader.usChecksum ) );
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 		#if( ipconfigHAS_DEBUG_PRINTF != 0 )
 		{
 			pcType = "TCP";
@@ -1876,8 +1888,14 @@ uint8_t ucProtocol;
 		{
 			return ipINVALID_LENGTH;
 		}
-
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Waddress-of-packed-member"
+		#endif
 		pusChecksum = ( uint16_t * ) ( &( pxProtPack->xICMPPacket.xICMPHeader.usChecksum ) );
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#endif
 		#if( ipconfigHAS_DEBUG_PRINTF != 0 )
 		{
 			if( ucProtocol == ( uint8_t ) ipPROTOCOL_ICMP )
