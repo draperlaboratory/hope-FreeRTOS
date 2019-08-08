@@ -105,7 +105,7 @@
 #define configUSE_COUNTING_SEMAPHORES 1
 
 // TODO: use only for debugging
-#define configGENERATE_RUN_TIME_STATS 0
+#define configGENERATE_RUN_TIME_STATS 1
 #define configRECORD_STACK_HIGH_ADDRESS (1)
 #define INCLUDE_uxTaskGetStackHighWaterMark 1
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
