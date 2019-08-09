@@ -9,9 +9,14 @@ ABI 		= -mabi=ilp32
 
 
 TARGET=$(CCPATH)riscv${RISCV_XLEN}-unknown-${RISCV_LIB}
+USE_LED_BLINK_TASK ?= 0
+
 
 # Decide which compiler to use
 ifeq ($(USE_CLANG),yes)
+GCC_SYSROOT_PATH=$(shell which riscv32-unknown-elf-gdb)
+export C_INCLUDE_PATH= $(dir $(GCC_SYSROOT_PATH))../riscv32-unknown-elf/include
+$(info C_INCLUDE_PATH=$(C_INCLUDE_PATH))
 	CC		= clang --target=riscv32
 	# LLVM doesn't support linking RISC-V files yet,
 	# so we have to use GCC linker to do so
@@ -73,7 +78,7 @@ ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy \
 	-DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
 CFLAGS = $(WARNINGS) $(INCLUDES)
-CFLAGS += -O0 -g3 $(ARCH) $(ABI) $(COMPILER_FLAGS) -DAXI_DEBUG_PRINT=1
+CFLAGS += -O0 -g3 $(ARCH) $(ABI) $(COMPILER_FLAGS) -DAXI_DEBUG_PRINT=1 -DUSE_LED_BLINK_TASK=$(USE_LED_BLINK_TASK)
 
 DEMO_SRC = main.c \
 	demo/$(PROG).c
