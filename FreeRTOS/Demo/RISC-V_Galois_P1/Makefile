@@ -1,13 +1,13 @@
 RISCV_XLEN ?= 32
 RISCV_LIB  ?= elf
 CCPATH =
-ARCH 		= -march=rv32im
+ARCH 		= -march=rv32ima
 ABI 		= -mabi=ilp32
 
 
 TARGET=$(CCPATH)riscv${RISCV_XLEN}-unknown-${RISCV_LIB}
 
-GCC		= $(TARGET)-gcc
+GCC     = $(ISP_PREFIX)/bin/clang
 OBJCOPY	= $(TARGET)-objcopy
 OBJDUMP	= $(TARGET)-objdump
 AR		= $(TARGET)-ar
@@ -39,7 +39,7 @@ FREERTOS_SRC = \
 	$(FREERTOS_SOURCE_DIR)/timers.c \
 	$(FREERTOS_SOURCE_DIR)/event_groups.c \
 	$(FREERTOS_SOURCE_DIR)/stream_buffer.c \
-	$(FREERTOS_SOURCE_DIR)/portable/MemMang/heap_4.c
+	$(FREERTOS_SOURCE_DIR)/portable/MemMang/heap_2.c
 
 APP_SOURCE_DIR	= ../Common/Minimal
 
@@ -56,7 +56,8 @@ INCLUDES = \
 ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
 CFLAGS = $(WARNINGS) $(INCLUDES)
-CFLAGS += -O0 -g3 $(ARCH) $(ABI) -mcmodel=medany
+CFLAGS += -O0 -g3 $(ARCH) $(ABI) -mcmodel=medium
+CFLAGS += -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
 
 DEMO_SRC = main.c \
 	demo/$(PROG).c
@@ -89,6 +90,7 @@ APP_SRC = \
 	bsp/xilinx/axiethernet/xaxiethernet_sinit.c \
 	bsp/xilinx/iic/xiic.c \
 	bsp/xilinx/iic/xiic_g.c \
+	bsp/xilinx/iic/xiic_l.c \
 	bsp/xilinx/iic/xiic_sinit.c \
 	bsp/xilinx/iic/xiic_selftest.c \
 	bsp/xilinx/iic/xiic_master.c \
@@ -256,7 +258,7 @@ PORT_ASM_OBJ = $(PORT_ASM:.S=.o)
 CRT0_OBJ = $(CRT0:.S=.o)
 OBJS = $(CRT0_OBJ) $(PORT_ASM_OBJ) $(PORT_OBJ) $(RTOS_OBJ) $(DEMO_OBJ) $(APP_OBJ)
 
-LDFLAGS	 = -T link.ld -nostartfiles -nostdlib -defsym=_STACK_SIZE=4K
+LDFLAGS	 = -T link.ld -nostartfiles -defsym=_STACK_SIZE=4K
 LIBS	 =  -lc -lgcc
 
 $(info ASFLAGS=$(ASFLAGS))
