@@ -14,7 +14,8 @@ AR		= $(TARGET)-ar
 RANLIB	= $(TARGET)-ranlib
 
 # Use main_blinky as demo source and target file name if not specified
-PROG 	?= main_blinky
+# PROG 	?= main_blinky
+PROG 	?= libfreertos
 CRT0	= bsp/boot.S
 
 # For debugging
@@ -235,7 +236,13 @@ ifeq ($(PROG),main_uart)
 	INCLUDES += -I./demo
 	INCLUDES += -I./devices
 else
+ifeq ($(PROG),libfreertos)
+	CFLAGS += -DmainDEMO_TYPE=8
+	INCLUDES += -I./demo
+	INCLUDES += -I./devices
+else
 	$(info unknown demo: $(PROG))
+endif
 endif
 endif
 endif
@@ -275,12 +282,21 @@ $(info ARFLAGS=$(ARFLAGS))
 	@echo "    CC $<"
 	@$(GCC) $(ASFLAGS) -c $(CFLAGS) -o $@ $<
 
+ifeq ($(PROG),libfreertos)
+all: $(PROG).a
+else
 all: $(PROG).elf
+endif
 
 $(PROG).elf  : $(OBJS) Makefile 
 	@echo Linking....
 	@$(GCC) -o $@ $(LDFLAGS) $(OBJS) $(LIBS)
 	@$(OBJDUMP) -S $(PROG).elf > $(PROG).asm	
+	@echo Completed $@
+
+$(PROG).a  : $(OBJS) Makefile 
+	@echo Linking....
+	@$(AR) rcs $@ $(OBJS)
 	@echo Completed $@
 
 clean :

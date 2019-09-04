@@ -61,6 +61,8 @@ extern void main_sd(void);
 #elif mainDEMO_TYPE == 7
 #pragma message "Demo type 7: UART test"
 extern void main_uart(void);
+#elif mainDEMO_TYPE == 8
+extern void main_pipe(void);
 #else
 #error "Unsupported demo type"
 #endif
