@@ -1,22 +1,14 @@
 # For debugging
 $(info $$PROG is [${PROG}])
 
-RISCV_XLEN ?= 32
-RISCV_LIB  ?= elf
-CCPATH =
+CCPATH 		=
 ARCH 		= -march=rv32im
 ABI 		= -mabi=ilp32
 
-
-TARGET=$(CCPATH)riscv${RISCV_XLEN}-unknown-${RISCV_LIB}
-USE_LED_BLINK_TASK ?= 0
-
+TARGET=$(CCPATH)riscv64-unknown-elf
 
 # Decide which compiler to use
 ifeq ($(USE_CLANG),yes)
-GCC_SYSROOT_PATH=$(shell which riscv32-unknown-elf-gdb)
-export C_INCLUDE_PATH= $(dir $(GCC_SYSROOT_PATH))../riscv32-unknown-elf/include
-$(info C_INCLUDE_PATH=$(C_INCLUDE_PATH))
 	CC		= clang --target=riscv32
 	# LLVM doesn't support linking RISC-V files yet,
 	# so we have to use GCC linker to do so
@@ -44,12 +36,8 @@ FREERTOS_PLUS_SOURCE_DIR = ../../../FreeRTOS-Plus/Source
 FREERTOS_TCP_SOURCE_DIR = $(FREERTOS_PLUS_SOURCE_DIR)/FreeRTOS-Plus-TCP
 FREERTOS_PROTOCOLS_DIR = ./protocols
 
-WARNINGS= -Wall -Wextra -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wsign-compare \
+WARNINGS= -Werror -Wall -Wextra -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wsign-compare \
 		-Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wunused
-
-
-# Root of RISC-V tools installation
-RISCV ?= /opt/riscv
 
 FREERTOS_SRC = \
 	$(FREERTOS_SOURCE_DIR)/croutine.c \
@@ -78,7 +66,7 @@ ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy \
 	-DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
 CFLAGS = $(WARNINGS) $(INCLUDES)
-CFLAGS += -O0 -g3 $(ARCH) $(ABI) $(COMPILER_FLAGS) -DAXI_DEBUG_PRINT=1 -DUSE_LED_BLINK_TASK=$(USE_LED_BLINK_TASK)
+CFLAGS += -O0 -g3 $(ARCH) $(ABI) $(COMPILER_FLAGS)
 
 DEMO_SRC = main.c \
 	demo/$(PROG).c
@@ -217,7 +205,7 @@ ifeq ($(PROG),main_tcp)
 	INCLUDES += $(FREERTOS_IP_INCLUDE)
 	FREERTOS_SRC += $(FREERTOS_IP_SRC)
 	DEMO_SRC += $(FREERTOS_IP_DEMO_SRC)
-		
+
 else
 ifeq ($(PROG),main_peekpoke)
 	CFLAGS += -DmainDEMO_TYPE=9
@@ -261,7 +249,11 @@ ifeq ($(PROG),main_rtc)
 	INCLUDES += -I./devices
 	DEMO_SRC += devices/ds1338rtc.c
 else
+ifeq ($(PROG),main_uart_malware)
+	CFLAGS += -DmainDEMO_TYPE=11
+else
 $(error unknown demo: $(PROG))
+endif # main_uart_malware
 endif # main_rtc
 endif # main_uart
 endif # main_sd
@@ -286,7 +278,7 @@ PORT_ASM_OBJ = $(PORT_ASM:.S=.o)
 CRT0_OBJ = $(CRT0:.S=.o)
 OBJS = $(CRT0_OBJ) $(PORT_ASM_OBJ) $(PORT_OBJ) $(RTOS_OBJ) $(DEMO_OBJ) $(APP_OBJ)
 
-LDFLAGS	 = -T link.ld -nostartfiles -nostdlib
+LDFLAGS	 = -T link.ld -nostartfiles -nostdlib $(ARCH) $(ABI)
 LIBS	 =  -lc -lgcc
 
 $(info ASFLAGS=$(ASFLAGS))
