@@ -80,7 +80,7 @@ _HEAP_SIZE = DEFINED(_HEAP_SIZE) ? _HEAP_SIZE : 0x4000;
  ****************************************************************************/
 MEMORY {
    cmem : ORIGIN = 0x80000000, LENGTH = 0x00800000
-	imem : ORIGIN = 0xc0000200, LENGTH = 0x0007fe00
+	imem : ORIGIN = 0xc0000000, LENGTH = 0x00080000
 	dmem : ORIGIN = 0xc0080000, LENGTH = 0x00800000
 }
 
