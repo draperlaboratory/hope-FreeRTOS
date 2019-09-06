@@ -639,6 +639,10 @@ int XUartNs550_SetBaudRate(XUartNs550 *InstancePtr, u32 BaudRate)
 	u32 Error;
 	u32 PercentError;
 
+  u32 baud_times_16;
+  u32 baud_times_8;
+  u32 clock_plus_8baud;
+
 	/*
 	 * Assert validates the input arguments
 	 */
@@ -650,8 +654,16 @@ int XUartNs550_SetBaudRate(XUartNs550 *InstancePtr, u32 BaudRate)
 	 * rater based upon the input clock frequency and a baud clock prescaler
 	 * of 16
 	 */
-	Divisor = ((InstancePtr->InputClockHz +((BaudRate * 16UL)/2)) /
-			(BaudRate * 16UL));
+  
+  baud_times_16 = BaudRate * 16UL;
+  baud_times_8 = BaudRate * 8UL;
+  clock_plus_8baud = InstancePtr->InputClockHz + baud_times_8;
+
+  Divisor = clock_plus_8baud / baud_times_16;
+  
+	/* Divisor = ((InstancePtr->InputClockHz +((BaudRate * 16UL)/2)) / */
+	/* 		(BaudRate * 16UL)); */
+
 	/*
 	 * check for too much error between the baud rate that will be generated
 	 * using the divisor and the expected baud rate, integer division also
