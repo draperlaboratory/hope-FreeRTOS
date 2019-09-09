@@ -110,7 +110,8 @@ APP_SRC = \
 	bsp/xilinx/gpio/xgpio_sinit.c \
 	bsp/xilinx/common/xbasic_types.c \
 	bsp/xilinx/common/xil_io.c \
-	bsp/xilinx/common/xil_assert.c
+	bsp/xilinx/common/xil_assert.c \
+	memcpy.c
 
 INCLUDES = \
 	-I. \
@@ -266,6 +267,7 @@ CRT0_OBJ = $(CRT0:.S=.o)
 OBJS = $(CRT0_OBJ) $(PORT_ASM_OBJ) $(PORT_OBJ) $(RTOS_OBJ) $(DEMO_OBJ) $(APP_OBJ)
 
 LDFLAGS	 = -T link.ld -nostartfiles -defsym=_STACK_SIZE=4K
+LDFLAGS  += -Wl,--wrap=memcpy
 LIBS	 =  -lc -lgcc
 
 $(info ASFLAGS=$(ASFLAGS))
