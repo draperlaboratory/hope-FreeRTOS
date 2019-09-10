@@ -42,10 +42,10 @@ struct UartDriver
 
 static bool uart_rxready(struct UartDriver *Uart);
 static uint8_t uart_rxchar(struct UartDriver *Uart);
-static uint8_t uart_txchar(struct UartDriver *Uart, uint8_t c);
+static uint8_t uart_txchar(struct UartDriver *Uart, uint32_t c);
 static int uart_rxbuffer(struct UartDriver *Uart, uint8_t *ptr, int len);
 static int uart_txbuffer(struct UartDriver *Uart, uint8_t *ptr, int len);
-static void uart_init(struct UartDriver *Uart, uint8_t device_id, uint8_t plic_source_id);
+static void uart_init(struct UartDriver *Uart, uint32_t device_id, uint32_t plic_source_id);
 
 #if !XPAR_UART_USE_POLLING_MODE
 static void UartNs550StatusHandler(void *CallBackRef, u32 Event, unsigned int EventData);
@@ -179,7 +179,7 @@ static bool uart_rxready(struct UartDriver *Uart)
 /**
  * Initialize UART peripheral
  */
-static void uart_init(struct UartDriver *Uart, uint8_t device_id, uint8_t plic_source_id)
+static void uart_init(struct UartDriver *Uart, uint32_t device_id, uint32_t plic_source_id)
 {
     // Initialize struct
     Uart->tx_mutex = xSemaphoreCreateMutex();
@@ -249,11 +249,11 @@ static uint8_t uart_rxchar(struct UartDriver *Uart)
  * Transmit a single byte from UART peripheral. Polling mode,
  * waits until finished.
  */
-static uint8_t uart_txchar(struct UartDriver *Uart, uint8_t c)
+static uint8_t uart_txchar(struct UartDriver *Uart, uint32_t c)
 {
 #if XPAR_UART_USE_POLLING_MODE
-    XUartNs550_SendByte(Uart->Device.BaseAddress, c);
-    return c;
+    XUartNs550_SendByte(Uart->Device.BaseAddress, (uint8_t)c);
+    return (uint8_t) c;
 #else
     return uart_txchar(Uart, c);
 #endif
