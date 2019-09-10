@@ -628,6 +628,35 @@ unsigned int XUartNs550_ReceiveBuffer(XUartNs550 *InstancePtr)
 * @note		None.
 *
 *****************************************************************************/
+
+u32 softmul(u32 multiplier, u32 multiplicand)
+{
+  u32 i;
+  u32 result = 0;
+
+  for(i = 0; i < 32; i++) {
+    if(((multiplier << i) & 1) == 1) {
+      result += multiplicand;
+    }
+
+    multiplicand = multiplicand << 1;
+  }
+
+  return result;
+}
+
+u32 softdiv(u32 dividend, u32 divisor)
+{
+  u32 result = 0;
+
+  while (dividend > divisor) {
+    dividend -= divisor;
+    result++;
+  }
+
+  return result;
+}
+
 int XUartNs550_SetBaudRate(XUartNs550 *InstancePtr, u32 BaudRate)
 {
 
@@ -659,7 +688,8 @@ int XUartNs550_SetBaudRate(XUartNs550 *InstancePtr, u32 BaudRate)
   baud_times_8 = BaudRate * 8UL;
   clock_plus_8baud = InstancePtr->InputClockHz + baud_times_8;
 
-  Divisor = clock_plus_8baud / baud_times_16;
+  /* Divisor = clock_plus_8baud / baud_times_16; */
+  Divisor = softdiv(clock_plus_8baud, baud_times_16);
   
 	/* Divisor = ((InstancePtr->InputClockHz +((BaudRate * 16UL)/2)) / */
 	/* 		(BaudRate * 16UL)); */
@@ -669,7 +699,8 @@ int XUartNs550_SetBaudRate(XUartNs550 *InstancePtr, u32 BaudRate)
 	 * using the divisor and the expected baud rate, integer division also
 	 * truncates always positive
 	 */
-	TargetRate = Divisor * BaudRate * 16UL;
+	/* TargetRate = Divisor * BaudRate * 16UL; */
+	TargetRate = softmul(Divisor, BaudRate) * 16UL;
 	if (TargetRate < InstancePtr->InputClockHz) {
 		Error = InstancePtr->InputClockHz - TargetRate;
 	} else {
@@ -680,7 +711,8 @@ int XUartNs550_SetBaudRate(XUartNs550 *InstancePtr, u32 BaudRate)
 	 * avoid floating point calculations, should be less than 3% as per
 	 * RS-232 spec
 	 */
-	PercentError = (Error * 100UL) / InstancePtr->InputClockHz;
+	/* PercentError = (Error * 100UL) / InstancePtr->InputClockHz; */
+  PercentError = softdiv(softmul(Error, 100UL), InstancePtr->InputClockHz);
 	if (PercentError > XUN_MAX_BAUD_ERROR_RATE) {
 		return XST_UART_BAUD_ERROR;
 
