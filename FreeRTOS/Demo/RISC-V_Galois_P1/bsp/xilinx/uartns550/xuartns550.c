@@ -200,10 +200,10 @@ int XUartNs550_CfgInitialize(XUartNs550 *InstancePtr,
 	 * be done with 2 writes, 1st enabling the FIFOs then set the trigger
 	 * level
 	 */
-	//XUartNs550_WriteReg(InstancePtr->BaseAddress,
-	//			XUN_FCR_OFFSET, XUN_FIFO_ENABLE);
-	//XUartNs550_WriteReg(InstancePtr->BaseAddress, XUN_FCR_OFFSET,
-	//			XUN_FIFO_ENABLE | XUN_FIFO_RX_TRIG_MSB);
+	XUartNs550_WriteReg(InstancePtr->BaseAddress,
+				XUN_FCR_OFFSET, XUN_FIFO_ENABLE);
+	XUartNs550_WriteReg(InstancePtr->BaseAddress, XUN_FCR_OFFSET,
+				XUN_FIFO_ENABLE | XUN_FIFO_RX_TRIG_MSB);
 	/*
 	 * Clear the statistics for this driver
 	 */
