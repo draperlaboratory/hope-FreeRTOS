@@ -267,8 +267,6 @@ CRT0_OBJ = $(CRT0:.S=.o)
 OBJS = $(CRT0_OBJ) $(PORT_ASM_OBJ) $(PORT_OBJ) $(RTOS_OBJ) $(DEMO_OBJ) $(APP_OBJ)
 
 LDFLAGS	 = -T link.ld -nostartfiles -defsym=_STACK_SIZE=4K
-LDFLAGS  += -Wl,--wrap=memcpy
-LDFLAGS  += -Wl,--wrap=memset
 LDFLAGS  += -Wl,--wrap=printf
 LDFLAGS  += -Wl,--wrap=puts
 
