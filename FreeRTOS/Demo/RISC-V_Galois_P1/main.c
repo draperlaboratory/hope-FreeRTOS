@@ -125,7 +125,16 @@ uint32_t port_get_current_mtime(void)
  */
 int main(void)
 {
+  int i = 5;
+  char buf[0x100];
+
 	prvSetupHardware();
+
+  // XXX: testing snprintf+UART
+  snprintf(buf, sizeof(buf), "int i (@ 0x%x) = %d\n", &i, i);
+  puts(buf);
+
+  return 0;
 
 #if mainDEMO_TYPE == 1
 	{
