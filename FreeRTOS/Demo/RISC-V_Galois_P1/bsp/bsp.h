@@ -189,7 +189,7 @@ void external_interrupt_handler(uint32_t cause);
 #define XPAR_SPI_0_XIP_MODE 0
 #define XPAR_SPI_0_USE_STARTUP 0
 
-#define BSP_USE_SPI1 1 /* SPI1 is used for SD card (polled mode), and can be used for LCD screen (interrupt mode)*/ 
+#define BSP_USE_SPI1 0 /* SPI1 is used for SD card (polled mode), and can be used for LCD screen (interrupt mode)*/ 
 #define XPAR_SPI_1_DEVICE_ID 1
 #define XPAR_SPI_1_BASEADDR (0x62320000ULL)
 #define XPAR_SPI_1_FIFO_EXIST 0
