@@ -7,14 +7,18 @@ ABI 		= -mabi=ilp32
 
 TARGET=$(CCPATH)riscv${RISCV_XLEN}-unknown-${RISCV_LIB}
 
+ifdef CLANG
 GCC     = $(ISP_PREFIX)/bin/clang
+else
+GCC     = $(TARGET)-gcc
+endif
+
 OBJCOPY	= $(TARGET)-objcopy
 OBJDUMP	= $(TARGET)-objdump
 AR		= $(TARGET)-ar
 RANLIB	= $(TARGET)-ranlib
 
 # Use main_blinky as demo source and target file name if not specified
-# PROG 	?= main_blinky
 PROG 	?= libfreertos
 CRT0	= bsp/boot.S
 
@@ -57,8 +61,14 @@ INCLUDES = \
 ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
 CFLAGS = $(WARNINGS) $(INCLUDES) -ffunction-sections -fdata-sections
-CFLAGS += -O0 -g3 $(ARCH) $(ABI) -mcmodel=medium
+CFLAGS += -O0 -g3 $(ARCH) $(ABI)
 CFLAGS += -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
+
+ifdef CLANG
+CFLAGS += -mcmodel=medium
+else
+CFLAGS += -mcmodel=medany
+endif
 
 DEMO_SRC = main.c \
 	demo/$(PROG).c
@@ -91,7 +101,6 @@ APP_SRC = \
 	bsp/xilinx/axiethernet/xaxiethernet_sinit.c \
 	bsp/xilinx/iic/xiic.c \
 	bsp/xilinx/iic/xiic_g.c \
-	bsp/xilinx/iic/xiic_l.c \
 	bsp/xilinx/iic/xiic_sinit.c \
 	bsp/xilinx/iic/xiic_selftest.c \
 	bsp/xilinx/iic/xiic_master.c \
@@ -110,8 +119,7 @@ APP_SRC = \
 	bsp/xilinx/gpio/xgpio_sinit.c \
 	bsp/xilinx/common/xbasic_types.c \
 	bsp/xilinx/common/xil_io.c \
-	bsp/xilinx/common/xil_assert.c \
-	wrap.c
+	bsp/xilinx/common/xil_assert.c
 
 INCLUDES = \
 	-I. \
@@ -266,9 +274,8 @@ PORT_ASM_OBJ = $(PORT_ASM:.S=.o)
 CRT0_OBJ = $(CRT0:.S=.o)
 OBJS = $(CRT0_OBJ) $(PORT_ASM_OBJ) $(PORT_OBJ) $(RTOS_OBJ) $(DEMO_OBJ) $(APP_OBJ)
 
-LDFLAGS	 = -T link.ld -nostartfiles -defsym=_STACK_SIZE=4K -Wl,--gc-sections
-LDFLAGS  += -Wl,--wrap=printf
-LDFLAGS  += -Wl,--wrap=puts
+LDFLAGS	 = -T link.ld -nostartfiles -nostdlib -defsym=_STACK_SIZE=4K
+LDFLAGS  += -Wl,--gc-sections
 
 LIBS	 =  -lc -lgcc
 
