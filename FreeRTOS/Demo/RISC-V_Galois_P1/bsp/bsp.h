@@ -79,7 +79,7 @@ void external_interrupt_handler(uint32_t cause);
 /**
  * DMA defines
  */
-#define BSP_USE_DMA 1
+#define BSP_USE_DMA 0
 #define XPAR_XAXIDMA_NUM_INSTANCES 1
 #define XPAR_AXI_DMA 1
 
@@ -111,7 +111,7 @@ void external_interrupt_handler(uint32_t cause);
 /**
  * Ethernet defines
  */
-#define BSP_USE_ETHERNET 1
+#define BSP_USE_ETHERNET 0
 #define XPAR_XAXIETHERNET_NUM_INSTANCES 1
 
 #define XPAR_AXIETHERNET_0_PHYADDR 0x03
@@ -163,7 +163,6 @@ void external_interrupt_handler(uint32_t cause);
  */
 #define XPAR_XIIC_NUM_INSTANCES 1
 
-// XXX: temporarily disabled for PIPE debugging
 #define BSP_USE_IIC0 0
 #define XPAR_IIC_0_DEVICE_ID 0
 #define XPAR_IIC_0_BASEADDR (0x62310000ULL)
@@ -205,7 +204,6 @@ void external_interrupt_handler(uint32_t cause);
 /**
  * GPIO defines
  */
-// XXX: temporarily disabled for PIPE debugging
 #define BSP_USE_GPIO 0
 #define XPAR_XGPIO_NUM_INSTANCES 1
 #define XPAR_GPIO_0_DEVICE_ID 0
