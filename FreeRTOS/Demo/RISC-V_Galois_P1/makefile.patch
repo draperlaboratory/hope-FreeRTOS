@@ -1,0 +1,22 @@
+diff --git a/FreeRTOS/Demo/RISC-V_Galois_P1/Makefile b/FreeRTOS/Demo/RISC-V_Galois_P1/Makefile
+index a17465f38..85fd6dfe2 100644
+--- a/FreeRTOS/Demo/RISC-V_Galois_P1/Makefile
++++ b/FreeRTOS/Demo/RISC-V_Galois_P1/Makefile
+@@ -56,7 +56,7 @@ INCLUDES = \
+ 
+ ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
+ 
+-CFLAGS = $(WARNINGS) $(INCLUDES)
++CFLAGS = $(WARNINGS) $(INCLUDES) -ffunction-sections -fdata-sections
+ CFLAGS += -O0 -g3 $(ARCH) $(ABI) -mcmodel=medium
+ CFLAGS += -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
+ 
+@@ -266,7 +266,7 @@ PORT_ASM_OBJ = $(PORT_ASM:.S=.o)
+ CRT0_OBJ = $(CRT0:.S=.o)
+ OBJS = $(CRT0_OBJ) $(PORT_ASM_OBJ) $(PORT_OBJ) $(RTOS_OBJ) $(DEMO_OBJ) $(APP_OBJ)
+ 
+-LDFLAGS	 = -T link.ld -nostartfiles -defsym=_STACK_SIZE=4K
++LDFLAGS	 = -T link.ld -nostartfiles -defsym=_STACK_SIZE=4K -Wl,--gc-sections
+ LDFLAGS  += -Wl,--wrap=printf
+ LDFLAGS  += -Wl,--wrap=puts
+ 
