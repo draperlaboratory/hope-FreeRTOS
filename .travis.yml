@@ -1,0 +1,13 @@
+language: c
+
+notifications:
+  email: false
+
+services:
+  - docker
+
+before install:
+  - docker pull galoisinc/besspin:gfe
+
+script:
+  - docker run -v ${TRAVIS_BUILD_DIR}:/FreeRTOS-mirror galoisinc/besspin:gfe /bin/bash -c "cd /FreeRTOS-mirror; ./compile_all.sh"
