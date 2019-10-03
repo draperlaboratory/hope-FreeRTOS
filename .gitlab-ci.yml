@@ -8,7 +8,7 @@
 # where x86_64-081978aa  is a suitable tag for your architecture (and date)
 # then we have to re-tag the image:
 # sudo docker tag gitlab/gitlab-runner-helper:x86_64-081978aa gitlab-runner-helper:11.2.0
-image: galoisinc/besspin:besspin_light
+image: galoisinc/besspin:gfe
 
 
 before_script:

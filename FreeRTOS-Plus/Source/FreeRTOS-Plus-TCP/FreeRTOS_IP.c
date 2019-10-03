@@ -1850,10 +1850,15 @@ uint8_t ucProtocol;
 		#if defined(__clang__)
 		#pragma clang diagnostic push
 		#pragma clang diagnostic ignored "-Waddress-of-packed-member"
+		#else
+		#pragma GCC diagnostic push
+		#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 		#endif
 		pusChecksum = ( uint16_t * ) ( &( pxProtPack->xUDPPacket.xUDPHeader.usChecksum ) );
 		#if defined(__clang__)
 		#pragma clang diagnostic pop
+		#else
+		#pragma GCC diagnostic pop
 		#endif
 		#if( ipconfigHAS_DEBUG_PRINTF != 0 )
 		{
@@ -1870,10 +1875,15 @@ uint8_t ucProtocol;
 		#if defined(__clang__)
 		#pragma clang diagnostic push
 		#pragma clang diagnostic ignored "-Waddress-of-packed-member"
+		#else
+		#pragma GCC diagnostic push
+		#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 		#endif
 		pusChecksum = ( uint16_t * ) ( &( pxProtPack->xTCPPacket.xTCPHeader.usChecksum ) );
 		#if defined(__clang__)
 		#pragma clang diagnostic pop
+		#else
+		#pragma GCC diagnostic pop
 		#endif
 		#if( ipconfigHAS_DEBUG_PRINTF != 0 )
 		{
@@ -1891,10 +1901,15 @@ uint8_t ucProtocol;
 		#if defined(__clang__)
 		#pragma clang diagnostic push
 		#pragma clang diagnostic ignored "-Waddress-of-packed-member"
+		#else
+		#pragma GCC diagnostic push
+		#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 		#endif
 		pusChecksum = ( uint16_t * ) ( &( pxProtPack->xICMPPacket.xICMPHeader.usChecksum ) );
 		#if defined(__clang__)
 		#pragma clang diagnostic pop
+		#else
+		#pragma GCC diagnostic pop
 		#endif
 		#if( ipconfigHAS_DEBUG_PRINTF != 0 )
 		{

@@ -14,7 +14,9 @@ ifeq ($(USE_CLANG),yes)
 	# so we have to use GCC linker to do so
 	GCC		= $(TARGET)-gcc
 	OBJCOPY	= llvm-objcopy
-	OBJDUMP	= llvm-objdump
+	# LLVM doesn't uderstand debug symbols created by GCC linker
+	# using GCC objdump for the time being (instead of llvm-objdump)
+	OBJDUMP	= $(TARGET)-objdump
 	AR		= llvm-ar
 	RANLIB	= llvm-ranlib
 else
