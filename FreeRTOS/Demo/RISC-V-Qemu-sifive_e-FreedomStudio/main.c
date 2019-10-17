@@ -79,7 +79,9 @@ or 0 to run the more comprehensive test and demo application. */
  * main_blinky() is used when mainCREATE_SIMPLE_BLINKY_DEMO_ONLY is set to 1.
  * main_full() is used when mainCREATE_SIMPLE_BLINKY_DEMO_ONLY is set to 0.
  */
-#if mainCREATE_SIMPLE_BLINKY_DEMO_ONLY == 1
+#ifdef testgenOnFreeRTOS 
+	extern void main_testgen( void );
+#elif mainCREATE_SIMPLE_BLINKY_DEMO_ONLY == 1
 	extern void main_blinky( void );
 #else
 	extern void main_full( void );
@@ -98,7 +100,11 @@ int main( void )
 {
 	/* The mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting is described at the top
 	of this file. */
-	#if( mainCREATE_SIMPLE_BLINKY_DEMO_ONLY == 1 )
+	#ifdef testgenOnFreeRTOS 
+	{
+		main_testgen();
+	}
+	#elif( mainCREATE_SIMPLE_BLINKY_DEMO_ONLY == 1 )
 	{
 		main_blinky();
 	}

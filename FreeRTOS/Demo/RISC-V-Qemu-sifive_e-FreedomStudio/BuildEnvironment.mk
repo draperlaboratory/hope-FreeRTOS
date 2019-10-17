@@ -4,7 +4,7 @@
 #
 
 BUILD_DIR = ./build
-CROSS_COMPILE_PREFIX = riscv32-unknown-elf
+CROSS_COMPILE_PREFIX = riscv64-unknown-elf
 
 SDK_DIR = ./freedom-e-sdk
 
@@ -39,6 +39,7 @@ ASMFLAGS += -MT"$@" -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)"
 # Linker arguments __________________________________________
 LDFLAGS :=  -Xlinker --gc-sections -Xlinker --defsym=__stack_size=1K
 LDFLAGS += -O0 -g3
+LDFLAGS += $(ARCH_FLAGS)
 LDFLAGS += -ffunction-sections -fdata-sections --specs=nano.specs
 LDFLAGS += -nostartfiles
 LDFLAGS += -T $(LINKER_SCRIPT)

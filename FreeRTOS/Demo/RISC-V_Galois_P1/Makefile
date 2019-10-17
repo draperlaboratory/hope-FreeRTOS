@@ -254,7 +254,18 @@ else
 ifeq ($(PROG),main_uart_malware)
 	CFLAGS += -DmainDEMO_TYPE=11
 else
+ifeq ($(PROG),main_testgen)
+	CFLAGS := $(filter-out -Werror,$(CFLAGS))
+	CFLAGS += -DmainDEMO_TYPE=12 
+	CFLAGS += -DtestgenOnFreeRTOS
+	DEMO_SRC = main.c \
+		$(INC_TESTGEN)/$(TEST_TESTGEN).c \
+		$(INC_TESTGEN)/main_$(TEST_TESTGEN).c \
+		$(wildcard $(INC_TESTGEN)/lib/*.c)
+	INCLUDES += -I$(INC_TESTGEN)/lib	
+else
 $(error unknown demo: $(PROG))
+endif # main_testgen
 endif # main_uart_malware
 endif # main_rtc
 endif # main_uart

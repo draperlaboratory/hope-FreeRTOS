@@ -67,6 +67,10 @@ extern void main_peekpoke(void);
 #elif mainDEMO_TYPE == 10
 #pragma message "Demo type 10: RTC test"
 extern void main_rtc(void);
+#elif mainDEMO_TYPE == 12
+#undef configGENERATE_RUN_TIME_STATS
+#pragma message "Demo type 12: Testgen"
+extern void main_testgen(void);
 
 #else
 #error "Unsupported demo type"
@@ -173,6 +177,10 @@ int main(void)
 #elif mainDEMO_TYPE == 10
 	{
 		main_rtc();
+	}
+#elif mainDEMO_TYPE == 12
+	{
+		main_testgen();
 	}
 #endif
 

@@ -65,10 +65,6 @@ CFLAGS += -DportasmHANDLE_INTERRUPT=$(INTERRUPT_HANDLER)
 
 # Set up application source, include, and object files for compilation: ______________________
 APP_SRC_DIR = .
-APP_SRC = \
-	$(APP_SRC_DIR)/main.c \
-	$(APP_SRC_DIR)/blinky_demo/main_blinky.c \
-	$(APP_SRC_DIR)/full_demo/main_full.c
 
 APP_ASM = \
 	$(APP_SRC_DIR)/full_demo/RegTest.S
@@ -82,13 +78,37 @@ APP_INCLUDES = \
 	-I $(ARCH_PORTABLE_INC) \
 	-I $(FREERTOS_DIR)/Demo/Common/include
 
+ifeq ($(PROJ_NAME),simple)
+	APP_SRC = \
+		$(APP_SRC_DIR)/main.c \
+		$(APP_SRC_DIR)/blinky_demo/main_blinky.c \
+		$(APP_SRC_DIR)/full_demo/main_full.c
+	VPATH += \
+		$(APP_SRC_DIR)/blinky_demo \
+		$(APP_SRC_DIR)/full_demo \
+		$(APP_SRC_DIR)
+else
+ifeq ($(PROJ_NAME),main_testgen)
+	CFLAGS += -DtestgenOnFreeRTOS
+	APP_SRC = \
+		$(APP_SRC_DIR)/main.c  \
+		$(INC_TESTGEN)/$(TEST_TESTGEN).c \
+		$(INC_TESTGEN)/main_$(TEST_TESTGEN).c \
+		$(wildcard $(INC_TESTGEN)/lib/*.c)
+	VPATH += \
+		$(APP_SRC_DIR) \
+		$(APP_SRC_DIR)/full_demo \
+		$(INC_TESTGEN) \
+		$(INC_TESTGEN)/lib/
+	APP_INCLUDES += -I$(INC_TESTGEN)/lib
+else
+$(error unknown proj: $(PROJ_NAME))
+endif #main_testgen
+endif #simple
+
 APP_BUILD_DIR = $(BUILD_DIR)/app
 APP_OBJS := $(patsubst %.c,$(APP_BUILD_DIR)/%.o,$(notdir $(APP_SRC)))
 APP_OBJS += $(patsubst %.S,$(APP_BUILD_DIR)/%.o,$(notdir $(APP_ASM)))
-VPATH += \
-	$(APP_SRC_DIR)/blinky_demo \
-	$(APP_SRC_DIR)/full_demo \
-	$(APP_SRC_DIR)
 
 DEMO_COMMON_SRC =  \
 	$(FREERTOS_DIR)/Demo/Common/Minimal/EventGroupsDemo.c \
