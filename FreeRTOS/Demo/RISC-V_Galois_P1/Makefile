@@ -12,7 +12,7 @@ ifeq ($(USE_CLANG),yes)
 	CC		= clang --target=riscv32
 	# LLVM doesn't support linking RISC-V files yet,
 	# so we have to use GCC linker to do so
-	GCC		= $(TARGET)-gcc
+	LD		= $(TARGET)-gcc
 	OBJCOPY	= llvm-objcopy
 	# LLVM doesn't uderstand debug symbols created by GCC linker
 	# using GCC objdump for the time being (instead of llvm-objdump)
@@ -21,13 +21,15 @@ ifeq ($(USE_CLANG),yes)
 	RANLIB	= llvm-ranlib
 else
 	CC		= $(TARGET)-gcc
-	GCC		= $(CC)
+	LD		= $(CC)
 	OBJCOPY	= $(TARGET)-objcopy
 	OBJDUMP	= $(TARGET)-objdump
 	AR		= $(TARGET)-ar
 	RANLIB	= $(TARGET)-ranlib
 	COMPILER_FLAGS = -mcmodel=medany
 endif
+
+$(info CC=${CC})
 
 # Use main_blinky as demo source and target file name if not specified
 PROG 	?= main_blinky
@@ -305,7 +307,7 @@ all: $(PROG).elf
 
 $(PROG).elf  : $(OBJS) Makefile 
 	@echo Linking....
-	@$(GCC) -o $@ $(LDFLAGS) $(OBJS) $(LIBS)
+	@$(LD) -o $@ $(LDFLAGS) $(OBJS) $(LIBS)
 	@$(OBJDUMP) -S $(PROG).elf > $(PROG).asm	
 	@echo Completed $@
 
