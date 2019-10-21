@@ -89,18 +89,7 @@ ifeq ($(PROJ_NAME),simple)
 		$(APP_SRC_DIR)
 else
 ifeq ($(PROJ_NAME),main_testgen)
-	CFLAGS += -DtestgenOnFreeRTOS
-	APP_SRC = \
-		$(APP_SRC_DIR)/main.c  \
-		$(INC_TESTGEN)/$(TEST_TESTGEN).c \
-		$(INC_TESTGEN)/main_$(TEST_TESTGEN).c \
-		$(wildcard $(INC_TESTGEN)/lib/*.c)
-	VPATH += \
-		$(APP_SRC_DIR) \
-		$(APP_SRC_DIR)/full_demo \
-		$(INC_TESTGEN) \
-		$(INC_TESTGEN)/lib/
-	APP_INCLUDES += -I$(INC_TESTGEN)/lib
+	include $(INC_TESTGEN)/testgenEnvironment.mk
 else
 $(error unknown proj: $(PROJ_NAME))
 endif #main_testgen
