@@ -127,7 +127,7 @@ static void prvIicTestTask0(void *pvParameters)
 	{
 		ds1338_read_time(&time);
         format_time_str(&time, time_str);
-        printf("%s\r\n",time_str);
+        printf("Current time: %s\r\n",time_str);
 		vTaskDelay(pdMS_TO_TICKS(1000));
 	}
 }
