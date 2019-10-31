@@ -88,7 +88,7 @@ uint64_t get_cycle_count(void);
 
 #if configGENERATE_RUN_TIME_STATS
 /* Buffer and a task for displaying runtime stats */
-char statsBuffer[2048];
+char statsBuffer[4096];
 static void prvStatsTask(void *pvParameters);
 #endif /* configGENERATE_RUN_TIME_STATS */
 
@@ -185,7 +185,7 @@ int main(void)
 #endif
 
 #if configGENERATE_RUN_TIME_STATS
-	xTaskCreate(prvStatsTask, "prvStatsTask", configMINIMAL_STACK_SIZE * 10, NULL, tskIDLE_PRIORITY, NULL);
+	xTaskCreate(prvStatsTask, "prvStatsTask", configMINIMAL_STACK_SIZE * 20, NULL, tskIDLE_PRIORITY, NULL);
 #endif
 
 #if USE_LED_BLINK_TASK

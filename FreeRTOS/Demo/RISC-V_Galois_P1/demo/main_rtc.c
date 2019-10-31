@@ -39,16 +39,42 @@
 #include "ds1338rtc.h"
 
 // Define as 1 if you want to set the clock time as well
+#ifndef RTC_SET_TIME
 #define RTC_SET_TIME 0
+#endif
 
 // The time below correcsponds to of the time structure to July 27, 2019 and
 // the time to 9:55:00 am
+#ifndef RTC_YEAR
 #define RTC_YEAR 19
+#endif
+#ifndef RTC_MONTH
 #define RTC_MONTH 7
+#endif
+#ifndef RTC_DAY
 #define RTC_DAY 24
+#endif
+#ifndef RTC_HOUR
 #define RTC_HOUR 9
+#endif
+#ifndef RTC_MINUTE
 #define RTC_MINUTE 55
+#endif
+#ifndef RTC_SECONDS
 #define RTC_SECONDS 0
+#endif
+
+#if RTC_SET_TIME
+#define STRING2(x) #x
+#define STRING(x) STRING2(x)
+#pragma message "Setting RTC time: "
+#pragma message(STRING(RTC_YEAR))
+#pragma message(STRING(RTC_MONTH))
+#pragma message(STRING(RTC_DAY))
+#pragma message(STRING(RTC_HOUR))
+#pragma message(STRING(RTC_MINUTE))
+#pragma message(STRING(RTC_SECONDS))
+#endif
 
 #if !(BSP_USE_IIC0)
 #error "One or more peripherals are nor present, this test cannot be run"
