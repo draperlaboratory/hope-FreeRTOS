@@ -200,7 +200,9 @@ at the top of this file. */
   
 .endm
 
+.text
 .align 8
+.global freertos_risc_v_trap_handler
 freertos_risc_v_trap_handler:
 
     /* check for exception */
@@ -434,6 +436,7 @@ processed_source:
 	addi sp, sp, portCONTEXT_SIZE
 
 	mret
+.size freertos_risc_v_trap_handler, [.-freertos_risc_v_trap_handler]
 /*-----------------------------------------------------------*/
 
 .align 8
