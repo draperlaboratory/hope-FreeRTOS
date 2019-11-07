@@ -718,9 +718,11 @@ int wc_InitRng(RNG* rng)
         return MEMORY_E;
     }
 #endif
-
-    ret = wc_GenerateSeed(&rng->seed, key, 32);
-
+    #ifdef testgenOnFreeRTOS
+        ret = testgen_wc_GenerateSeed((uint8_t*) key, 32);
+    #else
+        ret = wc_GenerateSeed(&rng->seed, key, 32);
+    #endif
     if (ret == 0) {
         wc_Arc4SetKey(&rng->cipher, key, sizeof(key));
 

@@ -112,6 +112,9 @@ typedef struct RNG {
 
 WOLFSSL_LOCAL
 int wc_GenerateSeed(OS_Seed* os, byte* seed, word32 sz);
+#ifdef testgenOnFreeRTOS
+    extern int testgen_wc_GenerateSeed(uint8_t* seed, uint8_t sz);
+#endif
 
 #if defined(HAVE_HASHDRBG) || defined(NO_RC4)
 

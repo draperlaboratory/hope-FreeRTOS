@@ -306,8 +306,14 @@ int mp_grow (mp_int * a, int size)
      * in case the operation failed we don't want
      * to overwrite the dp member of a.
      */
-    tmp = OPT_CAST(mp_digit) XREALLOC (a->dp, sizeof (mp_digit) * size, 0,
-                                       DYNAMIC_TYPE_BIGINT);
+    #ifdef testgenOnFreeRTOS
+      //pass the original size too
+      tmp = OPT_CAST(mp_digit) XREALLOC (a->dp, sizeof (mp_digit) * size, (int*) USE_TESTGEN_REALLOC,
+                                         sizeof (mp_digit) * a->alloc);
+    #else
+      tmp = OPT_CAST(mp_digit) XREALLOC (a->dp, sizeof (mp_digit) * size, 0,
+                                         DYNAMIC_TYPE_BIGINT);
+    #endif
     if (tmp == NULL) {
       /* reallocation failed but "a" is still valid [can be freed] */
       return MP_MEM;

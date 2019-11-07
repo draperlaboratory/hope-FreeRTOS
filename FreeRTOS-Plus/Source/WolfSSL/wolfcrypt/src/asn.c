@@ -2391,7 +2391,11 @@ int ValidateDate(const byte* date, byte format, int dateType)
         if (btoi(date[0]) >= 5)
             certTime.tm_year = 1900;
         else
-            certTime.tm_year = 2000;
+            #ifdef testgenOnFreeRTOS
+                certTime.tm_year = 1950;
+            #else
+                certTime.tm_year = 2000;
+            #endif
     }
     else  { /* format == GENERALIZED_TIME */
         certTime.tm_year += btoi(date[i++]) * 1000;

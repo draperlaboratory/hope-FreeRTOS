@@ -162,6 +162,11 @@
 	/* default to libc stuff */
 	/* XREALLOC is used once in normal math lib, not in fast math lib */
 	/* XFREE on some embeded systems doesn't like free(0) so test  */
+	#ifdef testgenOnFreeRTOS
+	    #define XMALLOC(s, h, t) ((void) h, (void) t, pvPortMalloc((s)))
+	    extern void *XREALLOC(void *p, size_t n, void* heap, int type);
+	    #define XFREE(p, h, t) ((void) h, (void) t, vPortFree((p)))
+	#else
 	#if defined(XMALLOC_USER)
 	    /* prototypes for user heap override functions */
 	    #include <stddef.h>  /* for size_t */
@@ -182,6 +187,7 @@
 	    #define XMALLOC(s, h, t)     ((void)h, (void)t, wolfSSL_Malloc((s)))
 	    #define XFREE(p, h, t)       {void* xp = (p); if((xp)) wolfSSL_Free((xp));}
 	    #define XREALLOC(p, n, h, t) wolfSSL_Realloc((p), (n))
+	#endif
 	#endif
 
 	#ifndef STRING_USER
