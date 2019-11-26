@@ -168,3 +168,7 @@ header file. */
     }
 
 #endif /* FREERTOS_CONFIG_H */
+
+#ifdef testgenOnFreeRTOS
+    #include "testgenTraceHooks.h"
+#endif
