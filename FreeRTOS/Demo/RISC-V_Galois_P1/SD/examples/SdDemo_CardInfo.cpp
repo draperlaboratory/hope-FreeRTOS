@@ -69,9 +69,12 @@ void sd_demo() {
   volumesize /= 1024;
   printf("%u",volumesize);
   printf("\r\n");
+  /*
+   * NOTE: printing floating point numbers is not supported
   printf("Volume size (Gb):  ");
   printf("%f",(float)volumesize / 1024.0);
   printf("\r\n");
+  */
 
   printf("\nFiles found on the card (name, date and size in bytes): ");
   if (root.openRoot(volume) == 1) {
