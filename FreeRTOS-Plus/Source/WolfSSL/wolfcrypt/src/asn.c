@@ -184,6 +184,11 @@
     #ifndef HAVE_VALIDATE_DATE
         #define XVALIDATE_DATE(d, f, t) ValidateDate((d), (f), (t))
     #endif
+#elif defined(testgenOnFreeRTOS)
+    #include <time.h>
+    extern time_t XTIME(time_t *t);
+    #define XGMTIME(c, t) gmtime((c))
+    #define XVALIDATE_DATE(d, f, t) ValidateDate((d), (f), (t))
 #else
     /* default */
     /* uses complete <time.h> facility */
@@ -2391,11 +2396,7 @@ int ValidateDate(const byte* date, byte format, int dateType)
         if (btoi(date[0]) >= 5)
             certTime.tm_year = 1900;
         else
-            #ifdef testgenOnFreeRTOS
-                certTime.tm_year = 1950;
-            #else
-                certTime.tm_year = 2000;
-            #endif
+            certTime.tm_year = 2000;
     }
     else  { /* format == GENERALIZED_TIME */
         certTime.tm_year += btoi(date[i++]) * 1000;
