@@ -25,7 +25,7 @@ FREERTOS_INCLUDES := \
 	-I $(FREERTOS_CONFIG_INC) \
 	-I $(FREERTOS_INC)
 
-INTERRUPT_HANDLER = main_blinky
+INTERRUPT_HANDLER = freertos_risc_v_trap_handler
 
 FREERTOS_BUILD_DIR = $(BUILD_DIR)/FreeRTOS
 FREERTOS_OBJS = $(patsubst %.c,$(FREERTOS_BUILD_DIR)/%.o,$(notdir $(FREERTOS_SRC)))
