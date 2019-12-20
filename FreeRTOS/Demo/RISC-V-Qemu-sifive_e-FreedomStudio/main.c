@@ -1,5 +1,5 @@
 /*
- * FreeRTOS Kernel V10.2.0
+ * FreeRTOS Kernel V10.2.1
  * Copyright (C) 2019 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -93,7 +93,7 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName );
 void vApplicationTickHook( void );
 
 /* Exits QEMU on failure conditions */
-void sifive_fail_finish(void);
+void isp_test_device_fail(void);
 
 /*-----------------------------------------------------------*/
 
@@ -125,7 +125,7 @@ void vApplicationMallocFailedHook( void )
 	FreeRTOSConfig.h, and the xPortGetFreeHeapSize() API function can be used
 	to query the size of free heap space that remains (although it does not
 	provide information on how the remaining heap might be fragmented). */
-	sifive_fail_finish();
+	isp_test_device_fail();
 	taskDISABLE_INTERRUPTS();
 	for( ;; );
 }
@@ -150,7 +150,7 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 	( void ) pcTaskName;
 	( void ) pxTask;
 
-	sifive_fail_finish();
+	isp_test_device_fail();
 	/* Run time stack overflow checking is performed if
 	configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.  This hook
 	function is called if a stack overflow is detected. */

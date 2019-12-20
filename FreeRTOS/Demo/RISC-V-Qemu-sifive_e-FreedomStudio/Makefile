@@ -72,7 +72,6 @@ CFLAGS += -DportasmHANDLE_INTERRUPT=$(INTERRUPT_HANDLER)
 # Set up application source, include, and object files for compilation: ______________________
 APP_SRC_DIR = .
 APP_SRC = \
-	$(APP_SRC_DIR)/isp/utils.c \
 	$(APP_SRC_DIR)/main.c \
 	$(APP_SRC_DIR)/blinky_demo/main_blinky.c \
 	$(APP_SRC_DIR)/full_demo/main_full.c
@@ -143,9 +142,9 @@ OUT_OBJS = \
 
 # List of object files to compile for the system:
 LIB_OBJS = \
-	$(APP_OBJS) \
 	$(DEMO_COMMON_OBJS) \
-	$(FREERTOS_OBJS)
+	$(FREERTOS_OBJS) \
+	$(APP_BUILD_DIR)/lib.o
 
 BUILD_DIRECTORIES = \
 	$(APP_BUILD_DIR) \
