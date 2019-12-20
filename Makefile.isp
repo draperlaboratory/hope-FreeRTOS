@@ -5,23 +5,29 @@
 
 ISP_PREFIX ?= $(HOME)/.local/isp/
 
-RV_DEMO_DIR := FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio
-COMMON_DEMO_DIR := FreeRTOS/Demo/Common
 SOURCE_DIR := FreeRTOS/Source
+DEMO_DIR := FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio
+
+DEMO_LIB := $(patsubst %,%/build/libfreertos.a,$(DEMO_DIR))
 
 INSTALL_DIR := $(ISP_PREFIX)/FreeRTOS
-DEMO_INSTALL_DIR := $(INSTALL_DIR)/Demo
+INSTALL_LIB_DIR := $(INSTALL_DIR)/lib
+INSTALL_INCLUDE_DIR := $(INSTALL_DIR)/include
 
 all:
-	$(MAKE) -C FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio lib
+	$(MAKE) -C $(DEMO_DIR) lib
 
-install: all install-source
+install: install-libs install-headers
+	cp $(DEMO_DIR)/BuildEnvironment.mk $(INSTALL_DIR)
 
-install-source:
-	mkdir -p $(INSTALL_DIR)
-	mkdir -p $(DEMO_INSTALL_DIR)
-	cp -rf $(RV_DEMO_DIR) $(COMMON_DEMO_DIR) $(DEMO_INSTALL_DIR)
-	cp -rf $(SOURCE_DIR) $(INSTALL_DIR)
+install-libs: all
+	mkdir -p $(INSTALL_LIB_DIR)
+	cp $(DEMO_LIB) $(INSTALL_LIB_DIR)
+
+install-headers:
+	mkdir -p $(INSTALL_INCLUDE_DIR)
+	rsync -avm --include='*.h' -f 'hide,! */' $(SOURCE_DIR) $(INSTALL_INCLUDE_DIR)
+	rsync -avm --include='*.h' -f 'hide,! */' $(DEMO_DIR) $(INSTALL_INCLUDE_DIR)
 
 clean:
-	$(MAKE) -C FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio clean
+	$(MAKE) -C $(DEMO_DIR) clean
