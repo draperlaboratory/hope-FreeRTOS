@@ -19,7 +19,9 @@ AR		= $(TARGET)-ar
 RANLIB	= $(TARGET)-ranlib
 
 # Use main_blinky as demo source and target file name if not specified
-PROG 	?= libfreertos
+PROG 	?= main_blinky
+LIBFREERTOS = libfreertos.a
+
 CRT0	= bsp/boot.S
 
 # For debugging
@@ -81,6 +83,7 @@ APP_SRC = \
 	bsp/iic.c \
 	bsp/gpio.c \
 	bsp/spi.c \
+	bsp/rand.c \
 	bsp/xilinx/uartns550/xuartns550.c \
 	bsp/xilinx/uartns550/xuartns550_g.c \
 	bsp/xilinx/uartns550/xuartns550_sinit.c \
@@ -146,7 +149,7 @@ else
 ifeq ($(PROG),main_full)
 	CFLAGS += -DmainDEMO_TYPE=2
 	PORT_ASM += demo/RegTest.S
-	APP_SRC +=  \
+	DEMO_SRC +=  \
 		$(APP_SOURCE_DIR)/AbortDelay.c \
 		$(APP_SOURCE_DIR)/BlockQ.c \
 		$(APP_SOURCE_DIR)/blocktim.c \
@@ -183,7 +186,7 @@ ifeq ($(PROG),main_tcp)
 		-I$(FREERTOS_TCP_SOURCE_DIR) \
 		-I$(FREERTOS_TCP_SOURCE_DIR)/include \
 		-I$(FREERTOS_TCP_SOURCE_DIR)/portable/Compiler/GCC
-	FREERTOS_SRC += \
+	DEMO_SRC += \
 		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_IP.c \
 		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_ARP.c \
 		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DHCP.c \
@@ -195,10 +198,7 @@ ifeq ($(PROG),main_tcp)
 		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Stream_Buffer.c \
 		$(FREERTOS_TCP_SOURCE_DIR)/portable/BufferManagement/BufferAllocation_2.c \
 		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/riscv_hal_eth.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c	
-	APP_SRC += \
-		bsp/rand.c
-	DEMO_SRC += \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c \
 		demo/SimpleUDPClientAndServer.c \
 		demo/TCPEchoClient_SingleTasks.c \
 		demo/SimpleTCPEchoServer.c
@@ -211,7 +211,7 @@ ifeq ($(PROG),main_udp)
 		-I$(FREERTOS_TCP_SOURCE_DIR) \
 		-I$(FREERTOS_TCP_SOURCE_DIR)/include \
 		-I$(FREERTOS_TCP_SOURCE_DIR)/portable/Compiler/GCC
-	FREERTOS_SRC += \
+	DEMO_SRC += \
 		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_IP.c \
 		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_ARP.c \
 		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DHCP.c \
@@ -223,10 +223,7 @@ ifeq ($(PROG),main_udp)
 		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Stream_Buffer.c \
 		$(FREERTOS_TCP_SOURCE_DIR)/portable/BufferManagement/BufferAllocation_2.c \
 		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/riscv_hal_eth.c \
-		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c	
-	APP_SRC += \
-		bsp/rand.c
-	DEMO_SRC += \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c \
 		demo/SimpleUDPClientAndServer.c \
 		demo/TCPEchoClient_SingleTasks.c \
 		demo/SimpleTCPEchoServer.c
@@ -245,13 +242,7 @@ ifeq ($(PROG),main_uart)
 	INCLUDES += -I./demo
 	INCLUDES += -I./devices
 else
-ifeq ($(PROG),libfreertos)
-	CFLAGS += -DmainDEMO_TYPE=8
-	INCLUDES += -I./demo
-	INCLUDES += -I./devices
-else
 	$(info unknown demo: $(PROG))
-endif
 endif
 endif
 endif
@@ -272,15 +263,17 @@ PORT_OBJ = $(PORT_SRC:.c=.o)
 DEMO_OBJ = $(DEMO_SRC:.c=.o)
 PORT_ASM_OBJ = $(PORT_ASM:.S=.o)
 CRT0_OBJ = $(CRT0:.S=.o)
-OBJS = $(CRT0_OBJ) $(PORT_ASM_OBJ) $(PORT_OBJ) $(RTOS_OBJ) $(DEMO_OBJ) $(APP_OBJ)
+
+LIB_OBJS = $(CRT0_OBJ) $(PORT_ASM_OBJ) $(PORT_OBJ) $(RTOS_OBJ) $(APP_OBJ)
+ELF_OBJS = $(DEMO_OBJ)
 
 LDFLAGS	 = -T link.ld -nostartfiles -nostdlib -defsym=_STACK_SIZE=4K
 LDFLAGS  += -Wl,--gc-sections
 
-LIBS	 =  -lc -lgcc
+LIBS	 =  -lc -lgcc -lfreertos -L.
 
 $(info ASFLAGS=$(ASFLAGS))
-$(info LDLIBS=$(LDLIBS))
+$(info LIBS=$(LIBS))
 $(info CFLAGS=$(CFLAGS))
 $(info LDFLAGS=$(LDFLAGS))
 $(info ARFLAGS=$(ARFLAGS))
@@ -293,28 +286,22 @@ $(info ARFLAGS=$(ARFLAGS))
 	@echo "    CC $<"
 	@$(GCC) $(ASFLAGS) -c $(CFLAGS) -o $@ $<
 
-ifeq ($(PROG),libfreertos)
-all: $(PROG).a
-else
 all: $(PROG).elf
-endif
 
-$(PROG).elf  : $(OBJS) Makefile 
+$(PROG).elf  : libfreertos.a $(ELF_OBJS) Makefile 
 	@echo Linking....
-	@$(GCC) -o $@ $(LDFLAGS) $(OBJS) $(LIBS)
+	@$(GCC) -o $@ $(LDFLAGS) $(ELF_OBJS) $(LIBS)
 	@$(OBJDUMP) -S $(PROG).elf > $(PROG).asm	
 	@echo Completed $@
 
-$(PROG).a  : $(OBJS) Makefile 
+libfreertos.a  : $(LIB_OBJS) Makefile 
 	@echo Linking....
-	@$(AR) rcs $@ $(OBJS)
+	@$(AR) rcs $@ $(LIB_OBJS)
 	@echo Completed $@
 
 clean :
-	@rm -f $(OBJS)
-	@rm -f $(PROG).elf 
-	@rm -f $(PROG).map
-	@rm -f $(PROG).asm
+	@rm -f $(ELF_OBJS) $(LIB_OBJS) $(LIBFREERTOS)
+	@rm -f *.elf *.map *.asm
 
 docs :
 	@doxygen
