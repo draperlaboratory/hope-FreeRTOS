@@ -13,12 +13,17 @@ DEMO_LIB := $(patsubst %,%/build/libfreertos.a,$(DEMO_DIR))
 INSTALL_DIR := $(ISP_PREFIX)/FreeRTOS
 INSTALL_LIB_DIR := $(INSTALL_DIR)/lib
 INSTALL_INCLUDE_DIR := $(INSTALL_DIR)/include
+INSTALL_BUILD_DIR := $(INSTALL_DIR)/build
 
 all:
 	$(MAKE) -C $(DEMO_DIR) lib
 
-install: install-libs install-headers
-	cp $(DEMO_DIR)/BuildEnvironment.mk $(INSTALL_DIR)
+install: install-libs install-headers install-build
+
+install-build:
+	mkdir -p $(INSTALL_BUILD_DIR)
+	cp $(DEMO_DIR)/BuildEnvironment.mk $(INSTALL_BUILD_DIR)
+	cp $(DEMO_DIR)/freedom-e-sdk/env/freedom-e300-hifive1/flash.lds $(INSTALL_BUILD_DIR)
 
 install-libs: all
 	mkdir -p $(INSTALL_LIB_DIR)
