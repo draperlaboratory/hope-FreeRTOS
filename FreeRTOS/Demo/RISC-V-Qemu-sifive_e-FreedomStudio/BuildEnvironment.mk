@@ -3,7 +3,6 @@
 # Copyright (c) 2019, Dornerworks Ltd.
 #
 
-BUILD_DIR = ./build
 CROSS_COMPILE_PREFIX = riscv32-unknown-elf
 
 #-----------------------------------------------------------
@@ -25,7 +24,7 @@ ISP_CFLAGS += -ffunction-sections -fdata-sections -fno-builtin-printf
 ISP_CFLAGS += -DDONT_USE_PLIC -DDONT_USE_M_TIME -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
 ISP_CFLAGS += -include sys/cdefs.h
 ISP_CFLAGS += $(ARCH_FLAGS)
-ISP_CFLAGS += -I ${ISP_PREFIX}/riscv32-unknown-elf/include
+ISP_CFLAGS += -I $(ISP_PREFIX)/riscv32-unknown-elf/include
 # These flags are for outputing *.d dependency files for make
 
 ISP_ASMFLAGS =  -O0 -g3
@@ -35,10 +34,8 @@ ISP_ASMFLAGS += -DportasmMSI_HANDLER=$(MSI_HANDLER)
 ISP_ASMFLAGS += -ffunction-sections -fdata-sections
 ISP_ASMFLAGS += -x assembler-with-cpp
 
-LIBWRAP_SYMS := malloc free \
-	open lseek read write fstat stat close link unlink \
-	execve fork getpid kill wait \
-	isatty times sbrk _exit puts
+LIBWRAP_SYMS := open lseek read write fstat stat close link unlink \
+	execve fork getpid kill wait isatty times sbrk _exit puts
 
 # Linker arguments __________________________________________
 ISP_LDFLAGS := -Xlinker --defsym=__stack_size=1K
@@ -46,7 +43,6 @@ ISP_LDFLAGS += -O0 -g3
 ISP_LDFLAGS += -ffunction-sections -fdata-sections --specs=nano.specs
 ISP_LDFLAGS += -nostartfiles
 ISP_LDFLAGS += -T $(LINKER_SCRIPT)
-ISP_LDFLAGS += -Lbuild/
 ISP_LDFLAGS += -Wl,--start-group -lfreertos -lc -Wl,--end-group
 
 ISP_LDFLAGS += $(foreach s,$(LIBWRAP_SYMS),-Wl,--wrap=$(s))
