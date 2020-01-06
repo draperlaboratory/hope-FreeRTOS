@@ -6,9 +6,13 @@
 ISP_PREFIX ?= $(HOME)/.local/isp/
 
 SOURCE_DIR := FreeRTOS/Source
-DEMO_DIR := FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio
 
-DEMO_LIB := $(patsubst %,%/build/libfreertos.a,$(DEMO_DIR))
+DEMO_DIR   := FreeRTOS/Demo
+HIFIVE_DIR := $(DEMO_DIR)/RISC-V-Qemu-sifive_e-FreedomStudio
+VCU118_DIR := $(DEMO_DIR)/RISC-V_Galois_P1
+
+DEMO_LIBS := $(HIFIVE_DIR)/build/libfreertos-hifive.a
+DEMO_LIBS += $(VCU118_DIR)/libfreertos-vcu118.a
 
 INSTALL_DIR := $(ISP_PREFIX)/FreeRTOS
 INSTALL_LIB_DIR := $(INSTALL_DIR)/lib
@@ -16,23 +20,27 @@ INSTALL_INCLUDE_DIR := $(INSTALL_DIR)/include
 INSTALL_BUILD_DIR := $(INSTALL_DIR)/build
 
 all:
-	$(MAKE) -C $(DEMO_DIR) lib
+	$(MAKE) -C $(HIFIVE_DIR) lib
+	$(MAKE) -C $(VCU118_DIR) lib
 
 install: install-libs install-headers install-build
 
 install-build:
-	mkdir -p $(INSTALL_BUILD_DIR)
-	cp $(DEMO_DIR)/BuildEnvironment.mk $(INSTALL_BUILD_DIR)
-	cp $(DEMO_DIR)/freedom-e-sdk/env/freedom-e300-hifive1/flash.lds $(INSTALL_BUILD_DIR)
+	mkdir -p $(INSTALL_BUILD_DIR)/hifive
+	mkdir -p $(INSTALL_BUILD_DIR)/vcu118
+	cp $(HIFIVE_DIR)/BuildEnvironment.mk $(INSTALL_BUILD_DIR)/hifive
+	cp $(HIFIVE_DIR)/freedom-e-sdk/env/freedom-e300-hifive1/flash.lds $(INSTALL_BUILD_DIR)/hifive
+	cp $(VCU118_DIR)/link.ld $(INSTALL_BUILD_DIR)/vcu118
 
 install-libs: all
 	mkdir -p $(INSTALL_LIB_DIR)
-	cp $(DEMO_LIB) $(INSTALL_LIB_DIR)
+	cp $(DEMO_LIBS) $(INSTALL_LIB_DIR)
 
 install-headers:
-	mkdir -p $(INSTALL_INCLUDE_DIR)
+	mkdir -p $(INSTALL_INCLUDE_DIR)/Demo
 	rsync -avm --include='*.h' -f 'hide,! */' $(SOURCE_DIR) $(INSTALL_INCLUDE_DIR)
-	rsync -avm --include='*.h' -f 'hide,! */' $(DEMO_DIR) $(INSTALL_INCLUDE_DIR)
+	rsync -avm --include='*.h' -f 'hide,! */' $(HIFIVE_DIR) $(INSTALL_INCLUDE_DIR)/Demo
+	rsync -avm --include='*.h' -f 'hide,! */' $(VCU118_DIR) $(INSTALL_INCLUDE_DIR)/Demo
 
 clean:
 	$(MAKE) -C $(DEMO_DIR) clean
