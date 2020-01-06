@@ -127,7 +127,7 @@ VPATH += \
 	$(APP_SRC_DIR)/isp
 
 OUT_ELF = $(BUILD_DIR)/FreeRTOS-$(PROJ_NAME).elf
-OUT_LIB = $(BUILD_DIR)/libfreertos.a
+OUT_LIB = $(BUILD_DIR)/libfreertos-hifive.a
 
 # Need to tell FreeRTOS where to find the FreeRTOSConfig.h __________________________________
 FREERTOS_INCLUDES += \
