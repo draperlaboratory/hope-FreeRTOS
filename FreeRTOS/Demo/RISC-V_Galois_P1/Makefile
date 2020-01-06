@@ -20,7 +20,7 @@ RANLIB	= $(TARGET)-ranlib
 
 # Use main_blinky as demo source and target file name if not specified
 PROG 	?= main_blinky
-LIBFREERTOS = libfreertos.a
+LIBFREERTOS = libfreertos-vcu118.a
 
 CRT0	= bsp/boot.S
 
@@ -104,6 +104,7 @@ APP_SRC = \
 	bsp/xilinx/axiethernet/xaxiethernet_sinit.c \
 	bsp/xilinx/iic/xiic.c \
 	bsp/xilinx/iic/xiic_g.c \
+	bsp/xilinx/iic/xiic_l.c \
 	bsp/xilinx/iic/xiic_sinit.c \
 	bsp/xilinx/iic/xiic_selftest.c \
 	bsp/xilinx/iic/xiic_master.c \
@@ -288,13 +289,15 @@ $(info ARFLAGS=$(ARFLAGS))
 
 all: $(PROG).elf
 
-$(PROG).elf  : libfreertos.a $(ELF_OBJS) Makefile 
+lib: $(LIBFREERTOS)
+
+$(PROG).elf  : $(LIBFREERTOS) $(ELF_OBJS) Makefile 
 	@echo Linking....
 	$(GCC) -o $@ $(LDFLAGS) $(ELF_OBJS) $(LIBS)
 	@$(OBJDUMP) -S $(PROG).elf > $(PROG).asm	
 	@echo Completed $@
 
-libfreertos.a  : $(LIB_OBJS) Makefile 
+$(LIBFREERTOS)  : $(LIB_OBJS) Makefile 
 	@echo Linking....
 	$(AR) rcs $@ $(LIB_OBJS)
 	@echo Completed $@
