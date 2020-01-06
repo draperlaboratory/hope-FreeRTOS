@@ -267,7 +267,7 @@ CRT0_OBJ = $(CRT0:.S=.o)
 LIB_OBJS = $(CRT0_OBJ) $(PORT_ASM_OBJ) $(PORT_OBJ) $(RTOS_OBJ) $(APP_OBJ)
 ELF_OBJS = $(DEMO_OBJ)
 
-LDFLAGS	 = -T link.ld -nostartfiles -nostdlib -defsym=_STACK_SIZE=4K
+LDFLAGS	 = -T link.ld -nostartfiles -defsym=_STACK_SIZE=4K
 LDFLAGS  += -Wl,--gc-sections
 
 LIBS	 =  -lc -lgcc -lfreertos -L.
@@ -280,28 +280,28 @@ $(info ARFLAGS=$(ARFLAGS))
 
 %.o: %.c
 	@echo "    CC $<"
-	@$(GCC) -c $(CFLAGS) -o $@ $<
+	$(GCC) -c $(CFLAGS) -o $@ $<
 
 %.o: %.S
 	@echo "    CC $<"
-	@$(GCC) $(ASFLAGS) -c $(CFLAGS) -o $@ $<
+	$(GCC) $(ASFLAGS) -c $(CFLAGS) -o $@ $<
 
 all: $(PROG).elf
 
 $(PROG).elf  : libfreertos.a $(ELF_OBJS) Makefile 
 	@echo Linking....
-	@$(GCC) -o $@ $(LDFLAGS) $(ELF_OBJS) $(LIBS)
+	$(GCC) -o $@ $(LDFLAGS) $(ELF_OBJS) $(LIBS)
 	@$(OBJDUMP) -S $(PROG).elf > $(PROG).asm	
 	@echo Completed $@
 
 libfreertos.a  : $(LIB_OBJS) Makefile 
 	@echo Linking....
-	@$(AR) rcs $@ $(LIB_OBJS)
+	$(AR) rcs $@ $(LIB_OBJS)
 	@echo Completed $@
 
 clean :
 	@rm -f $(ELF_OBJS) $(LIB_OBJS) $(LIBFREERTOS)
-	@rm -f *.elf *.map *.asm
+	@rm -f *.elf *.map *.asm *.o
 
 docs :
 	@doxygen
