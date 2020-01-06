@@ -172,6 +172,10 @@ SECTIONS {
        __stack = _stack;
        __freertos_irq_stack_top = .;
     } > dmem
-    
+
+    .dover_metadata : {
+      KEEP(*(.dover_metadata))
+    }
+
     _end = .;
 }
