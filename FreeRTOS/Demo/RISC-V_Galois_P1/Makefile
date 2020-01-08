@@ -271,7 +271,7 @@ ELF_OBJS = $(DEMO_OBJ)
 LDFLAGS	 = -T link.ld -nostartfiles -defsym=_STACK_SIZE=4K
 LDFLAGS  += -Wl,--gc-sections
 
-LIBS	 =  -lc -lgcc -lfreertos -L.
+LIBS	 =  -lc -lgcc -lfreertos-vcu118 -L.
 
 $(info ASFLAGS=$(ASFLAGS))
 $(info LIBS=$(LIBS))
