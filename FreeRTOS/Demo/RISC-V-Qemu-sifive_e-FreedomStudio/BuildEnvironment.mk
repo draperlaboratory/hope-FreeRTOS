@@ -43,7 +43,6 @@ ISP_LDFLAGS += -O0 -g3
 ISP_LDFLAGS += -ffunction-sections -fdata-sections --specs=nano.specs
 ISP_LDFLAGS += -nostartfiles
 ISP_LDFLAGS += -T $(LINKER_SCRIPT)
-ISP_LDFLAGS += -Wl,--start-group -lfreertos -lc -Wl,--end-group
 
 ISP_LDFLAGS += $(foreach s,$(LIBWRAP_SYMS),-Wl,--wrap=$(s))
 ISP_LDFLAGS += $(foreach s,$(LIBWRAP_SYMS),-Wl,--wrap=_$(s))
