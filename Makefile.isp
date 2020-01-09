@@ -43,4 +43,5 @@ install-headers:
 	rsync -avm --include='*.h' -f 'hide,! */' $(VCU118_DIR) $(INSTALL_INCLUDE_DIR)/Demo
 
 clean:
-	$(MAKE) -C $(DEMO_DIR) clean
+	$(MAKE) -C $(HIFIVE_DIR) clean
+	$(MAKE) -C $(VCU118_DIR) clean
