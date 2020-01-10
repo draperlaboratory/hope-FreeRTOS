@@ -25,12 +25,9 @@
  * 1 tab == 4 spaces!
  */
 
-/*
- * This project is a cut down version of the project described on the following
- * link.  Only the simple UDP client and server and the TCP echo clients are
- * included in the build:
- * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_TCP/examples_FreeRTOS_simulator.html
- */
+ /***
+  * See https://www.FreeRTOS.org/mqtt/index.html for configuration and usage instructions.
+  ***/
 
 /* Standard includes. */
 #include <stdio.h>
@@ -51,32 +48,13 @@ should an assert get hit. */
 /* Demo app includes. */
 #include "demo_logging.h"
 
-/* Set the following constants to 1 or 0 to define which tasks to include and
-exclude:
-
-mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS:  When set to 1 two UDP client tasks
-and two UDP server tasks are created.  The clients talk to the servers.  One set
-of tasks use the standard sockets interface, and the other the zero copy sockets
-interface.  These tasks are self checking and will trigger a configASSERT() if
-they detect a difference in the data that is received from that which was sent.
-As these tasks use UDP, and can therefore loose packets, they will cause
-configASSERT() to be called when they are run in a less than perfect networking
-environment.
-
-mainCREATE_SIMPLE_MQTT_EXAMPLE_TASKS:  TBD
-*/
-#define mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS	1
-#define mainCREATE_SIMPLE_MQTT_EXAMPLE_TASKS		0
-
-/* Simple UDP client and server task parameters. */
-#define mainSIMPLE_UDP_CLIENT_SERVER_TASK_PRIORITY		( tskIDLE_PRIORITY )
-#define mainSIMPLE_UDP_CLIENT_SERVER_PORT				( 5005UL )
-
 /*
- * Prototypes for the demos that can be started from this project.
+ * Prototypes for the demos that can be started from this project.  Note the
+ * MQTT demo is not actually started until the network is already, which is
+ * indicated by vApplicationIPNetworkEventHook() executing - hence
+ * prvStartSimpleMQTTDemo() is called from inside vApplicationIPNetworkEventHook().
  */
 extern void vStartSimpleMQTTDemo( void );
-extern void vStartSimpleUDPClientServerTasks( uint16_t usStackSize, uint32_t ulsPort, UBaseType_t uxPriority );
 
 /*
  * Just seeds the simple pseudo random number generator.
@@ -124,10 +102,9 @@ static UBaseType_t ulNextRand;
 
 int main( void )
 {
-	/*
-	 * Instructions for using this project are provided on:
-	 * TBD
-	 */
+	/***
+	 * See https://www.FreeRTOS.org/mqtt/index.html for configuration and usage instructions.
+	 ***/
 
 	/* Miscellaneous initialisation including preparing the logging and seeding
 	the random number generator. */
@@ -158,30 +135,6 @@ int main( void )
 }
 /*-----------------------------------------------------------*/
 
-void vAssertCalled( const char *pcFile, uint32_t ulLine )
-{
-volatile uint32_t ulBlockVariable = 0UL;
-volatile char *pcFileName = ( volatile char *  ) pcFile;
-volatile uint32_t ulLineNumber = ulLine;
-
-	( void ) pcFileName;
-	( void ) ulLineNumber;
-
-	printf( "vAssertCalled( %s, %u\n", pcFile, ulLine );
-
-	/* Setting ulBlockVariable to a non-zero value in the debugger will allow
-	this function to be exited. */
-	taskDISABLE_INTERRUPTS();
-	{
-		while( ulBlockVariable == 0UL )
-		{
-			__debugbreak();
-		}
-	}
-	taskENABLE_INTERRUPTS();
-}
-/*-----------------------------------------------------------*/
-
 /* Called by FreeRTOS+TCP when the network connects or disconnects.  Disconnect
 events are only received if implemented in the MAC driver. */
 void vApplicationIPNetworkEventHook( eIPCallbackEvent_t eNetworkEvent )
@@ -197,18 +150,9 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
 		created. */
 		if( xTasksAlreadyCreated == pdFALSE )
 		{
-			#if( mainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS == 1 )
-			{
-				vStartSimpleUDPClientServerTasks( configMINIMAL_STACK_SIZE, mainSIMPLE_UDP_CLIENT_SERVER_PORT, mainSIMPLE_UDP_CLIENT_SERVER_TASK_PRIORITY );
-			}
-			#endif
-
-			#if( mainCREATE_SIMPLE_MQTT_EXAMPLE_TASKS == 1 )
-			{
-				vStartSimpleMQTTDemo();
-			}
-			#endif
-
+			/* Demos that use the nextwork are created after the nextwork is
+			up. */
+			vStartSimpleMQTTDemo();
 			xTasksAlreadyCreated = pdTRUE;
 		}
 
@@ -227,6 +171,30 @@ static BaseType_t xTasksAlreadyCreated = pdFALSE;
 		FreeRTOS_inet_ntoa( ulDNSServerAddress, cBuffer );
 		FreeRTOS_printf( ( "DNS Server Address: %s\r\n\r\n\r\n", cBuffer ) );
 	}
+}
+/*-----------------------------------------------------------*/
+
+void vAssertCalled( const char *pcFile, uint32_t ulLine )
+{
+	volatile uint32_t ulBlockVariable = 0UL;
+	volatile char *pcFileName = ( volatile char *  ) pcFile;
+	volatile uint32_t ulLineNumber = ulLine;
+
+	( void ) pcFileName;
+	( void ) ulLineNumber;
+
+	printf( "vAssertCalled( %s, %u\n", pcFile, ulLine );
+
+	/* Setting ulBlockVariable to a non-zero value in the debugger will allow
+	this function to be exited. */
+	taskDISABLE_INTERRUPTS();
+	{
+		while( ulBlockVariable == 0UL )
+		{
+			__debugbreak();
+		}
+	}
+	taskENABLE_INTERRUPTS();
 }
 /*-----------------------------------------------------------*/
 
@@ -261,7 +229,13 @@ uint32_t ulLoggingIPAddress;
 	ulLoggingIPAddress = FreeRTOS_inet_addr_quick( configECHO_SERVER_ADDR0, configECHO_SERVER_ADDR1, configECHO_SERVER_ADDR2, configECHO_SERVER_ADDR3 );
 	vLoggingInit( xLogToStdout, xLogToFile, xLogToUDP, ulLoggingIPAddress, configPRINT_PORT );
 
-	/* Seed the random number generator. */
+	/*
+	* Seed random number generator.
+	*
+	* !!!NOTE!!!
+	* This is not a secure method of generating a random number.  Production
+	* devices should use a True Random Number Generator (TRNG).
+	*/
 	time( &xTimeNow );
 	FreeRTOS_debug_printf( ( "Seed for randomiser: %lu\n", xTimeNow ) );
 	prvSRand( ( uint32_t ) xTimeNow );
@@ -378,5 +352,4 @@ void vApplicationGetTimerTaskMemory( StaticTask_t** ppxTimerTaskTCBBuffer, Stack
 	configMINIMAL_STACK_SIZE is specified in words, not bytes. */
 	*pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }
-
-
+/*-----------------------------------------------------------*/

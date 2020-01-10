@@ -81,8 +81,10 @@
  *
  * See http://www.freertos.org/a00110.html.
  *----------------------------------------------------------*/
-//#define configISR_STACK_SIZE_WORDS      500 // NOTE: if using configISR_STACK_SIZE_WORDS the stack alignment assert doesn't pass
-#define configCLINT_BASE_ADDRESS 0x10000000
+//#define configISR_STACK_SIZE_WORDS      500
+#define CLINT_CTRL_ADDR 0x10000000
+#define configMTIME_BASE_ADDRESS		( CLINT_CTRL_ADDR + 0xBFF8UL )
+#define configMTIMECMP_BASE_ADDRESS		( CLINT_CTRL_ADDR + 0x4000UL )
 #define configUSE_PREEMPTION 1
 #define configUSE_IDLE_HOOK 1
 #define configUSE_TICK_HOOK 1
