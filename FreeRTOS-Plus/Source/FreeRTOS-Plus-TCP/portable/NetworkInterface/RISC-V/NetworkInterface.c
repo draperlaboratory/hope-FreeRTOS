@@ -89,11 +89,19 @@ BaseType_t xNetworkInterfaceOutput( NetworkBufferDescriptor_t * const pxNetworkB
 	/* configure BD */
 	uint8_t* xTxBuffer = AxiEthernetGetTxBuffer();
 	memcpy(xTxBuffer, pxNetworkBuffer->pucEthernetBuffer, pxNetworkBuffer->xDataLength);
+#if defined(__clang__)
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
+#endif
 	XAxiDma_BdSetBufAddr(BdPtr,(u32)xTxBuffer);
 	XAxiDma_BdSetLength(BdPtr, pxNetworkBuffer->xDataLength, TxRingPtr->MaxTransferLen);
 	XAxiDma_BdSetCtrl(BdPtr, XAXIDMA_BD_CTRL_TXSOF_MASK |
 			     XAXIDMA_BD_CTRL_TXEOF_MASK);
-	
+#if defined(__clang__)
+#else
+#pragma GCC diagnostic pop
+#endif	
 	/* pass BD to HW */
 	taskENTER_CRITICAL();
 	configASSERT( XAxiDma_BdRingToHw(TxRingPtr, 1, BdPtr) == 0 );

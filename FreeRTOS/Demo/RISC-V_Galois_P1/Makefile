@@ -4,8 +4,7 @@ $(info $$PROG is [${PROG}])
 CCPATH 		?=
 TARGET=$(CCPATH)riscv64-unknown-elf
 
-#XARCH=64
-
+XARCH?=32
 
 ifeq ($(XARCH),64)
 	ARCH 		= -march=rv64imac
@@ -56,7 +55,7 @@ FREERTOS_TCP_SOURCE_DIR = $(FREERTOS_PLUS_SOURCE_DIR)/FreeRTOS-Plus-TCP
 FREERTOS_PROTOCOLS_DIR = ./protocols
 
 WARNINGS = -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align -Wsign-compare \
-		-Waggregate-return -Wmissing-declarations -Wunused #-Werror 
+		-Waggregate-return -Wmissing-declarations -Wunused -Werror 
  
 C_WARNINGS = -Wbad-function-cast -Wmissing-prototypes -Wstrict-prototypes
 

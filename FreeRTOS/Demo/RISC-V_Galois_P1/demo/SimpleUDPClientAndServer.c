@@ -63,7 +63,11 @@ static void prvSimpleZeroCopyServerTask(void *pvParameters);
 
 /*-----------------------------------------------------------*/
 
+#if __riscv_xlen == 64
+void vStartSimpleUDPClientServerTasks(uint16_t usStackSize, uint64_t ulPort, UBaseType_t uxPriority)
+#else
 void vStartSimpleUDPClientServerTasks(uint16_t usStackSize, uint32_t ulPort, UBaseType_t uxPriority)
+#endif
 {
 	/* Create the client and server tasks that do use the zero copy interface. */
 	xTaskCreate(prvSimpleZeroCopyUDPClientTask, "SimpZCpyClnt", usStackSize, (void *)(ulPort + 1), uxPriority, NULL);
@@ -102,7 +106,17 @@ static void prvSimpleZeroCopyUDPClientTask(void *pvParameters)
 															configECHO_SERVER_ADDR1,
 															configECHO_SERVER_ADDR2,
 															configECHO_SERVER_ADDR3);
+#if defined(__clang__)
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
+#endif
 	xDestinationAddress.sin_port = (uint16_t)((uint32_t)pvParameters) & 0xffffUL;
+#if defined(__clang__)
+#else
+#pragma GCC diagnostic pop
+#endif
+	
 	xDestinationAddress.sin_port = FreeRTOS_htons(xDestinationAddress.sin_port);
 
 	for (;;)
@@ -143,11 +157,7 @@ static void prvSimpleZeroCopyUDPClientTask(void *pvParameters)
 			end.  Note that the string is being written directly into the buffer
 			obtained from the IP stack above. */
 			memset((void *)pucUDPPayloadBuffer, 0x00, xStringLength);
-			#if defined(__clang__)
-			sprintf((char *)pucUDPPayloadBuffer, "%s%u\r\n", pcStringToSend, ulCount);
-			#else
-			sprintf((char *)pucUDPPayloadBuffer, "%s%lu\r\n", pcStringToSend, ulCount);
-			#endif
+			sprintf((char *)pucUDPPayloadBuffer, "%s%u\r\n", pcStringToSend, (unsigned int)ulCount);
 
 			/* Pass the buffer into the send function.  ulFlags has the
 			FREERTOS_ZERO_COPY bit set so the IP stack will take control of the
@@ -158,7 +168,7 @@ static void prvSimpleZeroCopyUDPClientTask(void *pvParameters)
 										FREERTOS_ZERO_COPY,							   /* ulFlags with the FREERTOS_ZERO_COPY bit set. */
 										&xDestinationAddress,						   /* Where the data is being sent. */
 										sizeof(xDestinationAddress));
-			FreeRTOS_debug_printf(("prvSimpleZeroCopyUDPClientTask: FreeRTOS_sendto returned %lu\r\n", lReturned));
+			FreeRTOS_debug_printf(("prvSimpleZeroCopyUDPClientTask: FreeRTOS_sendto returned %u\r\n", (unsigned int)lReturned));
 
 			if (lReturned == 0)
 			{
@@ -216,7 +226,16 @@ static void prvSimpleZeroCopyServerTask(void *pvParameters)
 	after the network is up, so the IP address is valid here. */
 	FreeRTOS_GetAddressConfiguration(&ulIPAddress, NULL, NULL, NULL);
 	xBindAddress.sin_addr = ulIPAddress;
+#if defined(__clang__)
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
+#endif
 	xBindAddress.sin_port = (uint16_t)((uint32_t)pvParameters) & 0xffffUL;
+#if defined(__clang__)
+#else
+#pragma GCC diagnostic pop
+#endif
 	xBindAddress.sin_port = FreeRTOS_htons(xBindAddress.sin_port);
 
 	/* Bind the socket to the port that the client task will send to. */
@@ -236,11 +255,7 @@ static void prvSimpleZeroCopyServerTask(void *pvParameters)
 		/* Print the received characters. */
 		if (lBytes > 0)
 		{
-			#if defined(__clang__)
-			FreeRTOS_printf(("prvSimpleZeroCopyServerTask: received %u bytes\r\n", lBytes));
-			#else
-			FreeRTOS_printf(("prvSimpleZeroCopyServerTask: received %lu bytes\r\n", lBytes));
-			#endif
+			FreeRTOS_printf(("prvSimpleZeroCopyServerTask: received %i bytes\r\n", (int)lBytes));
 			/* It is expected to receive one more byte than the string length as
 			the NULL terminator is also transmitted. */
 			//configASSERT( lBytes == ( ( BaseType_t ) strlen( ( const char * ) pucUDPPayloadBuffer ) + 1 ) );
@@ -250,11 +265,7 @@ static void prvSimpleZeroCopyServerTask(void *pvParameters)
 									 FREERTOS_ZERO_COPY,							/* ulFlags with the FREERTOS_ZERO_COPY bit set. */
 									 &xClient,										/* Where the data is being sent. */
 									 sizeof(xClientLength));
-			#if defined(__clang__)
-			FreeRTOS_printf(("prvSimpleZeroCopyServerTask: FreeRTOS_sendto returned %u\r\n", lBytes));
-			#else
-			FreeRTOS_printf(("prvSimpleZeroCopyServerTask: FreeRTOS_sendto returned %lu\r\n", lBytes));
-			#endif
+			FreeRTOS_printf(("prvSimpleZeroCopyServerTask: FreeRTOS_sendto returned %i\r\n", (int)lBytes));
 		}
 
 		if (lBytes >= 0)

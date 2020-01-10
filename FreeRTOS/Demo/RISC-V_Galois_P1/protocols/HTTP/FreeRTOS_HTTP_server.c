@@ -268,13 +268,13 @@ BaseType_t xHTTPClientWork( TCPClient_t *pxTCPClient )
 		}
 		else
 		{
-			FreeRTOS_printf( ( "unknown xIndex (%ld), not running prvOpenURL\r\n", xIndex ) );
+			FreeRTOS_printf( ( "unknown xIndex (%i), not running prvOpenURL\r\n", (int)xIndex ) );
 		}
 	}
 	else if( xRc < 0 )
 	{
 		/* The connection will be closed and the client will be deleted. */
-		FreeRTOS_printf( ( "xHTTPClientWork: rc = %ld\r\n", xRc ) );
+		FreeRTOS_printf( ( "xHTTPClientWork: rc = %d\r\n", (int)xRc ) );
 	}
 	return xRc;
 }

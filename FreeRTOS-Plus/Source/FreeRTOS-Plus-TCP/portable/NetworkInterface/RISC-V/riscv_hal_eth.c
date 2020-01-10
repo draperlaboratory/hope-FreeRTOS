@@ -245,7 +245,19 @@ void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 			configASSERT( pxBufferDescriptor != NULL);
 
 			// Buf address
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wint-to-pointer-cast"
+/* this cast is OK */
 			xRxBuffer = (uint8_t*)XAxiDma_BdGetBufAddr(BdPtr);
+#pragma clang diagnostic pop
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+/* this cast is OK */
+			xRxBuffer = (uint8_t*)XAxiDma_BdGetBufAddr(BdPtr);
+#pragma GCC diagnostic pop
+#endif
 
 			/* pxBufferDescriptor->pucEthernetBuffer now points to an Ethernet
                 buffer large enough to hold the received data.  Copy the
@@ -338,6 +350,11 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 	/* Disable all RX interrupts before RxBD space setup */
 	XAxiDma_BdRingIntDisable(RxRingPtr, XAXIDMA_IRQ_ALL_MASK);
 
+#if defined(__clang__)
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
+#endif
 	/*
 	 * Create the RxBD ring
 	 */
@@ -397,11 +414,12 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 	for (int Index = 0; Index < FreeBdCount; Index++) {
 		//Status = XAxiDma_BdSetBufAddr(BdCurPtr, (u32)&RxFrameBuf[Index]);
 		Status = XAxiDma_BdSetBufAddr(BdCurPtr, (u32)(RxFrameBufRef +(Index*sizeof(EthernetFrame))));
+
 		if (Status != XST_SUCCESS) {
 			printf("Rx set buffer addr %x on BD %x failed %d\r\n",
 			//(unsigned int)&RxFrameBuf[Index],
 			(unsigned int)(RxFrameBufRef +(Index*sizeof(EthernetFrame))),
-			(UINTPTR)BdCurPtr, Status);
+			(unsigned int)(UINTPTR)BdCurPtr, Status);
 
 			return XST_FAILURE;
 		}
@@ -410,8 +428,8 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 		Status = XAxiDma_BdSetLength(BdCurPtr, sizeof(EthernetFrame),
 					RxRingPtr->MaxTransferLen);
 		if (Status != XST_SUCCESS) {
-			printf("Rx set length %d on BD %x failed %d\r\n",
-				sizeof(EthernetFrame), (UINTPTR)BdCurPtr, Status);
+			printf("Rx set length %u on BD %x failed %d\r\n",
+				(unsigned int)sizeof(EthernetFrame), (unsigned int)(UINTPTR)BdCurPtr, Status);
 			    //sizeof(RxFrameBuf[Index]), (UINTPTR)BdCurPtr, Status);
 
 			return XST_FAILURE;
@@ -424,7 +442,10 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 		XAxiDma_BdSetId(BdCurPtr, Index);
 		BdCurPtr = (XAxiDma_Bd *)XAxiDma_BdRingNext(RxRingPtr, BdCurPtr);
 	}
-
+#if defined(__clang__)
+#else
+#pragma GCC diagnostic pop
+#endif
 	/*
 	 * Enqueue to HW
 	 */
