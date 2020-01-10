@@ -5,7 +5,7 @@ export C_INCLUDE_PATH=$RISCV_C_INCLUDE_PATH
 for use_clang in yes no
 do
     export USE_CLANG=$use_clang
-    for prog in main_blinky main_full main_iic main_uart main_udp main_tcp
+    for prog in main_blinky main_full main_udp main_tcp
     do
         make clean
         export PROG=$prog

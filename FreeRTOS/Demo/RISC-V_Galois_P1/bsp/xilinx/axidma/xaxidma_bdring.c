@@ -1390,8 +1390,8 @@ int XAxiDma_BdRingFree(XAxiDma_BdRing * RingPtr, int NumBd,
 		printf("BdRingFree: Error free BDs: "
 		"post count %d to free %d, PostHead %x to free ptr %x\r\n",
 			RingPtr->PostCnt, NumBd,
-			(UINTPTR)RingPtr->PostHead,
-			(UINTPTR)BdSetPtr);
+			(unsigned int)(UINTPTR)RingPtr->PostHead,
+			(unsigned int)(UINTPTR)BdSetPtr);
 
 		return XST_DMA_SG_LIST_ERROR;
 	}

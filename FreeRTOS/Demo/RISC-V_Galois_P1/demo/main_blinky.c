@@ -134,7 +134,7 @@ void main_blinky(void)
 static void prvQueueSendTask(void *pvParameters)
 {
 	TickType_t xNextWakeTime;
-	const unsigned long ulValueToSend = 100UL;
+	const unsigned int ulValueToSend = 100UL;
 	BaseType_t xReturned;
 
 	unsigned int cnt = 0;
@@ -168,8 +168,8 @@ static void prvQueueSendTask(void *pvParameters)
 
 static void prvQueueReceiveTask(void *pvParameters)
 {
-	unsigned long ulReceivedValue;
-	const unsigned long ulExpectedValue = 100UL;
+	unsigned int ulReceivedValue;
+	const unsigned int ulExpectedValue = 100UL;
 
 	unsigned int cnt = 0;
 

@@ -1,16 +1,26 @@
 # For debugging
 $(info $$PROG is [${PROG}])
 
-CCPATH 		=
-ARCH 		= -march=rv32im
-ABI 		= -mabi=ilp32
-
+CCPATH 		?=
 TARGET=$(CCPATH)riscv64-unknown-elf
+
+#XARCH=64
+
+
+ifeq ($(XARCH),64)
+	ARCH 		= -march=rv64imac
+	ABI 		= -mabi=lp64
+	CLANG_ARCH  = riscv64
+else
+	ARCH 		= -march=rv32im
+	ABI 		= -mabi=ilp32
+	CLANG_ARCH  = riscv32
+endif
 
 # Decide which compiler to use
 ifeq ($(USE_CLANG),yes)
-	CC		= clang --target=riscv32
-	# CPP		= clang++ --target=riscv32
+	CC		= clang --target=$(CLANG_ARCH)
+	# CPP		= clang++ --target=$(CLANG_ARCH)
 	# TODO: clang has problems with system includes, use g++ for now
 	CPP		= $(TARGET)-g++
 	# LLVM doesn't support linking RISC-V files yet,
@@ -30,8 +40,9 @@ else
 	OBJDUMP	= $(TARGET)-objdump
 	AR		= $(TARGET)-ar
 	RANLIB	= $(TARGET)-ranlib
-	COMPILER_FLAGS = -mcmodel=medany
 endif
+
+COMPILER_FLAGS = -mcmodel=medany
 
 $(info CC=${CC})
 
@@ -44,8 +55,8 @@ FREERTOS_PLUS_SOURCE_DIR = ../../../FreeRTOS-Plus/Source
 FREERTOS_TCP_SOURCE_DIR = $(FREERTOS_PLUS_SOURCE_DIR)/FreeRTOS-Plus-TCP
 FREERTOS_PROTOCOLS_DIR = ./protocols
 
-WARNINGS = -Werror -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align -Wsign-compare \
-		-Waggregate-return -Wmissing-declarations -Wunused
+WARNINGS = -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align -Wsign-compare \
+		-Waggregate-return -Wmissing-declarations -Wunused #-Werror 
  
 C_WARNINGS = -Wbad-function-cast -Wmissing-prototypes -Wstrict-prototypes
 

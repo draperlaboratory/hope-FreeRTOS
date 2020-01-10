@@ -99,6 +99,12 @@ static void vTestLED(void *pvParameters);
 #endif
 /*-----------------------------------------------------------*/
 
+#if __riscv_xlen == 64
+#define read_csr(reg) ({ unsigned long __tmp; \
+  asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
+  __tmp; })
+#endif
+
 /**
  * Capture the current 64-bit cycle count.
  */

@@ -89,7 +89,7 @@ static void CustomCallback(const char8 *File, s32 Line) {
 	#if defined(__clang__)
 	printf("Xil assert failed! %s: %i\r\n", File, Line);
 	#else
-	printf("Xil assert failed! %s: %li\r\n", File, Line);
+	printf("Xil assert failed! %s: %i\r\n", File, (int)Line);
 	#endif
 }
 
