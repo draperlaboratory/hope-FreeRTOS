@@ -36,9 +36,9 @@ do
         make
         if [ $? -eq 0 ]
         then
-            echo USE_CLANG=$USE_CLANG $PROG OK
+            echo USE_CLANG=$USE_CLANG $PROG 64-bit OK
         else
-            echo USE_CLANG=$USE_CLANG $PROG failed
+            echo USE_CLANG=$USE_CLANG $PROG 64-bit failed
             exit 1
         fi
     done
