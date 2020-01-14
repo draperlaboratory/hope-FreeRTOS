@@ -83,7 +83,7 @@ _mstart:
     li	x3, 0
     li	x4, 0
     li	x5, 0
-	li	x6, 0
+    li	x6, 0
     li	x7, 0
     li	x8, 0
     li	x9, 0
@@ -110,6 +110,9 @@ _mstart:
     li	x30, 0
     li	x31, 0
 
+
+	
+	
     /* initialize global pointer */
     la	gp, _gp
 
@@ -148,3 +151,24 @@ fill_block:
     j		fill_block
 fb_end:
     ret
+
+.section ".tdata.begin"
+.globl _tdata_begin
+_tdata_begin:
+
+.section ".tdata.end"
+.globl _tdata_end
+_tdata_end:
+
+.section ".tbss.end"
+.globl _tbss_end
+_tbss_end:
+	
+.section ".tohost","aw",@progbits
+.align 6
+.globl tohost
+tohost: .dword 0
+.align 6
+.globl fromhost
+fromhost: .dword 0
+	

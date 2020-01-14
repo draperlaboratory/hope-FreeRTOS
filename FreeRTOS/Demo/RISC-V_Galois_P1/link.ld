@@ -112,6 +112,11 @@ SECTIONS {
        KEEP (*(.fini))
     } > imem
 
+    .tohost : {
+      . = ALIGN(0x1000);
+      *(.tohost);
+    } > imem
+    
     .rodata : {
        __rodata_start = .;
        *(.rodata)
@@ -153,6 +158,20 @@ SECTIONS {
        . = ALIGN(8);
        __bss_end = .;
     } > dmem
+
+ /* thread-local data segment */
+  .tdata :
+  {
+    _tls_data = .;
+    *(.tdata.begin)
+    *(.tdata)
+    *(.tdata.end)
+  } > dmem
+  .tbss :
+  {
+    *(.tbss)
+    *(.tbss.end)
+  } > dmem
 
     /* Generate Stack and Heap definitions */
 

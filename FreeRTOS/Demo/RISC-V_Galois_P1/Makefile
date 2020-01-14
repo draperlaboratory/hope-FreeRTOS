@@ -51,12 +51,16 @@ APP_SOURCE_DIR	= ../Common/Minimal
 PORT_SRC = $(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/port.c
 PORT_ASM = $(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/portASM.S
 
+RISCV_TESTS_DIR=$(HOME)/hope-gfe-12-11/riscv-tests
+
+
 INCLUDES = \
 	-I. \
 	-I./bsp \
 	-I$(FREERTOS_SOURCE_DIR)/include \
 	-I../Common/include \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V
+
 
 ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
@@ -142,6 +146,8 @@ ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy \
 
 ifeq ($(PROG),main_blinky)
 	CFLAGS += -DmainDEMO_TYPE=1
+	INCLUDES += -I$(RISCV_TESTS_DIR)/benchmarks/common -I$(RISCV_TESTS_DIR)/env
+	DEMO_SRC += $(RISCV_TESTS_DIR)/benchmarks/common/*.c
 else 
 ifeq ($(PROG),main_full)
 	CFLAGS += -DmainDEMO_TYPE=2
