@@ -84,19 +84,14 @@
         #include <fcntl.h>
         #if !(defined(DEVKITPRO) || defined(HAVE_RTP_SYS) || defined(EBSNET)) \
             && !(defined(WOLFSSL_PICOTCP))
-            #ifdef testgenOnFreeRTOS
-                #include "FreeRTOS_IP.h"
-                #include "FreeRTOS_Sockets.h"
+            #include <sys/socket.h>
+            #include <arpa/inet.h>
+            #include <netinet/in.h>
+            #include <netdb.h>
+            #ifdef __PPU
+                #include <netex/errno.h>
             #else
-                #include <sys/socket.h>
-                #include <arpa/inet.h>
-                #include <netinet/in.h>
-                #include <netdb.h>
-                #ifdef __PPU
-                    #include <netex/errno.h>
-                #else
-                    #include <sys/ioctl.h>
-                #endif
+                #include <sys/ioctl.h>
             #endif
         #endif
         #ifdef HAVE_RTP_SYS
@@ -193,13 +188,8 @@
     #define SEND_FUNCTION pico_send
     #define RECV_FUNCTION pico_recv
 #else
-    #ifdef testgenOnFreeRTOS
-        #define SEND_FUNCTION FreeRTOS_send
-        #define RECV_FUNCTION FreeRTOS_recv
-    #else
-        #define SEND_FUNCTION send
-        #define RECV_FUNCTION recv
-    #endif
+    #define SEND_FUNCTION send
+    #define RECV_FUNCTION recv
 #endif
 
 
@@ -244,11 +234,7 @@ int EmbedReceive(WOLFSSL *ssl, char *buf, int sz, void *ctx)
 {
     int recvd;
     int err;
-    #ifdef testgenOnFreeRTOS
-        Socket_t sd = *(Socket_t*)ctx;
-    #else
-        int sd = *(int*)ctx;
-    #endif
+    int sd = *(int*)ctx;
 
 #ifdef WOLFSSL_DTLS
     {
@@ -272,9 +258,8 @@ int EmbedReceive(WOLFSSL *ssl, char *buf, int sz, void *ctx)
 #endif
 
     recvd = (int)RECV_FUNCTION(sd, buf, sz, ssl->rflags);
-    #ifndef testgenOnFreeRTOS
-        recvd = TranslateReturnCode(recvd, sd);
-    #endif
+
+    recvd = TranslateReturnCode(recvd, sd);
 
     if (recvd < 0) {
         err = LastError();
@@ -324,11 +309,7 @@ int EmbedReceive(WOLFSSL *ssl, char *buf, int sz, void *ctx)
  */
 int EmbedSend(WOLFSSL* ssl, char *buf, int sz, void *ctx)
 {
-    #ifdef testgenOnFreeRTOS
-        Socket_t sd = *(Socket_t*)ctx;
-    #else
-        int sd = *(int*)ctx;
-    #endif
+    int sd = *(int*)ctx;
     int sent;
     int len = sz;
     int err;

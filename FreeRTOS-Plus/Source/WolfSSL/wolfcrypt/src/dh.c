@@ -71,32 +71,19 @@ void wc_FreeDhKey(DhKey* key)
 #endif
 }
 
-#ifdef testgenOnFreeRTOS
-    extern void onPrintf (const char * textToPrint, ...); //to report the error
-#endif
 
 static word32 DiscreteLogWorkFactor(word32 n)
 {
-    #ifdef testgenOnFreeRTOS
-        if (n != 1024) {
-            onPrintf("<INVALID> [DiscreteLogWorkFactor]: Called with a value different than 1024.\n");
-        }
-        return 82; //the actual answer in case n==1024
-    #else
-        /* assuming discrete log takes about the same time as factoring */
-        if (n<5)
-            return 0;
-        else
-            return (word32)(2.4 * XPOW((double)n, 1.0/3.0) *
-                    XPOW(XLOG((double)n), 2.0/3.0) - 5);
-    #endif
+    /* assuming discrete log takes about the same time as factoring */
+    if (n<5)
+        return 0;
+    else
+        return (word32)(2.4 * XPOW((double)n, 1.0/3.0) *
+                XPOW(XLOG((double)n), 2.0/3.0) - 5);
 }
 
-#ifdef testgenOnFreeRTOS
-    int GeneratePrivate(DhKey* key, RNG* rng, byte* priv, word32* privSz)
-#else
-    static int GeneratePrivate(DhKey* key, RNG* rng, byte* priv, word32* privSz)
-#endif
+
+static int GeneratePrivate(DhKey* key, RNG* rng, byte* priv, word32* privSz)
 {
     int ret;
     word32 sz = mp_unsigned_bin_size(&key->p);
@@ -114,13 +101,9 @@ static word32 DiscreteLogWorkFactor(word32 n)
     return 0;
 }
 
-#ifdef testgenOnFreeRTOS
-    int GeneratePublic(DhKey* key, const byte* priv, word32 privSz,
+
+static int GeneratePublic(DhKey* key, const byte* priv, word32 privSz,
                           byte* pub, word32* pubSz)
-#else
-    static int GeneratePublic(DhKey* key, const byte* priv, word32 privSz,
-                              byte* pub, word32* pubSz)
-#endif
 {
     int ret = 0;
 
