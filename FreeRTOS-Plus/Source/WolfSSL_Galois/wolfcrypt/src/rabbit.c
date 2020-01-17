@@ -202,7 +202,11 @@ static INLINE int DoKey(Rabbit* ctx, const byte* key, const byte* iv)
 int wc_RabbitSetKey(Rabbit* ctx, const byte* key, const byte* iv)
 {
 #ifdef XSTREAM_ALIGN
-    if ((wolfssl_word)key % 4) {
+    #if defined(testgenOnFreeRTOS) && (__riscv_xlen == 64)
+        if ((intptr_t)key % 4) {
+    #else
+        if ((wolfssl_word)key % 4) {
+    #endif
         int alignKey[4];
 
         /* iv aligned in SetIV */
@@ -282,7 +286,11 @@ static INLINE int DoProcess(Rabbit* ctx, byte* output, const byte* input,
 int wc_RabbitProcess(Rabbit* ctx, byte* output, const byte* input, word32 msglen)
 {
 #ifdef XSTREAM_ALIGN
-    if ((wolfssl_word)input % 4 || (wolfssl_word)output % 4) {
+    #if defined(testgenOnFreeRTOS) && (__riscv_xlen == 64)
+        if ((intptr_t)input % 4 || (intptr_t)output % 4) {
+    #else
+        if ((wolfssl_word)input % 4 || (wolfssl_word)output % 4) {
+    #endif
         #ifndef NO_WOLFSSL_ALLOC_ALIGN
             byte* tmp;
             WOLFSSL_MSG("wc_RabbitProcess unaligned");
