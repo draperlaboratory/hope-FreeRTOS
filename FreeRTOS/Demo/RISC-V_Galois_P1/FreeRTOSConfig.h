@@ -100,7 +100,14 @@
 #define configTICK_RATE_HZ ((TickType_t)1000)
 #define configMAX_PRIORITIES (5)
 #define configMINIMAL_STACK_SIZE ((uint32_t)512) /* Can be as low as 60 but some of the demo tasks that use this constant require it to be higher. */
-#define configTOTAL_HEAP_SIZE ((size_t)(256 * 1024))
+#if defined(testgenOnFreeRTOS) && (__riscv_xlen == 64) && defined(useExtraStack)
+    #define configSTACK_DEPTH_TYPE uint32_t //the default ifndef is uint16_t
+#endif
+#if defined(testgenOnFreeRTOS) && (__riscv_xlen == 64) && defined(useExtraHeap)
+    #define configTOTAL_HEAP_SIZE ((size_t)(useExtraHeap * 1024 * 1024))
+#else
+    #define configTOTAL_HEAP_SIZE ((size_t)(256 * 1024))
+#endif
 #define configMAX_TASK_NAME_LEN (16)
 #define configUSE_TRACE_FACILITY 1
 #define configUSE_16_BIT_TICKS 0
