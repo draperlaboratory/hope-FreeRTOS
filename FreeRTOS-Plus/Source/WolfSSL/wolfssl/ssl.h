@@ -922,7 +922,6 @@ WOLFSSL_API int wolfSSL_make_eap_keys(WOLFSSL*, void* key, unsigned int len,
                                                              const char* label);
 
 
-#ifndef testgenOnFreeRTOS
 #ifndef _WIN32
     #ifndef NO_WRITEV
         #ifdef __PPU
@@ -936,7 +935,6 @@ WOLFSSL_API int wolfSSL_make_eap_keys(WOLFSSL*, void* key, unsigned int len,
                                      int iovcnt);
     #endif
 #endif
-#endif //testgenOnFreeRTOS
 
 
 #ifndef NO_CERTS
