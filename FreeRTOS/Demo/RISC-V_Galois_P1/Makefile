@@ -354,7 +354,7 @@ PORT_ASM_OBJ = $(PORT_ASM:.S=.o)
 CRT0_OBJ = $(CRT0:.S=.o)
 OBJS = $(CRT0_OBJ) $(PORT_ASM_OBJ) $(PORT_OBJ) $(RTOS_OBJ) $(DEMO_OBJ) $(APP_OBJ) $(CPP_OBJ)
 
-LDFLAGS	 = -T link.ld -nostartfiles -nostdlib $(ARCH) $(ABI)
+LDFLAGS	 += -T link.ld -nostartfiles -nostdlib $(ARCH) $(ABI)
 LIBS	 =  -lc -lgcc
 
 $(info ASFLAGS=$(ASFLAGS))

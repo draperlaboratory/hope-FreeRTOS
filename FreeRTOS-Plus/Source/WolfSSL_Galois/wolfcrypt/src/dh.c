@@ -93,6 +93,7 @@ static word32 DiscreteLogWorkFactor(word32 n)
 }
 
 #ifdef testgenOnFreeRTOS
+    int GeneratePrivate(DhKey* key, RNG* rng, byte* priv, word32* privSz);
     int GeneratePrivate(DhKey* key, RNG* rng, byte* priv, word32* privSz)
 #else
     static int GeneratePrivate(DhKey* key, RNG* rng, byte* priv, word32* privSz)
@@ -115,6 +116,8 @@ static word32 DiscreteLogWorkFactor(word32 n)
 }
 
 #ifdef testgenOnFreeRTOS
+    int GeneratePublic(DhKey* key, const byte* priv, word32 privSz,
+                          byte* pub, word32* pubSz);
     int GeneratePublic(DhKey* key, const byte* priv, word32 privSz,
                           byte* pub, word32* pubSz)
 #else
