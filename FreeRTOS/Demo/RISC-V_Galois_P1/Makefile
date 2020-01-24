@@ -32,8 +32,6 @@ ifeq ($(USE_CLANG),yes)
 	OBJDUMP	= $(TARGET)-objdump
 	AR		= llvm-ar
 	RANLIB	= llvm-ranlib
-	C_INCLUDE_PATH?=/opt/riscv/riscv64-unknown-elf/include
-	$(info $$C_INCLUDE_PATH is [${C_INCLUDE_PATH}])
 else
 	CC		= $(TARGET)-gcc
 	CPP		= $(TARGET)-g++
