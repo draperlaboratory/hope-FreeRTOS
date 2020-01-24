@@ -1,12 +1,13 @@
 # For debugging
 $(info $$PROG is [${PROG}])
 
+
 CCPATH 		?=
 TARGET=$(CCPATH)riscv64-unknown-elf
 
-XARCH?=32
+XLEN?=32
 
-ifeq ($(XARCH),64)
+ifeq ($(XLEN),64)
 	ARCH 		= -march=rv64imac
 	ABI 		= -mabi=lp64
 	CLANG_ARCH  = riscv64
@@ -31,6 +32,8 @@ ifeq ($(USE_CLANG),yes)
 	OBJDUMP	= $(TARGET)-objdump
 	AR		= llvm-ar
 	RANLIB	= llvm-ranlib
+	C_INCLUDE_PATH?=/opt/riscv/riscv64-unknown-elf/include
+	$(info $$C_INCLUDE_PATH is [${C_INCLUDE_PATH}])
 else
 	CC		= $(TARGET)-gcc
 	CPP		= $(TARGET)-g++
