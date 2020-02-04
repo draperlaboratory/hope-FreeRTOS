@@ -84,6 +84,8 @@ APP_SRC = \
 	bsp/gpio.c \
 	bsp/spi.c \
 	bsp/rand.c \
+	bsp/wrap/printf.c \
+	bsp/wrap/puts.c \
 	bsp/xilinx/uartns550/xuartns550.c \
 	bsp/xilinx/uartns550/xuartns550_g.c \
 	bsp/xilinx/uartns550/xuartns550_sinit.c \
@@ -128,6 +130,7 @@ APP_SRC = \
 INCLUDES = \
 	-I. \
 	-I./bsp \
+	-I./bsp/wrap \
 	-I./bsp/xilinx \
 	-I./bsp/xilinx/common \
 	-I./bsp/xilinx/axidma \
@@ -270,6 +273,8 @@ ELF_OBJS = $(DEMO_OBJ)
 
 LDFLAGS	 = -T link.ld -nostartfiles -defsym=_STACK_SIZE=4K
 LDFLAGS  += -Wl,--gc-sections
+LDFLAGS  += -Wl,--wrap=puts
+LDFLAGS  += -Wl,--wrap=printf
 
 LIBS	 =  -lc -lgcc -lfreertos-vcu118 -L.
 
