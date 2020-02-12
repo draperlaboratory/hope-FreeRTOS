@@ -16,11 +16,12 @@
 #define NUM_PACKETS  1 /* Number of ethernet frames to hold */
 
 /* IEEE PHY Specific definitions */
-#define PHY_R0_CTRL_REG		0
+#define PHY_R0_CTRL_REG			0
 #define PHY_R1_STATUS_REG		1
 #define PHY_R3_PHY_IDENT_REG	3
 
-#define PHY_R1_LINK_STATUS  0x4
+#define PHY_R5_PART_ABIL_1_REG	5
+#define PHY_R10_PART_ABIL_3_REG	10
 
 #define PHY_R0_RESET         0x8000
 #define PHY_R0_LOOPBACK      0x4000
@@ -31,6 +32,16 @@
 #define PHY_R0_DFT_SPD_1000  0x0040
 #define PHY_R0_DFT_SPD_2500  0x0040
 #define PHY_R0_ISOLATE       0x0400
+
+#define PHY_R1_LINK_STATUS	0x0004
+#define PHY_R1_ANEG_COMP	0x0020
+#define PHY_R1_1GBPS_EXT	0x0100
+
+#define PHY_R5_ACK			0x4000
+#define PHY_R5_100MBPS		0x0380
+#define PHY_R5_10MBPS		0x0060
+
+#define PHY_R10_1GBPS		0x0C00
 
 /* Marvel PHY 88E1111 Specific definitions */
 #define PHY_R20_EXTND_CTRL_REG	20
@@ -53,6 +64,7 @@
 #define PHY_REG21_10      0x0030
 #define PHY_REG21_100     0x2030
 #define PHY_REG21_1000    0x0070
+#define PHY_R32_RGMIICTL1 0x32
 
 /* Marvel PHY flags */
 #define MARVEL_PHY_88E1111_MODEL	0xC0
@@ -73,6 +85,10 @@
 #define TI_PHY_CR_DEVAD_EN		0x001F
 #define TI_PHY_CR_DEVAD_DATAEN		0x4000
 
+#define TI_PHY_CFGR4			0x31
+#define TI_PHY_CFGR4_RES_BIT8		0x100
+#define TI_PHY_CFGR4_RES_BIT7		0x080
+#define TI_PHY_CFGR4_ANEG_TIMER		0x060
 
 /* Driver instances*/
 XAxiEthernet AxiEthernetInstance;
@@ -143,7 +159,14 @@ int PhyLinkStatus(XAxiEthernet *AxiEthernetInstancePtr) {
 
 int AxiEtherentConfigureTIPhy(XAxiEthernet *AxiEthernetInstancePtr, u32 PhyAddr)
 {
-	u16 PhyReg14;
+	u16 PhyReg5;
+	u16 PhyRegCfg4;
+	u16 Speed;
+	u16 Status;
+
+	/* Enable autonegotiation */
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, PHY_R0_CTRL_REG,
+			    PHY_R0_ANEG_ENABLE | PHY_R0_DFT_SPD_1000);
 
 	/* Enable SGMII Clock */
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
@@ -155,15 +178,80 @@ int AxiEtherentConfigureTIPhy(XAxiEthernet *AxiEthernetInstancePtr, u32 PhyAddr)
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
 			      TI_PHY_SGMIICLK_EN);
 
+	/* Disable RGMII */
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			      PHY_R32_RGMIICTL1);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR, 0);
+
 	/* Enable SGMII */
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_PHYCTRL,
 	                      TI_PHY_CR_SGMII_EN);
-	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CFGR2,
-			     &PhyReg14);
-	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CFGR2,
-			      PhyReg14 & (~TI_PHY_CFGR2_SGMII_AUTONEG_EN));
-	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CFGR2,
-			     &PhyReg14);
+
+	/* Wait for autonegotiation */
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
+		  			     PHY_R5_PART_ABIL_1_REG, &PhyReg5);
+	while (!(PhyReg5 & PHY_R5_ACK)) {
+		msleep(100);
+		XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
+				     PHY_R5_PART_ABIL_1_REG, &PhyReg5);
+	}
+
+	/* Magic VCU-118 workaround */
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+				  TI_PHY_CR_DEVAD_EN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+				  TI_PHY_CFGR4);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+				  TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+				  &PhyRegCfg4);
+	PhyRegCfg4 &= ~TI_PHY_CFGR4_RES_BIT7;
+	PhyRegCfg4 |= TI_PHY_CFGR4_RES_BIT8;
+	PhyRegCfg4 |= TI_PHY_CFGR4_ANEG_TIMER;
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+				  TI_PHY_CR_DEVAD_EN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+				  TI_PHY_CFGR4);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+				  TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+				  PhyRegCfg4);
+
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, PHY_R1_STATUS_REG,
+			     &Status);
+	while (!(Status & PHY_R1_ANEG_COMP)) {
+		msleep(100);
+		XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
+				     PHY_R1_STATUS_REG, &Status);
+	}
+
+	/* Pass result of autonegotiation to AxiEthernet */
+	Speed = 0;
+	if (Status & PHY_R1_1GBPS_EXT) {
+		u16 PhyReg10;
+		XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
+			PHY_R10_PART_ABIL_3_REG, &PhyReg10);
+		if (PhyReg10 & PHY_R10_1GBPS) {
+			Speed = XAE_SPEED_1000_MBPS;
+		}
+	}
+	if (!Speed) {
+		XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
+			PHY_R5_PART_ABIL_1_REG, &PhyReg5);
+		if (PhyReg5 & PHY_R5_100MBPS) {
+			Speed = XAE_SPEED_100_MBPS;
+		} else if (PhyReg5 & PHY_R5_10MBPS) {
+			Speed = XAE_SPEED_10_MBPS;
+		} else {
+			return XST_FAILURE;
+		}
+	}
+
+	configASSERT(XAxiEthernet_SetOperatingSpeed(AxiEthernetInstancePtr, Speed) == 0);
 
 	return XST_SUCCESS;
 }
@@ -503,24 +591,20 @@ int PhySetup(XAxiEthernet *AxiEthernetInstancePtr, u16 AxiEthernetDeviceId)
 						MacCfgPtr->BaseAddress) == 0);
 
 	/*
-	 * Set the MAC address
-	 */
-	configASSERT( XAxiEthernet_SetMacAddress(AxiEthernetInstancePtr,
-							AxiEthernetMAC) == 0);
-
-	// FIXME: replace `sleep` with a better solution
-	sleep(AXIETHERNET_PHY_DELAY_SEC);
-	AxiEtherentConfigureTIPhy(AxiEthernetInstancePtr, XPAR_AXIETHERNET_0_PHYADDR);
-
-	// FIXME: replace `sleep` with a better solution
-	sleep(AXIETHERNET_PHY_DELAY_SEC);
-
-	/*
 	 * Make sure Tx, Rx and extended multicast are enabled.
 	 */
 	configASSERT( XAxiEthernet_SetOptions(AxiEthernetInstancePtr,
 						XAE_RECEIVER_ENABLE_OPTION | XAE_DEFAULT_OPTIONS |
 						XAE_TRANSMITTER_ENABLE_OPTION) == 0);
+
+
+	/*
+	 * Set the MAC address
+	 */
+	configASSERT( XAxiEthernet_SetMacAddress(AxiEthernetInstancePtr,
+							AxiEthernetMAC) == 0);
+
+	AxiEtherentConfigureTIPhy(AxiEthernetInstancePtr, XPAR_AXIETHERNET_0_PHYADDR);
 
 	return XST_SUCCESS;
 }
