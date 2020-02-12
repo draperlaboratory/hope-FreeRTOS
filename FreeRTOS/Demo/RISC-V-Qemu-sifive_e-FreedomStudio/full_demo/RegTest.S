@@ -127,8 +127,15 @@ reg1_loop:
 	bne x31, x30, reg1_error_loop
 
 	/* Everything passed, increment the loop counter. */
-	lw x31, ulRegTest1LoopCounterConst
-	lw x30, 0(x31)
+	#if __riscv_xlen == 64
+		lwu x31, ulRegTest1LoopCounterConst
+		lwu x30, 0(x31)
+	#elif __riscv_xlen == 32
+		lw x31, ulRegTest1LoopCounterConst
+		lw x30, 0(x31)
+	#else
+		#error Assembler did not define __riscv_xlen
+	#endif
 	addi x30, x30, 1
 	sw x30, 0(x31)
 
@@ -240,8 +247,15 @@ Reg2_loop:
 	bne x5, x31, reg2_error_loop
 
 	/* Everything passed, increment the loop counter. */
-	lw x5, ulRegTest2LoopCounterConst
-	lw x6, 0(x5)
+	#if __riscv_xlen == 64
+		lwu x5, ulRegTest2LoopCounterConst
+		lwu x6, 0(x5)
+	#elif __riscv_xlen == 32
+		lw x5, ulRegTest2LoopCounterConst
+		lw x6, 0(x5)
+	#else
+		#error Assembler did not define __riscv_xlen
+	#endif
 	addi x6, x6, 1
 	sw x6, 0(x5)
 

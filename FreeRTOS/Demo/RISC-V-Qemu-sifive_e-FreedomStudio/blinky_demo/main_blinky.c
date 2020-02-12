@@ -132,7 +132,13 @@ void main_blinky( void )
 {
 
 	/* Create the queue. */
-	xQueue = xQueueCreate( mainQUEUE_LENGTH, sizeof( uint32_t ) );
+	#if __riscv_xlen == 64
+		xQueue = xQueueCreate( mainQUEUE_LENGTH, sizeof( uint64_t ) );
+	#elif __riscv_xlen == 32
+		xQueue = xQueueCreate( mainQUEUE_LENGTH, sizeof( uint32_t ) );
+	#else
+		#error Assembler did not define __riscv_xlen
+	#endif
 
 	if( xQueue != NULL )
 	{
