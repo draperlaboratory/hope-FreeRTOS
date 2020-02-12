@@ -4,6 +4,9 @@
 #
 
 CROSS_COMPILE_PREFIX = riscv32-unknown-elf
+ifeq ($(RVXX), RV64)
+CROSS_COMPILE_PREFIX = riscv64-unknown-elf
+endif
 
 #-----------------------------------------------------------
 GCC     = $(ISP_PREFIX)/bin/clang
@@ -18,13 +21,17 @@ MSI_HANDLER = as_yet_unhandled
 
 # if using the multi-arch (riscv64-unknown-elf-gcc):
 ARCH_FLAGS = -march=rv32ima -mabi=ilp32 -mcmodel=medium
+ifeq ($(RVXX), RV64)
+ARCH_FLAGS = -march=rv64imafd -mabi=lp64d -mcmodel=medany
+endif
+
 # Basic ISP_CFLAGS:
 ISP_CFLAGS  = -Wall -Wextra -O0 -g3 -std=gnu11
 ISP_CFLAGS += -ffunction-sections -fdata-sections -fno-builtin-printf
 ISP_CFLAGS += -DDONT_USE_PLIC -DDONT_USE_M_TIME -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
 ISP_CFLAGS += -include sys/cdefs.h
 ISP_CFLAGS += $(ARCH_FLAGS)
-ISP_CFLAGS += -I $(ISP_PREFIX)/riscv32-unknown-elf/include
+ISP_CFLAGS += -I ${ISP_PREFIX}/$(CROSS_COMPILE_PREFIX)/include
 # These flags are for outputing *.d dependency files for make
 
 ISP_ASMFLAGS =  -O0 -g3

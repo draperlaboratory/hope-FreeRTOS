@@ -4,6 +4,14 @@
 #
 
 PROJ_NAME ?= simple
+RVXX ?= RV32
+
+BUILD_DIR = ./build
+OUT_LIB = $(BUILD_DIR)/libfreertos-hifive.a
+ifeq ($(RVXX), RV64)
+BUILD_DIR = ./build64
+OUT_LIB = $(BUILD_DIR)/libfreertos-hifive64.a
+endif
 
 include BuildEnvironment.mk
 include FreeRTOS.mk
@@ -21,10 +29,9 @@ ARCH_PORTABLE_INC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/
 ARCH_PORTABLE_SRC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/port.c
 ARCH_PORTABLE_ASM = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/portASM.S
 
-BUILD_DIR = ./build
 SDK_DIR = ./freedom-e-sdk
 
-LDFLAGS += -Lbuild/
+LDFLAGS += -L$(BUILD_DIR)
 LDFLAGS += -Wl,-Map,"$(BUILD_DIR)/$(PROJ_NAME).map"
 
 SDK_SRC := \
@@ -127,7 +134,6 @@ VPATH += \
 	$(APP_SRC_DIR)/isp
 
 OUT_ELF = $(BUILD_DIR)/FreeRTOS-$(PROJ_NAME).elf
-OUT_LIB = $(BUILD_DIR)/libfreertos-hifive.a
 
 # Need to tell FreeRTOS where to find the FreeRTOSConfig.h __________________________________
 FREERTOS_INCLUDES += \
@@ -248,7 +254,15 @@ clean-libfreertos-objs:
 	rm -rfv $(LIB_OBJS)
 
 sim-qemu: $(OUT_ELF)
-	qemu-system-riscv32 -kernel $^  -S -s -machine sifive_e -nographic
+	ifeq ($(RVXX), RV64)
+		qemu-system-riscv32 -kernel $^  -S -s -machine sifive_e -nographic
+	else
+		qemu-system-riscv64 -kernel $^  -S -s -machine sifive_e -nographic
+	endif
 
 gdb: $(OUT_ELF)
-	$(GDB) -iex "set mem inaccessible-by-default off" -iex "set arch riscv:rv32" -iex "set riscv use_compressed_breakpoint off"
+	ifeq ($(RVXX), RV64)
+		$(GDB) -iex "set mem inaccessible-by-default off" -iex "set arch riscv:rv64" -iex "set riscv use_compressed_breakpoint off"
+	else
+		$(GDB) -iex "set mem inaccessible-by-default off" -iex "set arch riscv:rv32" -iex "set riscv use_compressed_breakpoint off"
+	endif
