@@ -1,6 +1,7 @@
 # For debugging
 $(info $$PROG is [${PROG}])
 
+configCPU_CLOCK_HZ ?=
 
 CCPATH 		?=
 TARGET=$(CCPATH)riscv64-unknown-elf
@@ -340,6 +341,11 @@ endif # main_blinky
 ARFLAGS=crsv
 
 CFLAGS += -O0 -g3 $(ARCH) $(ABI) $(COMPILER_FLAGS) $(INCLUDES)
+
+# If configCPU_CLOCK_HZ is not empty, pass it as a definition
+ifneq ($(configCPU_CLOCK_HZ),)
+CFLAGS += -DconfigCPU_CLOCK_HZ=$(configCPU_CLOCK_HZ)
+endif
 # Disable warnings for C++ for now
 CPPFLAGS += -O0 -g3 $(ARCH) $(ABI) $(COMPILER_FLAGS) $(INCLUDES)
 

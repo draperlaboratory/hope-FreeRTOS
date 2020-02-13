@@ -89,13 +89,16 @@
 #define configUSE_IDLE_HOOK 1
 #define configUSE_TICK_HOOK 1
 
+#if !defined(configCPU_CLOCK_HZ)
 #if __riscv_xlen == 64
 #define configCPU_CLOCK_HZ ((uint32_t)(100000000))
-#define configPERIPH_CLOCK_HZ ((uint32_t)(100000000)) 
 #else
 #define configCPU_CLOCK_HZ ((uint32_t)(50000000))
-#define configPERIPH_CLOCK_HZ ((uint32_t)(50000000))
 #endif
+#endif /* !defined(configCPU_CLOCK_HZ) */
+
+#define configPERIPH_CLOCK_HZ configCPU_CLOCK_HZ 
+
 
 #define configTICK_RATE_HZ ((TickType_t)1000)
 #define configMAX_PRIORITIES (5)
