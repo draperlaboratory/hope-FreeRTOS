@@ -207,7 +207,7 @@ int wolfSSL_use_old_poly(WOLFSSL* ssl, int value)
 }
 #endif
 
-int wolfSSL_set_fd(WOLFSSL* ssl, int fd)
+int wolfSSL_set_fd(WOLFSSL* ssl, WOLFSSL_FD fd)
 {
     WOLFSSL_ENTER("SSL_set_fd");
     ssl->rfd = fd;      /* not used directly to allow IO callbacks */
@@ -276,7 +276,7 @@ int wolfSSL_get_ciphers(char* buf, int len)
 }
 
 
-int wolfSSL_get_fd(const WOLFSSL* ssl)
+WOLFSSL_FD wolfSSL_get_fd(const WOLFSSL* ssl)
 {
     WOLFSSL_ENTER("SSL_get_fd");
     WOLFSSL_LEAVE("SSL_get_fd", ssl->rfd);
@@ -6976,7 +6976,7 @@ int wolfSSL_set_compression(WOLFSSL* ssl)
     }
 
 
-    int wolfSSL_set_rfd(WOLFSSL* ssl, int rfd)
+    int wolfSSL_set_rfd(WOLFSSL* ssl, WOLFSSL_FD rfd)
     {
         WOLFSSL_ENTER("SSL_set_rfd");
         ssl->rfd = rfd;      /* not used directly to allow IO callbacks */
@@ -6987,7 +6987,7 @@ int wolfSSL_set_compression(WOLFSSL* ssl)
     }
 
 
-    int wolfSSL_set_wfd(WOLFSSL* ssl, int wfd)
+    int wolfSSL_set_wfd(WOLFSSL* ssl, WOLFSSL_FD wfd)
     {
         WOLFSSL_ENTER("SSL_set_wfd");
         ssl->wfd = wfd;      /* not used directly to allow IO callbacks */

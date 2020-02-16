@@ -1496,8 +1496,8 @@ int InitSSL(WOLFSSL* ssl, WOLFSSL_CTX* ctx)
 #endif
 
     ssl->timeout = ctx->timeout;
-    ssl->rfd = -1;   /* set to invalid descriptor */
-    ssl->wfd = -1;
+    ssl->rfd = (WOLFSSL_FD)-1;   /* set to invalid descriptor */
+    ssl->wfd = (WOLFSSL_FD)-1;
 
     ssl->IOCB_ReadCtx  = &ssl->rfd;  /* prevent invalid pointer access if not */
     ssl->IOCB_WriteCtx = &ssl->wfd;  /* correctly set */
