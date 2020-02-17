@@ -61,9 +61,9 @@ void prvSetupHardware(void)
  * Define an external interrupt handler
  * cause = 0x8000000b == Machine external interrupt
  */
-void external_interrupt_handler(uint32_t cause)
+void external_interrupt_handler(HANDLER_DATATYPE cause)
 {
-    configASSERT(cause == 0x8000000b);
+    configASSERT(cause == MCAUSE_EXTERNAL_INTERRUPT);
 
     plic_source source_id = PLIC_claim_interrupt(&Plic);
 

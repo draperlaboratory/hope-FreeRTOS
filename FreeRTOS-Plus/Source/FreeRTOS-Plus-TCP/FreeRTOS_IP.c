@@ -907,11 +907,16 @@ NetworkBufferDescriptor_t *pxResult;
 
 		/* Here a pointer was placed to the network descriptor,
 		As a pointer is dereferenced, make sure it is well aligned */
+		#if __riscv_xlen == 64
+		if( ( ( ( uint64_t ) pucBuffer ) & ( sizeof( pucBuffer ) - 1 ) ) == 0 )
+		#else
 		if( ( ( ( uint32_t ) pucBuffer ) & ( sizeof( pucBuffer ) - 1 ) ) == 0 )
+		#endif
 		{
 			/* The following statement may trigger a:
 			warning: cast increases required alignment of target type [-Wcast-align].
 			It has been confirmed though that the alignment is suitable. */
+			#pragma GCC diagnostic ignored "-Wcast-align"
 			pxResult = * ( ( NetworkBufferDescriptor_t ** ) pucBuffer );
 		}
 		else
@@ -1831,7 +1836,7 @@ uint8_t ucProtocol;
 	{
 		return ipINVALID_LENGTH;
 	}
-	if( uxBufferLength < FreeRTOS_ntohs( pxIPPacket->xIPHeader.usLength ) )
+	if( uxBufferLength < ( size_t ) ( ipSIZE_OF_ETH_HEADER + FreeRTOS_ntohs( pxIPPacket->xIPHeader.usLength ) ) )
 	{
 		return ipINVALID_LENGTH;
 	}
@@ -1853,8 +1858,19 @@ uint8_t ucProtocol;
 		{
 			return ipINVALID_LENGTH;
 		}
-
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Waddress-of-packed-member"
+		#else
+		#pragma GCC diagnostic push
+		#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+		#endif
 		pusChecksum = ( uint16_t * ) ( &( pxProtPack->xUDPPacket.xUDPHeader.usChecksum ) );
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#else
+		#pragma GCC diagnostic pop
+		#endif
 		#if( ipconfigHAS_DEBUG_PRINTF != 0 )
 		{
 			pcType = "UDP";
@@ -1867,8 +1883,19 @@ uint8_t ucProtocol;
 		{
 			return ipINVALID_LENGTH;
 		}
-
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Waddress-of-packed-member"
+		#else
+		#pragma GCC diagnostic push
+		#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+		#endif
 		pusChecksum = ( uint16_t * ) ( &( pxProtPack->xTCPPacket.xTCPHeader.usChecksum ) );
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#else
+		#pragma GCC diagnostic pop
+		#endif
 		#if( ipconfigHAS_DEBUG_PRINTF != 0 )
 		{
 			pcType = "TCP";
@@ -1882,8 +1909,19 @@ uint8_t ucProtocol;
 		{
 			return ipINVALID_LENGTH;
 		}
-
+		#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Waddress-of-packed-member"
+		#else
+		#pragma GCC diagnostic push
+		#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+		#endif
 		pusChecksum = ( uint16_t * ) ( &( pxProtPack->xICMPPacket.xICMPHeader.usChecksum ) );
+		#if defined(__clang__)
+		#pragma clang diagnostic pop
+		#else
+		#pragma GCC diagnostic pop
+		#endif
 		#if( ipconfigHAS_DEBUG_PRINTF != 0 )
 		{
 			if( ucProtocol == ( uint8_t ) ipPROTOCOL_ICMP )
@@ -2053,7 +2091,12 @@ uint32_t ulAlignBits, ulCarry = 0ul;
 	xTerm.u32 = 0ul;
 
 	xSource.u8ptr = ( uint8_t * ) pucNextData;
+#if __riscv_xlen == 64
+	ulAlignBits = ( ( ( uint64_t ) pucNextData ) & 0x03u ); /* gives 0, 1, 2, or 3 */
+#else
 	ulAlignBits = ( ( ( uint32_t ) pucNextData ) & 0x03u ); /* gives 0, 1, 2, or 3 */
+#endif
+	
 
 	/* If byte (8-bit) aligned... */
 	if( ( ( ulAlignBits & 1ul ) != 0ul ) && ( uxDataLengthBytes >= ( size_t ) 1 ) )
@@ -2323,3 +2366,9 @@ BaseType_t FreeRTOS_IsNetworkUp( void )
 	}
 #endif
 /*-----------------------------------------------------------*/
+
+/* Provide access to private members for verification. */
+#ifdef FREERTOS_TCP_ENABLE_VERIFICATION
+	#include "aws_freertos_ip_verification_access_ip_define.h"
+#endif
+

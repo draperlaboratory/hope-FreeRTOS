@@ -16,11 +16,12 @@
 #define NUM_PACKETS  1 /* Number of ethernet frames to hold */
 
 /* IEEE PHY Specific definitions */
-#define PHY_R0_CTRL_REG		0
+#define PHY_R0_CTRL_REG			0
 #define PHY_R1_STATUS_REG		1
 #define PHY_R3_PHY_IDENT_REG	3
 
-#define PHY_R1_LINK_STATUS  0x4
+#define PHY_R5_PART_ABIL_1_REG	5
+#define PHY_R10_PART_ABIL_3_REG	10
 
 #define PHY_R0_RESET         0x8000
 #define PHY_R0_LOOPBACK      0x4000
@@ -31,6 +32,16 @@
 #define PHY_R0_DFT_SPD_1000  0x0040
 #define PHY_R0_DFT_SPD_2500  0x0040
 #define PHY_R0_ISOLATE       0x0400
+
+#define PHY_R1_LINK_STATUS	0x0004
+#define PHY_R1_ANEG_COMP	0x0020
+#define PHY_R1_1GBPS_EXT	0x0100
+
+#define PHY_R5_ACK			0x4000
+#define PHY_R5_100MBPS		0x0380
+#define PHY_R5_10MBPS		0x0060
+
+#define PHY_R10_1GBPS		0x0C00
 
 /* Marvel PHY 88E1111 Specific definitions */
 #define PHY_R20_EXTND_CTRL_REG	20
@@ -53,6 +64,7 @@
 #define PHY_REG21_10      0x0030
 #define PHY_REG21_100     0x2030
 #define PHY_REG21_1000    0x0070
+#define PHY_R32_RGMIICTL1 0x32
 
 /* Marvel PHY flags */
 #define MARVEL_PHY_88E1111_MODEL	0xC0
@@ -73,6 +85,10 @@
 #define TI_PHY_CR_DEVAD_EN		0x001F
 #define TI_PHY_CR_DEVAD_DATAEN		0x4000
 
+#define TI_PHY_CFGR4			0x31
+#define TI_PHY_CFGR4_RES_BIT8		0x100
+#define TI_PHY_CFGR4_RES_BIT7		0x080
+#define TI_PHY_CFGR4_ANEG_TIMER		0x060
 
 /* Driver instances*/
 XAxiEthernet AxiEthernetInstance;
@@ -92,15 +108,22 @@ static TaskHandle_t prvEMACDeferredInterruptHandlerTaskHandle = NULL;
  * specific to the GNU compiler
  */
 typedef uint8_t EthernetFrame[NUM_PACKETS * XAE_MAX_JUMBO_FRAME_SIZE] __attribute__ ((aligned(BD_ALIGNMENT)));
-
-static EthernetFrame TxFrameBuf[TXBD_CNT] __attribute__ ((section(".uncached")));	/* Transmit buffers */
-static EthernetFrame RxFrameBuf[RXBD_CNT] __attribute__ ((section(".uncached")));	/* Receive buffers */
+// 0x80000000
+static uint8_t * TxFrameBufRef = (uint8_t *)0x80000000;
+//static EthernetFrame TxFrameBuf[TXBD_CNT] __attribute__ ((section(".uncached")));	/* Transmit buffers */
+// 0x80015fc0
+static uint8_t * RxFrameBufRef =(uint8_t *)0x80015fc0;
+//static EthernetFrame RxFrameBuf[RXBD_CNT] __attribute__ ((section(".uncached")));	/* Receive buffers */
 
 /*
  * Aligned memory segments to be used for buffer descriptors
  */
-char RxBdSpace[RXBD_SPACE_BYTES] __attribute__ ((aligned(BD_ALIGNMENT))) __attribute__ ((section(".uncached")));
-char TxBdSpace[TXBD_SPACE_BYTES] __attribute__ ((aligned(BD_ALIGNMENT))) __attribute__ ((section(".uncached")));
+// 8002bf80
+//char RxBdSpace[RXBD_SPACE_BYTES] __attribute__ ((aligned(BD_ALIGNMENT))) __attribute__ ((section(".uncached")));
+char * RxBdSpaceRef = (char *) 0x8002bf80;
+// 8002c200
+//char TxBdSpace[TXBD_SPACE_BYTES] __attribute__ ((aligned(BD_ALIGNMENT))) __attribute__ ((section(".uncached")));
+char * TxBdSpaceRef = (char *) 0x8002c200;
 
 
 /*
@@ -110,12 +133,15 @@ volatile int FramesRx;	  /* Num of frames that have been received */
 volatile int FramesTx;	  /* Num of frames that have been sent */
 volatile int DeviceErrors; /* Num of errors detected in the device */
 
-char AxiEthernetMAC[6] = { configMAC_ADDR0, configMAC_ADDR1, configMAC_ADDR2, configMAC_ADDR3, configMAC_ADDR4, configMAC_ADDR5 };
+
+// @mpodhradsky: "Declaring AxiEthernetMAC as weak, so it can be overriden in the user app"
+char AxiEthernetMAC[6]  __attribute__((weak)) = { configMAC_ADDR0, configMAC_ADDR1, configMAC_ADDR2, configMAC_ADDR3, configMAC_ADDR4, configMAC_ADDR5 };
 
 
 uint8_t* AxiEthernetGetTxBuffer(void) {
 	static uint8_t idx = 0;
-	return (uint8_t*)&TxFrameBuf[idx++ % TXBD_CNT];
+	//return (uint8_t*)&TxFrameBuf[idx++ % TXBD_CNT];
+	return (uint8_t *)(TxFrameBufRef + (idx++ % TXBD_CNT)*sizeof(EthernetFrame));
 }
 
 void AxiEthernetUtilErrorTrap(char *Message)
@@ -133,7 +159,14 @@ int PhyLinkStatus(XAxiEthernet *AxiEthernetInstancePtr) {
 
 int AxiEtherentConfigureTIPhy(XAxiEthernet *AxiEthernetInstancePtr, u32 PhyAddr)
 {
-	u16 PhyReg14;
+	u16 PhyReg5;
+	u16 PhyRegCfg4;
+	u16 Speed;
+	u16 Status;
+
+	/* Enable autonegotiation */
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, PHY_R0_CTRL_REG,
+			    PHY_R0_ANEG_ENABLE | PHY_R0_DFT_SPD_1000);
 
 	/* Enable SGMII Clock */
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
@@ -145,15 +178,80 @@ int AxiEtherentConfigureTIPhy(XAxiEthernet *AxiEthernetInstancePtr, u32 PhyAddr)
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
 			      TI_PHY_SGMIICLK_EN);
 
+	/* Disable RGMII */
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			      PHY_R32_RGMIICTL1);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR, 0);
+
 	/* Enable SGMII */
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_PHYCTRL,
 	                      TI_PHY_CR_SGMII_EN);
-	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CFGR2,
-			     &PhyReg14);
-	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CFGR2,
-			      PhyReg14 & (~TI_PHY_CFGR2_SGMII_AUTONEG_EN));
-	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CFGR2,
-			     &PhyReg14);
+
+	/* Wait for autonegotiation */
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
+		  			     PHY_R5_PART_ABIL_1_REG, &PhyReg5);
+	while (!(PhyReg5 & PHY_R5_ACK)) {
+		msleep(100);
+		XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
+				     PHY_R5_PART_ABIL_1_REG, &PhyReg5);
+	}
+
+	/* Magic VCU-118 workaround */
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+				  TI_PHY_CR_DEVAD_EN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+				  TI_PHY_CFGR4);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+				  TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+				  &PhyRegCfg4);
+	PhyRegCfg4 &= ~TI_PHY_CFGR4_RES_BIT7;
+	PhyRegCfg4 |= TI_PHY_CFGR4_RES_BIT8;
+	PhyRegCfg4 |= TI_PHY_CFGR4_ANEG_TIMER;
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+				  TI_PHY_CR_DEVAD_EN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+				  TI_PHY_CFGR4);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+				  TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+				  PhyRegCfg4);
+
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, PHY_R1_STATUS_REG,
+			     &Status);
+	while (!(Status & PHY_R1_ANEG_COMP)) {
+		msleep(100);
+		XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
+				     PHY_R1_STATUS_REG, &Status);
+	}
+
+	/* Pass result of autonegotiation to AxiEthernet */
+	Speed = 0;
+	if (Status & PHY_R1_1GBPS_EXT) {
+		u16 PhyReg10;
+		XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
+			PHY_R10_PART_ABIL_3_REG, &PhyReg10);
+		if (PhyReg10 & PHY_R10_1GBPS) {
+			Speed = XAE_SPEED_1000_MBPS;
+		}
+	}
+	if (!Speed) {
+		XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr,
+			PHY_R5_PART_ABIL_1_REG, &PhyReg5);
+		if (PhyReg5 & PHY_R5_100MBPS) {
+			Speed = XAE_SPEED_100_MBPS;
+		} else if (PhyReg5 & PHY_R5_10MBPS) {
+			Speed = XAE_SPEED_10_MBPS;
+		} else {
+			return XST_FAILURE;
+		}
+	}
+
+	configASSERT(XAxiEthernet_SetOperatingSpeed(AxiEthernetInstancePtr, Speed) == 0);
 
 	return XST_SUCCESS;
 }
@@ -235,7 +333,19 @@ void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 			configASSERT( pxBufferDescriptor != NULL);
 
 			// Buf address
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wint-to-pointer-cast"
+/* this cast is OK */
 			xRxBuffer = (uint8_t*)XAxiDma_BdGetBufAddr(BdPtr);
+#pragma clang diagnostic pop
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+/* this cast is OK */
+			xRxBuffer = (uint8_t*)XAxiDma_BdGetBufAddr(BdPtr);
+#pragma GCC diagnostic pop
+#endif
 
 			/* pxBufferDescriptor->pucEthernetBuffer now points to an Ethernet
                 buffer large enough to hold the received data.  Copy the
@@ -328,11 +438,19 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 	/* Disable all RX interrupts before RxBD space setup */
 	XAxiDma_BdRingIntDisable(RxRingPtr, XAXIDMA_IRQ_ALL_MASK);
 
+#if defined(__clang__)
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
+#endif
 	/*
 	 * Create the RxBD ring
 	 */
-	Status = XAxiDma_BdRingCreate(RxRingPtr, (u32) &RxBdSpace,
-				     (u32) &RxBdSpace, BD_ALIGNMENT, RXBD_CNT);
+	//Status = XAxiDma_BdRingCreate(RxRingPtr, (u32) &RxBdSpace,
+	//			     (u32) &RxBdSpace, BD_ALIGNMENT, RXBD_CNT);
+	Status = XAxiDma_BdRingCreate(RxRingPtr, (u32) RxBdSpaceRef,
+				     (u32) RxBdSpaceRef, BD_ALIGNMENT, RXBD_CNT);
+	
 	configASSERT( Status == 0);
 
 	XAxiDma_BdClear(&BdTemplate);
@@ -350,8 +468,10 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 	/*
 	 * Create the TxBD ring
 	 */
-	Status = XAxiDma_BdRingCreate(TxRingPtr, (u32) &TxBdSpace,
-				     (u32) &TxBdSpace, BD_ALIGNMENT, TXBD_CNT);
+	//Status = XAxiDma_BdRingCreate(TxRingPtr, (u32) &TxBdSpace,
+	//			     (u32) &TxBdSpace, BD_ALIGNMENT, TXBD_CNT);
+	Status = XAxiDma_BdRingCreate(TxRingPtr, (u32) TxBdSpaceRef,
+				     (u32) TxBdSpaceRef, BD_ALIGNMENT, TXBD_CNT);
 	configASSERT( Status == 0);
 
 	/*
@@ -380,20 +500,25 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 
 	BdCurPtr = BdPtr;
 	for (int Index = 0; Index < FreeBdCount; Index++) {
-		Status = XAxiDma_BdSetBufAddr(BdCurPtr, (u32)&RxFrameBuf[Index]);
+		//Status = XAxiDma_BdSetBufAddr(BdCurPtr, (u32)&RxFrameBuf[Index]);
+		Status = XAxiDma_BdSetBufAddr(BdCurPtr, (u32)(RxFrameBufRef +(Index*sizeof(EthernetFrame))));
+
 		if (Status != XST_SUCCESS) {
 			printf("Rx set buffer addr %x on BD %x failed %d\r\n",
-			(unsigned int)&RxFrameBuf[Index],
-			(UINTPTR)BdCurPtr, Status);
+			//(unsigned int)&RxFrameBuf[Index],
+			(unsigned int)(RxFrameBufRef +(Index*sizeof(EthernetFrame))),
+			(unsigned int)(UINTPTR)BdCurPtr, Status);
 
 			return XST_FAILURE;
 		}
 
-		Status = XAxiDma_BdSetLength(BdCurPtr, sizeof(RxFrameBuf[Index]),
+		//Status = XAxiDma_BdSetLength(BdCurPtr, sizeof(RxFrameBuf[Index]),
+		Status = XAxiDma_BdSetLength(BdCurPtr, sizeof(EthernetFrame),
 					RxRingPtr->MaxTransferLen);
 		if (Status != XST_SUCCESS) {
-			printf("Rx set length %d on BD %x failed %d\r\n",
-			    sizeof(RxFrameBuf[Index]), (UINTPTR)BdCurPtr, Status);
+			printf("Rx set length %u on BD %x failed %d\r\n",
+				(unsigned int)sizeof(EthernetFrame), (unsigned int)(UINTPTR)BdCurPtr, Status);
+			    //sizeof(RxFrameBuf[Index]), (UINTPTR)BdCurPtr, Status);
 
 			return XST_FAILURE;
 		}
@@ -405,7 +530,10 @@ int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId)
 		XAxiDma_BdSetId(BdCurPtr, Index);
 		BdCurPtr = (XAxiDma_Bd *)XAxiDma_BdRingNext(RxRingPtr, BdCurPtr);
 	}
-
+#if defined(__clang__)
+#else
+#pragma GCC diagnostic pop
+#endif
 	/*
 	 * Enqueue to HW
 	 */
@@ -461,6 +589,14 @@ int PhySetup(XAxiEthernet *AxiEthernetInstancePtr, u16 AxiEthernetDeviceId)
 	 */
 	configASSERT( XAxiEthernet_CfgInitialize(AxiEthernetInstancePtr, MacCfgPtr,
 						MacCfgPtr->BaseAddress) == 0);
+
+	/*
+	 * Make sure Tx, Rx and extended multicast are enabled.
+	 */
+	configASSERT( XAxiEthernet_SetOptions(AxiEthernetInstancePtr,
+						XAE_RECEIVER_ENABLE_OPTION | XAE_DEFAULT_OPTIONS |
+						XAE_TRANSMITTER_ENABLE_OPTION) == 0);
+
 
 	/*
 	 * Set the MAC address
@@ -660,7 +796,7 @@ int AxiEthernetSetupIntrSystem(plic_instance_t *IntcInstancePtr,
 				u16 DmaRxIntrId,
 				u16 DmaTxIntrId)
 {
-    printf("AxiEthernetSetupIntrSystem\r\n");
+    xaxi_debug_printf("AxiEthernetSetupIntrSystem\r\n");
 	XAxiDma_BdRing * TxRingPtr = XAxiDma_GetTxRing(DmaInstancePtr);
 	XAxiDma_BdRing * RxRingPtr = XAxiDma_GetRxRing(DmaInstancePtr);
 	int Status;

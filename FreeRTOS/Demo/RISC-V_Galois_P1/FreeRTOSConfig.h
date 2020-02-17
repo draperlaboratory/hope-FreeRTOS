@@ -81,17 +81,34 @@
  *
  * See http://www.freertos.org/a00110.html.
  *----------------------------------------------------------*/
-//#define configISR_STACK_SIZE_WORDS      500 // NOTE: if using configISR_STACK_SIZE_WORDS the stack alignment assert doesn't pass
-#define configCLINT_BASE_ADDRESS 0x10000000
+//#define configISR_STACK_SIZE_WORDS      500
+#define CLINT_CTRL_ADDR 0x10000000
+#define configMTIME_BASE_ADDRESS		( CLINT_CTRL_ADDR + 0xBFF8UL )
+#define configMTIMECMP_BASE_ADDRESS		( CLINT_CTRL_ADDR + 0x4000UL )
 #define configUSE_PREEMPTION 1
 #define configUSE_IDLE_HOOK 1
 #define configUSE_TICK_HOOK 1
+
+#if !defined(configCPU_CLOCK_HZ)
+#if __riscv_xlen == 64
+#define configCPU_CLOCK_HZ ((uint32_t)(100000000))
+#else
 #define configCPU_CLOCK_HZ ((uint32_t)(50000000))
-#define configPERIPH_CLOCK_HZ ((uint32_t)(50000000))
+#endif
+#endif /* !defined(configCPU_CLOCK_HZ) */
+
+#define configPERIPH_CLOCK_HZ configCPU_CLOCK_HZ 
+
+
 #define configTICK_RATE_HZ ((TickType_t)1000)
 #define configMAX_PRIORITIES (5)
-#define configMINIMAL_STACK_SIZE ((uint32_t)2048) /* Can be as low as 60 but some of the demo tasks that use this constant require it to be higher. */
-#define configTOTAL_HEAP_SIZE ((size_t)(1000 * 1024))
+#define configMINIMAL_STACK_SIZE ((uint32_t)512) /* Can be as low as 60 but some of the demo tasks that use this constant require it to be higher. */
+#define configSTACK_DEPTH_TYPE uint32_t //the default ifndef is uint16_t
+#ifdef configCUSTOM_HEAP_SIZE
+    #define configTOTAL_HEAP_SIZE ((size_t)(configCUSTOM_HEAP_SIZE * 1024 * 1024))
+#else
+    #define configTOTAL_HEAP_SIZE ((size_t)(256 * 1024))
+#endif
 #define configMAX_TASK_NAME_LEN (16)
 #define configUSE_TRACE_FACILITY 1
 #define configUSE_16_BIT_TICKS 0
@@ -106,7 +123,12 @@
 
 // TODO: use only for debugging
 #define configGENERATE_RUN_TIME_STATS 0
+#define configRECORD_STACK_HIGH_ADDRESS (1)
+#define INCLUDE_uxTaskGetStackHighWaterMark 1
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
+
+// See http://www.nadler.com/embedded/newlibAndFreeRTOS.html
+#define configUSE_NEWLIB_REENTRANT 0 // Required for thread-safety of newlib sprintf, 
 
 /* Runtime stats definitions */
 // TODO: use only for debugging
@@ -114,6 +136,12 @@
 extern uint32_t port_get_current_mtime(void);
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()
 #define portGET_RUN_TIME_COUNTER_VALUE() port_get_current_mtime()
+
+/* Make newlib reentrant */
+// See http://www.nadler.com/embedded/newlibAndFreeRTOS.html
+// Required for thread-safety of newlib sprintf and friends
+// NOTE: this feature is optional
+#define configUSE_NEWLIB_REENTRANT 0
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 0
@@ -157,3 +185,7 @@ header file. */
     }
 
 #endif /* FREERTOS_CONFIG_H */
+
+#ifdef testgenOnFreeRTOS
+    #include "testgenTraceHooks.h"
+#endif

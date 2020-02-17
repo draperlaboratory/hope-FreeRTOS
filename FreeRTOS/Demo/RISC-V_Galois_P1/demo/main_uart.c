@@ -56,8 +56,8 @@ static void vTestUART1Rx(void *pvParameters);
 void main_uart(void)
 {
     /* Create GPIO test */
-    xTaskCreate(vTestUART1Tx, "UART1 Tx Test", 1000, NULL, 0, NULL);
-    xTaskCreate(vTestUART1Rx, "UART1 Rx Test", 1000, NULL, 0, NULL);
+    xTaskCreate(vTestUART1Tx, "UART1 Tx Test", 1000, NULL, tskIDLE_PRIORITY, NULL);
+    xTaskCreate(vTestUART1Rx, "UART1 Rx Test", 1000, NULL, tskIDLE_PRIORITY+1, NULL);
 }
 /*-----------------------------------------------------------*/
 
@@ -65,7 +65,7 @@ static void vTestUART1Tx(void *pvParameters)
 {
 	(void)pvParameters;
 
-    char* msg = "Hello from UART1\n";
+    char* msg = "Hello from UART1!!!\n";
 	printf("Starting vTestUART1 Tx\r\n");
 
 	for (;;)
@@ -79,20 +79,30 @@ static void vTestUART1Rx(void *pvParameters)
 {
 	(void)pvParameters;
 	char str[20];
+    char buf[20];
     uint8_t idx = 0;
 
 	printf("Starting vTestUART1 Rx\r\n");
 	for (;;)
 	{
-        configASSERT( uart1_rxbuffer(&str[idx], 1) != -1);
-        if (str[idx] == '\n') { // End character received
-             str[idx] = '\0'; // proper termination
-             printf("UART1 RX: %s\r\n", str);
-             idx=0;
-        } else {
-            idx++;
-            idx %= sizeof(str);
+        int len = uart1_rxbuffer(buf, sizeof(buf));   
+        configASSERT(len != -1);
+
+        if (len > 0) {
+            printf("len=%i\r\n", len);
+
+            for (int i = 0; i<len; i++) {
+                if (buf[i] == '\n') { // End character received     
+                    str[idx] = '\0'; // proper termination
+                    printf("UART1 RX: %s\r\n", str);
+                    idx=0;
+                } else {
+                    str[idx] = buf[i];
+                    idx++;
+                }
+            }
         }
+        vTaskDelay(pdMS_TO_TICKS(1));
 	}
 }
 

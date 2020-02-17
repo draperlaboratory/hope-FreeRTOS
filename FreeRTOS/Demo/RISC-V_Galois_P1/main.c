@@ -61,8 +61,17 @@ extern void main_sd(void);
 #elif mainDEMO_TYPE == 7
 #pragma message "Demo type 7: UART test"
 extern void main_uart(void);
-#elif mainDEMO_TYPE == 8
-extern void main_pipe(void);
+#elif mainDEMO_TYPE == 9
+#pragma message "Demo type 9: HTTP peek/poke test"
+extern void main_peekpoke(void);
+#elif mainDEMO_TYPE == 10
+#pragma message "Demo type 10: RTC test"
+extern void main_rtc(void);
+#elif mainDEMO_TYPE == 12
+#undef configGENERATE_RUN_TIME_STATS
+#pragma message "Demo type 12: Testgen"
+extern void main_testgen(void);
+
 #else
 #error "Unsupported demo type"
 #endif
@@ -79,10 +88,22 @@ uint64_t get_cycle_count(void);
 
 #if configGENERATE_RUN_TIME_STATS
 /* Buffer and a task for displaying runtime stats */
-char statsBuffer[1024];
+char statsBuffer[4096];
 static void prvStatsTask(void *pvParameters);
 #endif /* configGENERATE_RUN_TIME_STATS */
+
+#if USE_LED_BLINK_TASK
+#include "gpio.h"
+#define MAIN_LED_DELAY_MS 100
+static void vTestLED(void *pvParameters);
+#endif
 /*-----------------------------------------------------------*/
+
+#if __riscv_xlen == 64
+#define read_csr(reg) ({ unsigned long __tmp; \
+  asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
+  __tmp; })
+#endif
 
 /**
  * Capture the current 64-bit cycle count.
@@ -155,10 +176,26 @@ int main(void)
 	{
 		main_uart();
 	}
+#elif mainDEMO_TYPE == 9
+	{
+		main_peekpoke();
+	}
+#elif mainDEMO_TYPE == 10
+	{
+		main_rtc();
+	}
+#elif mainDEMO_TYPE == 12
+	{
+		main_testgen();
+	}
 #endif
 
 #if configGENERATE_RUN_TIME_STATS
-	xTaskCreate(prvStatsTask, "prvStatsTask", configMINIMAL_STACK_SIZE * 2, NULL, tskIDLE_PRIORITY, NULL);
+	xTaskCreate(prvStatsTask, "prvStatsTask", configMINIMAL_STACK_SIZE * 20, NULL, tskIDLE_PRIORITY, NULL);
+#endif
+
+#if USE_LED_BLINK_TASK
+	xTaskCreate(vTestLED, "LED Test", 1000, NULL, 0, NULL);
 #endif
 
 	/* If all is well, the scheduler will now be running, and the following
@@ -174,18 +211,46 @@ int main(void)
 /*-----------------------------------------------------------*/
 
 #if configGENERATE_RUN_TIME_STATS
+
+// Returns percentage utilization of the ISR stack
+#include "portmacro.h"
+extern const StackType_t xISRStackTop;
+extern const uint32_t _stack_end[];
+const StackType_t xISRStackEnd = ( StackType_t ) _stack_end;
+
+static uint8_t prvIsrStackUtilization(void)
+{
+	uint8_t percent = 0;
+	uint32_t idx;
+	uint32_t stack_len = (xISRStackTop - xISRStackEnd)/4; // # words
+	uint32_t *stack_ptr = (uint32_t*) xISRStackEnd;
+
+	for (idx=0; idx<stack_len; idx++) {
+		if (*stack_ptr != 0xabababab) {
+			break;
+		}
+		stack_ptr++;
+	}
+
+	percent = 100 - idx*100/stack_len;
+
+	return percent;
+}
+
 static void prvStatsTask(void *pvParameters)
 {
 	(void)pvParameters;
 	printf(("prvStatsTask: starting\r\n"));
+	vTaskDelay(pdMS_TO_TICKS(1000));
 
 	for (;;)
 	{
-		vTaskDelay(pdMS_TO_TICKS(10000));
 		vTaskGetRunTimeStats(statsBuffer);
 		printf("prvStatsTask: xPortGetFreeHeapSize() = %u\r\n", xPortGetFreeHeapSize());
-		printf("prvStatsTask: Run-time stats\r\nTask\tAbsTime\tpercent_time\r\n");
+		printf("prvStatsTask: prvIsrStackUtilization() = %u\r\n", prvIsrStackUtilization());
+		printf("prvStatsTask: Run-time stats\r\nTask\t\tAbsTime\t\t%%time\tStackHighWaterMark\r\n");
 		printf("%s\r\n", statsBuffer);
+		vTaskDelay(pdMS_TO_TICKS(10000));
 	}
 }
 #endif /* configGENERATE_RUN_TIME_STATS */
@@ -250,3 +315,52 @@ void vApplicationTickHook(void)
 	}
 #endif
 }
+
+#if USE_LED_BLINK_TASK
+void vTestLED(void *pvParameters)
+{
+    (void)pvParameters;
+
+    printf("vTestLED starting\r\n");
+
+    for(;;)
+    {
+        /* Write to every LED */
+        led_write(0);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_LED_DELAY_MS));
+        led_write(1);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_LED_DELAY_MS));
+        led_write(2);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_LED_DELAY_MS));
+        led_write(3);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_LED_DELAY_MS));
+        led_write(4);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_LED_DELAY_MS));
+        led_write(5);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_LED_DELAY_MS));
+        led_write(6);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_LED_DELAY_MS));
+        led_write(7);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_LED_DELAY_MS));
+
+        /* Clear every LED */
+        led_clear(0);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_LED_DELAY_MS));
+        led_clear(1);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_LED_DELAY_MS));
+        led_clear(2);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_LED_DELAY_MS));
+        led_clear(3);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_LED_DELAY_MS));
+        led_clear(4);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_LED_DELAY_MS));
+        led_clear(5);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_LED_DELAY_MS));
+        led_clear(6);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_LED_DELAY_MS));
+        led_clear(7);
+        vTaskDelay(pdMS_TO_TICKS(MAIN_LED_DELAY_MS));
+    }
+}
+#endif /* USE_LED_BLINK_TASK */
+#endif /* USE_LED_BLINK_TASK */

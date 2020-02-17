@@ -209,6 +209,7 @@ void main_full( void )
 	prvSetupPeripheralTimers();
 
 	/* Start the scheduler. */
+	vSendString( "Starting" );
 	vTaskStartScheduler();
 
 	/* If all is well, the scheduler will now be running, and the following
@@ -229,15 +230,10 @@ uint32_t ulLastRegTest1Value = 0, ulLastRegTest2Value = 0;
 uint32_t ulLastTimer0Interrupts = 0, ulLastTimer1Interrupts = 0;
 char * const pcPassMessage = ".";
 char * pcStatusMessage = pcPassMessage;
-extern void vSendString( const char * const pcString );
 extern void vToggleLED( void );
 
 	/* Just to stop compiler warnings. */
 	( void ) pvParameters;
-
-	/* Start with a pass message, after which a '.' character will be printed
-	out on each successful loop. */
-	vSendString( "Pass" );
 
 	/* Initialise xLastExecutionTime so the first call to vTaskDelayUntil()
 	works correctly. */
