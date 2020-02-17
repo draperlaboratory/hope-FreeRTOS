@@ -244,16 +244,7 @@ int EmbedReceive(WOLFSSL *ssl, char *buf, int sz, void *ctx)
 {
     int recvd;
     int err;
-    #ifdef testgenOnFreeRTOS
-        #if __riscv_xlen == 64
-            //Due to difference of size of Socket_t and int (size of ssl->rfd and ssl->wfd). ReadCTX and WriteCTX do overlap.
-            Socket_t sd = *(Socket_t*) ((intptr_t) ctx +4);
-        #else
-            Socket_t sd = *(Socket_t*)ctx;
-        #endif
-    #else
-        int sd = *(int*)ctx;
-    #endif
+    WOLFSSL_FD sd = *(WOLFSSL_FD *)ctx;
 
 #ifdef WOLFSSL_DTLS
     {

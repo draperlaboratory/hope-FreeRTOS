@@ -70,6 +70,13 @@ typedef struct WOLFSSL_X509_CHAIN WOLFSSL_X509_CHAIN;
 typedef struct WOLFSSL_CERT_MANAGER WOLFSSL_CERT_MANAGER;
 typedef struct WOLFSSL_SOCKADDR     WOLFSSL_SOCKADDR;
 
+#ifdef testgenOnFreeRTOS
+    #include "FreeRTOS_Sockets.h"
+    typedef Socket_t WOLFSSL_FD;
+#else
+    typedef int WOLFSSL_FD;
+#endif
+
 /* redeclare guard */
 #define WOLFSSL_TYPES_DEFINED
 
@@ -242,10 +249,10 @@ WOLFSSL_API int wolfSSL_use_RSAPrivateKey_file(WOLFSSL*, const char*, int);
 
 WOLFSSL_API WOLFSSL_CTX* wolfSSL_CTX_new(WOLFSSL_METHOD*);
 WOLFSSL_API WOLFSSL* wolfSSL_new(WOLFSSL_CTX*);
-WOLFSSL_API int  wolfSSL_set_fd (WOLFSSL*, int);
+WOLFSSL_API int  wolfSSL_set_fd (WOLFSSL*, WOLFSSL_FD);
 WOLFSSL_API char* wolfSSL_get_cipher_list(int priority);
 WOLFSSL_API int  wolfSSL_get_ciphers(char*, int);
-WOLFSSL_API int  wolfSSL_get_fd(const WOLFSSL*);
+WOLFSSL_API WOLFSSL_FD wolfSSL_get_fd(const WOLFSSL*);
 WOLFSSL_API void wolfSSL_set_using_nonblock(WOLFSSL*, int);
 WOLFSSL_API int  wolfSSL_get_using_nonblock(WOLFSSL*);
 WOLFSSL_API int  wolfSSL_connect(WOLFSSL*);     /* please see note at top of README
@@ -343,8 +350,8 @@ WOLFSSL_API const char* wolfSSL_ERR_reason_error_string(unsigned long);
 
 WOLFSSL_API int  wolfSSL_set_ex_data(WOLFSSL*, int, void*);
 WOLFSSL_API int  wolfSSL_get_shutdown(const WOLFSSL*);
-WOLFSSL_API int  wolfSSL_set_rfd(WOLFSSL*, int);
-WOLFSSL_API int  wolfSSL_set_wfd(WOLFSSL*, int);
+WOLFSSL_API int  wolfSSL_set_rfd(WOLFSSL*, WOLFSSL_FD);
+WOLFSSL_API int  wolfSSL_set_wfd(WOLFSSL*, WOLFSSL_FD);
 WOLFSSL_API void wolfSSL_set_shutdown(WOLFSSL*, int);
 WOLFSSL_API int  wolfSSL_set_session_id_context(WOLFSSL*, const unsigned char*,
                                            unsigned int);
