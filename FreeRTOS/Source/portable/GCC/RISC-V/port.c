@@ -74,6 +74,11 @@ interrupt stack after the scheduler has started. */
      although I think it's overly conservative because the mask is wrt bytes and
      the array is words.   A fix like this should probably be upstreamed.  */
 	const StackType_t xISRStackTop = ( StackType_t ) &( xISRStack[ ( ( configISR_STACK_SIZE_WORDS - 1 ) & ~portBYTE_ALIGNMENT_MASK ) ] );
+    
+    /* Don't use 0xa5 as the stack fill bytes as that is used by the kernerl for
+	the task stacks, and so will legitimately appear in many positions within
+	the ISR stack. */
+	#define portISR_STACK_FILL_BYTE	0xee
 #else
 	extern const uint32_t __freertos_irq_stack_top[];
 	const StackType_t xISRStackTop = ( StackType_t ) __freertos_irq_stack_top;
@@ -92,7 +97,8 @@ void vPortSetupTimerInterrupt( void ) __attribute__(( weak ));
 uint64_t ullNextTime = 0ULL;
 const uint64_t *pullNextTime = &ullNextTime;
 const size_t uxTimerIncrementsForOneTick = ( size_t ) ( configCPU_CLOCK_HZ / configTICK_RATE_HZ ); /* Assumes increment won't go over 32-bits. */
-volatile uint64_t * const pullMachineTimerCompareRegister = ( volatile uint64_t * const ) ( configCLINT_BASE_ADDRESS + 0x4000 );
+uint32_t const ullMachineTimerCompareRegisterBase = configMTIMECMP_BASE_ADDRESS;
+volatile uint64_t * pullMachineTimerCompareRegister = NULL;
 
 /* Set configCHECK_FOR_STACK_OVERFLOW to 3 to add ISR stack checking to task
 stack checking.  A problem in the ISR stack will trigger an assert, not call the
