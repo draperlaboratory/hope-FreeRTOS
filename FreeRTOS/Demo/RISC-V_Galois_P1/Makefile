@@ -1,69 +1,42 @@
-# For debugging
-$(info $$PROG is [${PROG}])
+RISCV_XLEN ?= 32
+RISCV_LIB  ?= elf
+CCPATH =
+ARCH 		= -march=rv32im
+ABI 		= -mabi=ilp32
 
-configCPU_CLOCK_HZ ?=
 
-CCPATH 		?=
-TARGET=$(CCPATH)riscv64-unknown-elf
+TARGET=$(CCPATH)riscv${RISCV_XLEN}-unknown-${RISCV_LIB}
 
-XLEN?=32
-
-ifeq ($(XLEN),64)
-	ARCH 		= -march=rv64imac
-	ABI 		= -mabi=lp64
-	CLANG_ARCH  = riscv64
+ifdef CLANG
+GCC     = $(ISP_PREFIX)/bin/clang
 else
-	ARCH 		= -march=rv32im
-	ABI 		= -mabi=ilp32
-	CLANG_ARCH  = riscv32
+GCC     = $(TARGET)-gcc
 endif
 
-# Decide which compiler to use
-ifeq ($(USE_CLANG),yes)
-	CC		= clang --target=$(CLANG_ARCH)
-	# CPP		= clang++ --target=$(CLANG_ARCH)
-	# TODO: clang has problems with system includes, use g++ for now
-	CPP		= $(TARGET)-g++
-	# LLVM doesn't support linking RISC-V files yet,
-	# so we have to use GCC linker to do so
-	LD		= $(TARGET)-gcc
-	OBJCOPY	= llvm-objcopy
-	# LLVM doesn't uderstand debug symbols created by GCC linker
-	# using GCC objdump for the time being (instead of llvm-objdump)
-	OBJDUMP	= $(TARGET)-objdump
-	AR		= llvm-ar
-	RANLIB	= llvm-ranlib
-else
-	CC		= $(TARGET)-gcc
-	CPP		= $(TARGET)-g++
-	LD		= $(CC)
-	OBJCOPY	= $(TARGET)-objcopy
-	OBJDUMP	= $(TARGET)-objdump
-	AR		= $(TARGET)-ar
-	RANLIB	= $(TARGET)-ranlib
-endif
-
-COMPILER_FLAGS = -mcmodel=medany
-
-$(info CC=${CC})
+OBJCOPY	= $(TARGET)-objcopy
+OBJDUMP	= $(TARGET)-objdump
+AR		= $(TARGET)-ar
+RANLIB	= $(TARGET)-ranlib
 
 # Use main_blinky as demo source and target file name if not specified
 PROG 	?= main_blinky
+LIBFREERTOS = libfreertos-vcu118.a
+
 CRT0	= bsp/boot.S
+
+# For debugging
+$(info $$PROG is [${PROG}])
 
 FREERTOS_SOURCE_DIR	= ../../Source
 FREERTOS_PLUS_SOURCE_DIR = ../../../FreeRTOS-Plus/Source
 FREERTOS_TCP_SOURCE_DIR = $(FREERTOS_PLUS_SOURCE_DIR)/FreeRTOS-Plus-TCP
-FREERTOS_PROTOCOLS_DIR = ./protocols
 
-WARNINGS = -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align -Wsign-compare \
-		-Waggregate-return -Wmissing-declarations -Wunused -Werror 
- 
-C_WARNINGS = -Wbad-function-cast -Wmissing-prototypes -Wstrict-prototypes
+WARNINGS= -Wall -Wextra -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wsign-compare \
+		-Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wunused
 
-CPP_WARNINGS = 
 
-CPP_SRC = 
+# Root of RISC-V tools installation
+RISCV ?= /opt/riscv
 
 FREERTOS_SRC = \
 	$(FREERTOS_SOURCE_DIR)/croutine.c \
@@ -73,7 +46,7 @@ FREERTOS_SRC = \
 	$(FREERTOS_SOURCE_DIR)/timers.c \
 	$(FREERTOS_SOURCE_DIR)/event_groups.c \
 	$(FREERTOS_SOURCE_DIR)/stream_buffer.c \
-	$(FREERTOS_SOURCE_DIR)/portable/MemMang/heap_4.c
+	$(FREERTOS_SOURCE_DIR)/portable/MemMang/heap_2.c
 
 APP_SOURCE_DIR	= ../Common/Minimal
 
@@ -87,11 +60,17 @@ INCLUDES = \
 	-I../Common/include \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V
 
-ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy \
-	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions \
-	-DportasmHANDLE_INTERRUPT=external_interrupt_handler
+ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
-CFLAGS = $(WARNINGS) $(C_WARNINGS) $(INCLUDES)
+CFLAGS = $(WARNINGS) $(INCLUDES) -ffunction-sections -fdata-sections
+CFLAGS += -O0 -g3 $(ARCH) $(ABI)
+CFLAGS += -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
+
+ifdef CLANG
+CFLAGS += -mcmodel=medium
+else
+CFLAGS += -mcmodel=medany
+endif
 
 DEMO_SRC = main.c \
 	demo/$(PROG).c
@@ -104,6 +83,7 @@ APP_SRC = \
 	bsp/iic.c \
 	bsp/gpio.c \
 	bsp/spi.c \
+	bsp/rand.c \
 	bsp/xilinx/uartns550/xuartns550.c \
 	bsp/xilinx/uartns550/xuartns550_g.c \
 	bsp/xilinx/uartns550/xuartns550_sinit.c \
@@ -158,37 +138,11 @@ INCLUDES = \
 	-I./bsp/xilinx/gpio \
 	-I$(FREERTOS_SOURCE_DIR)/include \
 	-I../Common/include \
-	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V \
-	-I./demo
+	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V
 
 ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions \
 	-DportasmHANDLE_INTERRUPT=external_interrupt_handler
-
-FREERTOS_IP_SRC = \
-	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_IP.c \
-	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_ARP.c \
-	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DHCP.c \
-	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DNS.c \
-	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Sockets.c \
-	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_IP.c \
-	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_UDP_IP.c \
-	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_WIN.c \
-	$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Stream_Buffer.c \
-	$(FREERTOS_TCP_SOURCE_DIR)/portable/BufferManagement/BufferAllocation_2.c \
-	$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/riscv_hal_eth.c \
-	$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c \
-	bsp/rand.c
-
-FREERTOS_IP_INCLUDE = \
-	-I$(FREERTOS_TCP_SOURCE_DIR) \
-	-I$(FREERTOS_TCP_SOURCE_DIR)/include \
-	-I$(FREERTOS_TCP_SOURCE_DIR)/portable/Compiler/GCC
-
-FREERTOS_IP_DEMO_SRC = \
-	demo/SimpleUDPClientAndServer.c \
-	demo/TCPEchoClient_SingleTasks.c \
-	demo/SimpleTCPEchoServer.c
 
 ifeq ($(PROG),main_blinky)
 	CFLAGS += -DmainDEMO_TYPE=1
@@ -196,7 +150,7 @@ else
 ifeq ($(PROG),main_full)
 	CFLAGS += -DmainDEMO_TYPE=2
 	PORT_ASM += demo/RegTest.S
-	APP_SRC +=  \
+	DEMO_SRC +=  \
 		$(APP_SOURCE_DIR)/AbortDelay.c \
 		$(APP_SOURCE_DIR)/BlockQ.c \
 		$(APP_SOURCE_DIR)/blocktim.c \
@@ -218,6 +172,7 @@ ifeq ($(PROG),main_full)
 else
 ifeq ($(PROG),main_iic)
 	CFLAGS += -DmainDEMO_TYPE=3
+	INCLUDES += -I./demo
 	INCLUDES += -I./devices
 else
 ifeq ($(PROG),main_gpio)
@@ -227,127 +182,78 @@ else
 ifeq ($(PROG),main_tcp)
 	CFLAGS += -DmainDEMO_TYPE=5
 	CFLAGS += -DmainCREATE_TCP_ECHO_SERVER_TASK=1
-	INCLUDES += $(FREERTOS_IP_INCLUDE)
-	FREERTOS_SRC += $(FREERTOS_IP_SRC)
-	DEMO_SRC += $(FREERTOS_IP_DEMO_SRC)
-
-else
-ifeq ($(PROG),main_peekpoke)
-	CFLAGS += -DmainDEMO_TYPE=9
-	CFLAGS += -DmainCREATE_PEEKPOKE_SERVER_TASK=1
-	CFLAGS += -DmainCREATE_HTTP_SERVER=1
-	CFLAGS += -DipconfigUSE_HTTP=1
-	CFLAGS += '-DconfigHTTP_ROOT="/notused"'
-	CFLAGS += -DffconfigMAX_FILENAME=4096
 	INCLUDES += \
-		$(FREERTOS_IP_INCLUDE) \
-		-I$(FREERTOS_PROTOCOLS_DIR)/include
-	FREERTOS_SRC += \
-		$(FREERTOS_IP_SRC) \
-		$(FREERTOS_PROTOCOLS_DIR)/Common/FreeRTOS_TCP_server.c \
-		$(FREERTOS_PROTOCOLS_DIR)/HTTP/FreeRTOS_HTTP_server.c \
-		$(FREERTOS_PROTOCOLS_DIR)/HTTP/FreeRTOS_HTTP_commands.c \
-		$(FREERTOS_PROTOCOLS_DIR)/HTTP/peekpoke.c
-	DEMO_SRC += $(FREERTOS_IP_DEMO_SRC)
+		-I./demo \
+		-I$(FREERTOS_TCP_SOURCE_DIR) \
+		-I$(FREERTOS_TCP_SOURCE_DIR)/include \
+		-I$(FREERTOS_TCP_SOURCE_DIR)/portable/Compiler/GCC
+	DEMO_SRC += \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_IP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_ARP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DHCP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DNS.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Sockets.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_IP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_UDP_IP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_WIN.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Stream_Buffer.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/BufferManagement/BufferAllocation_2.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/riscv_hal_eth.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c \
+		demo/SimpleUDPClientAndServer.c \
+		demo/TCPEchoClient_SingleTasks.c \
+		demo/SimpleTCPEchoServer.c
 else
 ifeq ($(PROG),main_udp)
 	CFLAGS += -DmainDEMO_TYPE=5
 	CFLAGS += -DmainCREATE_SIMPLE_UDP_CLIENT_SERVER_TASKS=1
-	INCLUDES += $(FREERTOS_IP_INCLUDE)
-	FREERTOS_SRC += $(FREERTOS_IP_SRC)
-	DEMO_SRC += $(FREERTOS_IP_DEMO_SRC)
+	INCLUDES += \
+		-I./demo \
+		-I$(FREERTOS_TCP_SOURCE_DIR) \
+		-I$(FREERTOS_TCP_SOURCE_DIR)/include \
+		-I$(FREERTOS_TCP_SOURCE_DIR)/portable/Compiler/GCC
+	DEMO_SRC += \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_IP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_ARP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DHCP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_DNS.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Sockets.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_IP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_UDP_IP.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_TCP_WIN.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/FreeRTOS_Stream_Buffer.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/BufferManagement/BufferAllocation_2.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/riscv_hal_eth.c \
+		$(FREERTOS_TCP_SOURCE_DIR)/portable/NetworkInterface/RISC-V/NetworkInterface.c \
+		demo/SimpleUDPClientAndServer.c \
+		demo/TCPEchoClient_SingleTasks.c \
+		demo/SimpleTCPEchoServer.c
 else
 ifeq ($(PROG),main_sd)
 	CFLAGS += -DmainDEMO_TYPE=6
-	CPPLAGS += -DmainDEMO_TYPE=6
-	CPP_SRC += SD/src/SD.cpp \
-			   SD/src/File.cpp \
-			   SD/src/utility/Sd2Card.cpp \
-			   SD/src/utility/SdFile.cpp \
-			   SD/src/utility/SdVolume.cpp \
-			   SD/src/SDLib.cpp
-SD_EXAMPLE ?= CardInfo
-USE_RTC_CLOCK ?= 0
-$(info SD_EXAMPLE=${SD_EXAMPLE})
-ifeq ($(SD_EXAMPLE),ReadWrite)
-	CPP_SRC += SD/examples/SdDemo_ReadWrite.cpp
-else
-ifeq ($(SD_EXAMPLE),DumpFile)
-	CPP_SRC += SD/examples/SdDemo_DumpFile.cpp
-else
-ifeq ($(SD_EXAMPLE),CardInfo)
-	CPP_SRC += SD/examples/SdDemo_CardInfo.cpp
-else
-ifeq ($(SD_EXAMPLE),StressTest)
-	DEMO_SRC += SD/examples/SdDemo_StressTest.c
-else
-$(error unknown SD_EXAMPLE: $(SD_EXAMPLE))
-endif
-endif
-endif
-endif
-
-	INCLUDES += -I./SD/src
-ifeq ($(USE_RTC_CLOCK),1)
-# Below includes for RTC clock (SD FAT time)
-	CFLAGS += -DUSE_RTC_CLOCK=1
-	CPPLAGS += -DUSE_RTC_CLOCK=1
+	DEMO_SRC += devices/sdmm.c
+	DEMO_SRC += devices/ff.c
+	DEMO_SRC += devices/ffsystem.c
+	DEMO_SRC += devices/ffunicode.c
+	INCLUDES += -I./demo
 	INCLUDES += -I./devices
-	DEMO_SRC += devices/ds1338rtc.c
-endif # USE_RTC_CLOCK
 else
 ifeq ($(PROG),main_uart)
 	CFLAGS += -DmainDEMO_TYPE=7
+	INCLUDES += -I./demo
 	INCLUDES += -I./devices
 else
-ifeq ($(PROG),main_rtc)
-RTC_YEAR = $(shell date +%-y)
-RTC_MONTH = $(shell date +%-m)
-RTC_DAY = $(shell date +%-d)
-RTC_HOUR = $(shell date +%-H)
-RTC_MINUTE = $(shell date +%-M)
-RTC_SECONDS = $(shell date +%-S)
-	CFLAGS += -DRTC_YEAR=$(RTC_YEAR)
-	CFLAGS += -DRTC_MONTH=$(RTC_MONTH)
-	CFLAGS += -DRTC_DAY=$(RTC_DAY)
-	CFLAGS += -DRTC_HOUR=$(RTC_HOUR)
-	CFLAGS += -DRTC_MINUTE=$(RTC_MINUTE)
-	CFLAGS += -DRTC_SECONDS=$(RTC_SECONDS)
-	CFLAGS += -DRTC_SET_TIME=1
-	CFLAGS += -DmainDEMO_TYPE=10
-	INCLUDES += -I./devices
-	DEMO_SRC += devices/ds1338rtc.c
-else
-ifeq ($(PROG),main_uart_malware)
-	CFLAGS += -DmainDEMO_TYPE=11
-else
-ifeq ($(PROG),main_testgen)
-	include $(INC_TESTGEN)/testgenEnvironment.mk
-else
-$(error unknown demo: $(PROG))
-endif # main_testgen
-endif # main_uart_malware
-endif # main_rtc
-endif # main_uart
-endif # main_sd
-endif # main_udp
-endif # main_peekpoke
-endif # main_tcp
-endif # main_gpio
-endif # main_iic
-endif # main_full
-endif # main_blinky
+	$(info unknown demo: $(PROG))
+endif
+endif
+endif
+endif
+endif
+endif
+endif
+endif
 
 ARFLAGS=crsv
-
-CFLAGS += -O0 -g3 $(ARCH) $(ABI) $(COMPILER_FLAGS) $(INCLUDES)
-
-# If configCPU_CLOCK_HZ is not empty, pass it as a definition
-ifneq ($(configCPU_CLOCK_HZ),)
-CFLAGS += -DconfigCPU_CLOCK_HZ=$(configCPU_CLOCK_HZ)
-endif
-# Disable warnings for C++ for now
-CPPFLAGS += -O0 -g3 $(ARCH) $(ABI) $(COMPILER_FLAGS) $(INCLUDES)
 
 #
 # Define all object files.
@@ -356,45 +262,49 @@ RTOS_OBJ = $(FREERTOS_SRC:.c=.o)
 APP_OBJ  = $(APP_SRC:.c=.o)
 PORT_OBJ = $(PORT_SRC:.c=.o)
 DEMO_OBJ = $(DEMO_SRC:.c=.o)
-CPP_OBJ = $(CPP_SRC:.cpp=.o)
 PORT_ASM_OBJ = $(PORT_ASM:.S=.o)
 CRT0_OBJ = $(CRT0:.S=.o)
-OBJS = $(CRT0_OBJ) $(PORT_ASM_OBJ) $(PORT_OBJ) $(RTOS_OBJ) $(DEMO_OBJ) $(APP_OBJ) $(CPP_OBJ)
 
-LDFLAGS	 += -T link.ld -nostartfiles -nostdlib $(ARCH) $(ABI)
-LIBS	 =  -lc -lgcc
+LIB_OBJS = $(CRT0_OBJ) $(PORT_ASM_OBJ) $(PORT_OBJ) $(RTOS_OBJ) $(APP_OBJ)
+ELF_OBJS = $(DEMO_OBJ)
+
+LDFLAGS	 = -T link.ld -nostartfiles -defsym=_STACK_SIZE=4K
+LDFLAGS  += -Wl,--gc-sections
+
+LIBS	 =  -lc -lgcc -lfreertos-vcu118 -L.
 
 $(info ASFLAGS=$(ASFLAGS))
-$(info LDLIBS=$(LDLIBS))
+$(info LIBS=$(LIBS))
 $(info CFLAGS=$(CFLAGS))
 $(info LDFLAGS=$(LDFLAGS))
 $(info ARFLAGS=$(ARFLAGS))
 
 %.o: %.c
 	@echo "    CC $<"
-	@$(CC) -c $(CFLAGS) -o $@ $<
-
-%.o: %.cpp
-	@echo "    C++ $<"
-	@$(CPP) -c $(CPPFLAGS) -o $@ $<
+	$(GCC) -c $(CFLAGS) -o $@ $<
 
 %.o: %.S
 	@echo "    CC $<"
-	@$(CC) $(ASFLAGS) -c $(CFLAGS) -o $@ $<
+	$(GCC) $(ASFLAGS) -c $(CFLAGS) -o $@ $<
 
 all: $(PROG).elf
 
-$(PROG).elf  : $(OBJS) Makefile 
+lib: $(LIBFREERTOS)
+
+$(PROG).elf  : $(LIBFREERTOS) $(ELF_OBJS) Makefile 
 	@echo Linking....
-	@$(LD) -o $@ $(LDFLAGS) $(OBJS) $(LIBS)
+	$(GCC) -o $@ $(LDFLAGS) $(ELF_OBJS) $(LIBS)
 	@$(OBJDUMP) -S $(PROG).elf > $(PROG).asm	
 	@echo Completed $@
 
+$(LIBFREERTOS)  : $(LIB_OBJS) Makefile 
+	@echo Linking....
+	$(AR) rcs $@ $(LIB_OBJS)
+	@echo Completed $@
+
 clean :
-	@rm -f $(OBJS)
-	@rm -f $(PROG).elf 
-	@rm -f $(PROG).map
-	@rm -f $(PROG).asm
+	@rm -f $(ELF_OBJS) $(LIB_OBJS) $(LIBFREERTOS)
+	@rm -f *.elf *.map *.asm *.o
 
 docs :
 	@doxygen
