@@ -7,3 +7,4 @@ FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio/build
 *.a
 *~
 *.asm
+.DS_Store

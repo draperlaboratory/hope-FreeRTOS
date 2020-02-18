@@ -5,7 +5,7 @@
 
 int __wrap_isatty(int fd)
 {
-  if (fd == STDOUT_FILENO || fd == STDERR_FILENO)
+  if (fd == STDIN_FILENO || fd == STDOUT_FILENO || fd == STDERR_FILENO)
     return 1;
 
   return 0;

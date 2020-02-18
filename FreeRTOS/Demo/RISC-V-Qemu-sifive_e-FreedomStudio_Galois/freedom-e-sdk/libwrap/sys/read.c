@@ -9,22 +9,65 @@
 #include "stub.h"
 #include "weak_under_alias.h"
 
+enum {
+  UART_RXBUF_SIZE = (1 << 3),
+  UART_RXBUF_MASK = (UART_RXBUF_SIZE - 1),
+};
+
+static volatile uint8_t rxbuf_head;
+static volatile uint8_t rxbuf_tail;
+static char rxbuf[UART_RXBUF_SIZE];
+
+static int uart_probe_rx()
+{
+  int32_t c;
+
+  c = UART0_REG(UART_REG_RXFIFO);
+
+  if(c >= 0) {
+    rxbuf[rxbuf_head] = (char)c;
+    rxbuf_head++;
+    rxbuf_head &= UART_RXBUF_MASK;
+    return 0;
+  }
+
+  return -1;
+}
+
+static int uart_get_char(char *ptr, int blocking)
+{
+  int busy;
+
+  do {
+    uart_probe_rx();
+    busy = (rxbuf_head == rxbuf_tail);
+  } while (blocking && busy);
+
+  *ptr = rxbuf[rxbuf_tail];
+  rxbuf_tail++;
+  rxbuf_tail &= UART_RXBUF_MASK;
+  return 0;
+}
+
+static ssize_t uart_read(char *ptr, size_t len, char terminator, int blocking) {
+  ssize_t i;
+  
+  for (i = 0; i < len; i++) {
+    if (uart_get_char(&ptr[i], blocking) != 0) {
+      break;
+    }
+
+    if (ptr[i] == terminator) {
+      break;
+    }
+  }
+  return i;
+}
+
 ssize_t __wrap_read(int fd, void* ptr, size_t len)
 {
-  uint8_t * current = (uint8_t *)ptr;
-  volatile uint32_t * uart_rx = (uint32_t *)(UART0_CTRL_ADDR + UART_REG_RXFIFO);
-  volatile uint8_t * uart_rx_cnt = (uint8_t *)(UART0_CTRL_ADDR + UART_REG_RXCTRL + 2);
-
-  ssize_t result = 0;
-
   if (isatty(fd)) {
-    for (current = (uint8_t *)ptr;
-        (current < ((uint8_t *)ptr) + len) && (*uart_rx_cnt > 0);
-        current ++) {
-      *current = *uart_rx;
-      result++;
-    }
-    return result;
+    return uart_read(ptr, len, '\r', 1);
   }
 
   return _stub(EBADF);
