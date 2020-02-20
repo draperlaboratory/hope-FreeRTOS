@@ -81,7 +81,7 @@
 
 #include "riscv_hal.h"
 
-#ifdef __riscv64
+#if __riscv_xlen == 64
 # define STORE    sd
 # define LOAD     ld
 # define REGBYTES 8
