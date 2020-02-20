@@ -33,6 +33,7 @@ ifeq ($(USE_CLANG),yes)
 	OBJDUMP	= $(TARGET)-objdump
 	AR		= llvm-ar
 	RANLIB	= llvm-ranlib
+	WERROR = 
 else
 	CC		= $(TARGET)-gcc
 	CPP		= $(TARGET)-g++
@@ -41,6 +42,7 @@ else
 	OBJDUMP	= $(TARGET)-objdump
 	AR		= $(TARGET)-ar
 	RANLIB	= $(TARGET)-ranlib
+	WERROR = -Werror
 endif
 
 COMPILER_FLAGS = -mcmodel=medany
@@ -57,7 +59,7 @@ FREERTOS_TCP_SOURCE_DIR = $(FREERTOS_PLUS_SOURCE_DIR)/FreeRTOS-Plus-TCP
 FREERTOS_PROTOCOLS_DIR = ./protocols
 
 WARNINGS = -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align -Wsign-compare \
-		-Waggregate-return -Wmissing-declarations -Wunused -Werror 
+		-Waggregate-return -Wmissing-declarations -Wunused $(WERROR) 
  
 C_WARNINGS = -Wbad-function-cast -Wmissing-prototypes -Wstrict-prototypes
 

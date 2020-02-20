@@ -24,7 +24,7 @@ do
 done
 
 # 64-bit test
-export XARCH=64
+export XLEN=64
 for use_clang in yes no
 do
     export USE_CLANG=$use_clang
