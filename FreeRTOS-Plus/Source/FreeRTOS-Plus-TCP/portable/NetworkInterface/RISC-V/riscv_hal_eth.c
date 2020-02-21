@@ -109,10 +109,10 @@ static TaskHandle_t prvEMACDeferredInterruptHandlerTaskHandle = NULL;
  */
 typedef uint8_t EthernetFrame[NUM_PACKETS * XAE_MAX_JUMBO_FRAME_SIZE] __attribute__ ((aligned(BD_ALIGNMENT)));
 // 0x80000000
-static uint8_t * TxFrameBufRef = (uint8_t *)0x80000000;
+static uint8_t * const TxFrameBufRef = (uint8_t *)0x80000000;
 //static EthernetFrame TxFrameBuf[TXBD_CNT] __attribute__ ((section(".uncached")));	/* Transmit buffers */
 // 0x80015fc0
-static uint8_t * RxFrameBufRef =(uint8_t *)0x80015fc0;
+static uint8_t * const RxFrameBufRef =(uint8_t *)(TxFrameBufRef + TXBD_CNT * sizeof(EthernetFrame));
 //static EthernetFrame RxFrameBuf[RXBD_CNT] __attribute__ ((section(".uncached")));	/* Receive buffers */
 
 /*
@@ -120,10 +120,10 @@ static uint8_t * RxFrameBufRef =(uint8_t *)0x80015fc0;
  */
 // 8002bf80
 //char RxBdSpace[RXBD_SPACE_BYTES] __attribute__ ((aligned(BD_ALIGNMENT))) __attribute__ ((section(".uncached")));
-char * RxBdSpaceRef = (char *) 0x8002bf80;
+char * const RxBdSpaceRef = (char *) (RxFrameBufRef + RXBD_CNT * sizeof(EthernetFrame));
 // 8002c200
 //char TxBdSpace[TXBD_SPACE_BYTES] __attribute__ ((aligned(BD_ALIGNMENT))) __attribute__ ((section(".uncached")));
-char * TxBdSpaceRef = (char *) 0x8002c200;
+char * const TxBdSpaceRef = (char *) (RxBdSpaceRef + RXBD_SPACE_BYTES);
 
 
 /*
