@@ -314,9 +314,8 @@ void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 
 		/* Examine the BD */
 		BdSts = XAxiDma_BdGetSts(BdPtr);
-		if ((BdSts & XAXIDMA_BD_STS_ALL_ERR_MASK) ||
-			(!(BdSts & XAXIDMA_BD_STS_COMPLETE_MASK))) {
-				AxiEthernetUtilErrorTrap("Rx Error");
+		if (BdSts & XAXIDMA_BD_STS_ALL_ERR_MASK) {
+			AxiEthernetUtilErrorTrap("Rx Error");
 		}
 		else {
 			xBytesReceived =

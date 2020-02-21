@@ -1312,6 +1312,12 @@ int XAxiDma_BdRingFromHw(XAxiDma_BdRing * RingPtr, int BdLimit,
 			BdPartialCount++;
 		}
 
+		if (RingPtr->Cyclic) {
+			BdSts = BdSts & ~XAXIDMA_BD_STS_COMPLETE_MASK;
+			XAxiDma_BdWrite(CurBdPtr, XAXIDMA_BD_STS_OFFSET, BdSts);
+			XAXIDMA_CACHE_FLUSH(CurBdPtr);
+		}
+
 		/* Reached the end of the work group */
 		if (CurBdPtr == RingPtr->HwTail) {
 			break;
