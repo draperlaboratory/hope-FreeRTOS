@@ -288,7 +288,7 @@ void DmaFreeBDTask( void *pvParameters ) {
 void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 	(void) pvParameters;
 	NetworkBufferDescriptor_t *pxBufferDescriptor;
-	size_t xBytesReceived;
+	size_t xBytesReceived = 0;
 	uint8_t* xRxBuffer;
 	/* Used to indicate that xSendEventStructToIPTask() is being called because
 	of an Ethernet receive event. */
