@@ -266,12 +266,16 @@ void DmaFreeBDTask( void *pvParameters ) {
 	int BdLimit = 1;
 
 	for (;;) {
-		/* wait for notification */
-		ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
-		
 		taskENTER_CRITICAL();
 		int BdReturned = XAxiDma_BdRingFromHw(TxRingPtr, BdLimit, &BdPtr);
 		taskEXIT_CRITICAL();
+
+		if (BdReturned == 0) {
+			/* wait for notification */
+			ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+			continue;
+		}
+
 		configASSERT(BdReturned == BdLimit);
 
 		taskENTER_CRITICAL();
@@ -299,17 +303,19 @@ void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 	 uint32_t BdSts;
 
 	for(;;) {
+		taskENTER_CRITICAL();
+		int BdReturned = XAxiDma_BdRingFromHw(RxRingPtr, BdLimit, &BdPtr);
+		taskEXIT_CRITICAL();
+
 		/* Wait for the Ethernet MAC interrupt to indicate that another packet
         has been received.  The task notification is used in a similar way to a
         counting semaphore to count Rx events, but is a lot more efficient than
         a semaphore. */
-        ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+		if (BdReturned == 0) {
+			ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+			continue;
+		}
 
-		taskENTER_CRITICAL();
-		int BdReturned = XAxiDma_BdRingFromHw(RxRingPtr, BdLimit, &BdPtr);
-		taskEXIT_CRITICAL();
-		// TODO: optionally `continue` instead of throwing an exception, depending on how
-		// often this happens
 		configASSERT(BdReturned == BdLimit);
 
 		/* Examine the BD */
