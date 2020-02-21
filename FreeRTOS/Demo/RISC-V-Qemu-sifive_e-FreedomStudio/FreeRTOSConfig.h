@@ -104,7 +104,7 @@
 #define configMAX_PRIORITIES			( 7 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 70 )
 #if __riscv_xlen == 64
-	#define configTOTAL_HEAP_SIZE			( ( size_t ) 32768 )
+	#define configTOTAL_HEAP_SIZE			( ( size_t ) 0x10000 )
 #elif __riscv_xlen == 32
 	#define configTOTAL_HEAP_SIZE			( ( size_t ) 0x10000 )
 #else
