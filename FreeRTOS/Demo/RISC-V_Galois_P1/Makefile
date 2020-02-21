@@ -326,7 +326,14 @@ else
 ifeq ($(PROG),main_testgen)
 	include $(INC_TESTGEN)/testgenEnvironment.mk
 else
+ifeq ($(PROG),main_netboot)
+	CFLAGS += -DmainDEMO_TYPE=0xB002
+	PORT_ASM += demo/netboot.S
+	INCLUDES += $(FREERTOS_IP_INCLUDE)
+	FREERTOS_SRC += $(FREERTOS_IP_SRC)
+else
 $(error unknown demo: $(PROG))
+endif # main_netboot
 endif # main_testgen
 endif # main_uart_malware
 endif # main_rtc
@@ -342,14 +349,20 @@ endif # main_blinky
 
 ARFLAGS=crsv
 
-CFLAGS += -O0 -g3 $(ARCH) $(ABI) $(COMPILER_FLAGS) $(INCLUDES)
+ifeq ($(PROG),main_netboot)
+	OPT = -O2
+else
+	OPT = -O0
+endif
+
+CFLAGS += $(OPT) -g3 $(ARCH) $(ABI) $(COMPILER_FLAGS) $(INCLUDES)
 
 # If configCPU_CLOCK_HZ is not empty, pass it as a definition
 ifneq ($(configCPU_CLOCK_HZ),)
 CFLAGS += -DconfigCPU_CLOCK_HZ=$(configCPU_CLOCK_HZ)
 endif
 # Disable warnings for C++ for now
-CPPFLAGS += -O0 -g3 $(ARCH) $(ABI) $(COMPILER_FLAGS) $(INCLUDES)
+CPPFLAGS += $(OPT) -g3 $(ARCH) $(ABI) $(COMPILER_FLAGS) $(INCLUDES)
 
 #
 # Define all object files.
