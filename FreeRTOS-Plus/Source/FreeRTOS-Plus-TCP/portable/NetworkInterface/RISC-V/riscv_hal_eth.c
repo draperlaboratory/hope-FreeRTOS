@@ -615,6 +615,16 @@ int PhySetup(XAxiEthernet *AxiEthernetInstancePtr, u16 AxiEthernetDeviceId)
 }
 
 
+/**
+ * Uninitialize Ethernet
+ */
+void PhyReset(XAxiEthernet *AxiEthernetInstancePtr)
+{
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, XPAR_AXIETHERNET_0_PHYADDR,
+			      PHY_R0_CTRL_REG, PHY_R0_RESET);
+}
+
+
 void TxCallBack(XAxiDma_BdRing *TxRingPtr)
 {
 	(void) TxRingPtr;
@@ -828,6 +838,10 @@ void AxiEthernetDisableIntrSystem(plic_instance_t *IntcInstancePtr,
 					u16 DmaRxIntrId,
 					u16 DmaTxIntrId)
 {
+	/* Stop the tasks */
+	vTaskSuspend(DmaFreeBDTaskHandle);
+	vTaskSuspend(prvEMACDeferredInterruptHandlerTaskHandle);
+
 	/*
 	 * Disconnect the interrupts for the DMA TX and RX channels
 	 */
@@ -838,4 +852,8 @@ void AxiEthernetDisableIntrSystem(plic_instance_t *IntcInstancePtr,
 	 * Disconnect and disable the interrupt for the Axi Ethernet device
 	 */
     PLIC_unregister_interrupt_handler(IntcInstancePtr, AxiEthernetIntrId);
+
+	/* Now the callbacks won't be called we can delete the tasks */
+	vTaskDelete(DmaFreeBDTaskHandle);
+	vTaskDelete(prvEMACDeferredInterruptHandlerTaskHandle);
 }

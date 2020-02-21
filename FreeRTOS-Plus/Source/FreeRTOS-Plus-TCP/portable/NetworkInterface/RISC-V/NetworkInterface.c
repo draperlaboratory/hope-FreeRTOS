@@ -73,6 +73,18 @@ BaseType_t xNetworkInterfaceInitialise( void )
 }
 /*-----------------------------------------------------------*/
 
+BaseType_t xNetworkInterfaceDestroy( void )
+{
+	FreeRTOS_debug_printf( ("xNetworkInterfaceDestroy\r\n") );
+	XAxiEthernet_IntDisable(&AxiEthernetInstance, XAE_INT_RECV_ERROR_MASK);
+	AxiEthernetDisableIntrSystem(&Plic, PLIC_SOURCE_ETH, XPAR_AXIETHERNET_0_DMA_RX_INTR, XPAR_AXIETHERNET_0_DMA_TX_INTR);
+	XAxiDma_Reset(&AxiDmaInstance);
+	XAxiEthernet_Reset(&AxiEthernetInstance);
+	PhyReset(&AxiEthernetInstance);
+	return pdPASS;
+}
+/*-----------------------------------------------------------*/
+
 BaseType_t xNetworkInterfaceOutput( NetworkBufferDescriptor_t * const pxNetworkBuffer, BaseType_t xReleaseAfterSend )
 {
 	/* get BD ring descriptor */

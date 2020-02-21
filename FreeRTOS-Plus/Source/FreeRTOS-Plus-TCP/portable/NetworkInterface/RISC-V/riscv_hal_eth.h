@@ -47,6 +47,7 @@ void AxiEthernetDisableIntrSystem(plic_instance_t *IntcInstancePtr,
 				   u16 DmaRxIntrId, u16 DmaTxIntrId);
 
 int PhySetup(XAxiEthernet *AxiEthernetInstancePtr, u16 AxiEthernetDeviceId);
+void PhyReset(XAxiEthernet *AxiEthernetInstancePtr);
 int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId);
 
 int PhyLinkStatus(XAxiEthernet *AxiEthernetInstancePtr);
