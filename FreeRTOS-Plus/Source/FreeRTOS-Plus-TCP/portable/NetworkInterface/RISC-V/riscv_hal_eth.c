@@ -712,9 +712,6 @@ void TxIntrHandler(XAxiDma_BdRing *TxRingPtr)
 
 void RxCallBack(XAxiDma_BdRing *RxRingPtr)
 {
-	/*
-	 * Disable the receive related interrupts
-	 */
 	(void) RxRingPtr;
 	configASSERT( prvEMACDeferredInterruptHandlerTaskHandle != NULL);
 
