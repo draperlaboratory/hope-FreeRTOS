@@ -13,8 +13,8 @@ extern XAxiDma AxiDmaInstance;
 extern volatile int FramesTx;
 extern volatile int FramesRx;
 
-#define RXBD_CNT		10	/* Number of RxBDs to use */
-#define TXBD_CNT		10	/* Number of TxBDs to use */
+#define RXBD_CNT		64	/* Number of RxBDs to use */
+#define TXBD_CNT		64	/* Number of TxBDs to use */
 #define BD_ALIGNMENT		XAXIDMA_BD_MINIMUM_ALIGNMENT/* Byte alignment of
 							     * BDs
 							     */
@@ -47,6 +47,7 @@ void AxiEthernetDisableIntrSystem(plic_instance_t *IntcInstancePtr,
 				   u16 DmaRxIntrId, u16 DmaTxIntrId);
 
 int PhySetup(XAxiEthernet *AxiEthernetInstancePtr, u16 AxiEthernetDeviceId);
+void PhyReset(XAxiEthernet *AxiEthernetInstancePtr);
 int DmaSetup(XAxiDma *DmaInstancePtr, u16 AxiDmaDeviceId);
 
 int PhyLinkStatus(XAxiEthernet *AxiEthernetInstancePtr);

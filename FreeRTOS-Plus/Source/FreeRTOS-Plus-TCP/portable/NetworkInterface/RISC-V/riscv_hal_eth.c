@@ -109,10 +109,10 @@ static TaskHandle_t prvEMACDeferredInterruptHandlerTaskHandle = NULL;
  */
 typedef uint8_t EthernetFrame[NUM_PACKETS * XAE_MAX_JUMBO_FRAME_SIZE] __attribute__ ((aligned(BD_ALIGNMENT)));
 // 0x80000000
-static uint8_t * TxFrameBufRef = (uint8_t *)0x80000000;
+static uint8_t * const TxFrameBufRef = (uint8_t *)0x80000000;
 //static EthernetFrame TxFrameBuf[TXBD_CNT] __attribute__ ((section(".uncached")));	/* Transmit buffers */
 // 0x80015fc0
-static uint8_t * RxFrameBufRef =(uint8_t *)0x80015fc0;
+static uint8_t * const RxFrameBufRef =(uint8_t *)(TxFrameBufRef + TXBD_CNT * sizeof(EthernetFrame));
 //static EthernetFrame RxFrameBuf[RXBD_CNT] __attribute__ ((section(".uncached")));	/* Receive buffers */
 
 /*
@@ -120,10 +120,10 @@ static uint8_t * RxFrameBufRef =(uint8_t *)0x80015fc0;
  */
 // 8002bf80
 //char RxBdSpace[RXBD_SPACE_BYTES] __attribute__ ((aligned(BD_ALIGNMENT))) __attribute__ ((section(".uncached")));
-char * RxBdSpaceRef = (char *) 0x8002bf80;
+char * const RxBdSpaceRef = (char *) (RxFrameBufRef + RXBD_CNT * sizeof(EthernetFrame));
 // 8002c200
 //char TxBdSpace[TXBD_SPACE_BYTES] __attribute__ ((aligned(BD_ALIGNMENT))) __attribute__ ((section(".uncached")));
-char * TxBdSpaceRef = (char *) 0x8002c200;
+char * const TxBdSpaceRef = (char *) (RxBdSpaceRef + RXBD_SPACE_BYTES);
 
 
 /*
@@ -266,12 +266,16 @@ void DmaFreeBDTask( void *pvParameters ) {
 	int BdLimit = 1;
 
 	for (;;) {
-		/* wait for notification */
-		ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
-		
 		taskENTER_CRITICAL();
 		int BdReturned = XAxiDma_BdRingFromHw(TxRingPtr, BdLimit, &BdPtr);
 		taskEXIT_CRITICAL();
+
+		if (BdReturned == 0) {
+			/* wait for notification */
+			ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+			continue;
+		}
+
 		configASSERT(BdReturned == BdLimit);
 
 		taskENTER_CRITICAL();
@@ -288,7 +292,7 @@ void DmaFreeBDTask( void *pvParameters ) {
 void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 	(void) pvParameters;
 	NetworkBufferDescriptor_t *pxBufferDescriptor;
-	size_t xBytesReceived;
+	size_t xBytesReceived = 0;
 	uint8_t* xRxBuffer;
 	/* Used to indicate that xSendEventStructToIPTask() is being called because
 	of an Ethernet receive event. */
@@ -299,24 +303,25 @@ void prvEMACDeferredInterruptHandlerTask( void *pvParameters ) {
 	 uint32_t BdSts;
 
 	for(;;) {
+		taskENTER_CRITICAL();
+		int BdReturned = XAxiDma_BdRingFromHw(RxRingPtr, BdLimit, &BdPtr);
+		taskEXIT_CRITICAL();
+
 		/* Wait for the Ethernet MAC interrupt to indicate that another packet
         has been received.  The task notification is used in a similar way to a
         counting semaphore to count Rx events, but is a lot more efficient than
         a semaphore. */
-        ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+		if (BdReturned == 0) {
+			ulTaskNotifyTake( pdFALSE, portMAX_DELAY );
+			continue;
+		}
 
-		taskENTER_CRITICAL();
-		int BdReturned = XAxiDma_BdRingFromHw(RxRingPtr, BdLimit, &BdPtr);
-		taskEXIT_CRITICAL();
-		// TODO: optionally `continue` instead of throwing an exception, depending on how
-		// often this happens
 		configASSERT(BdReturned == BdLimit);
 
 		/* Examine the BD */
 		BdSts = XAxiDma_BdGetSts(BdPtr);
-		if ((BdSts & XAXIDMA_BD_STS_ALL_ERR_MASK) ||
-			(!(BdSts & XAXIDMA_BD_STS_COMPLETE_MASK))) {
-				AxiEthernetUtilErrorTrap("Rx Error");
+		if (BdSts & XAXIDMA_BD_STS_ALL_ERR_MASK) {
+			AxiEthernetUtilErrorTrap("Rx Error");
 		}
 		else {
 			xBytesReceived =
@@ -610,6 +615,16 @@ int PhySetup(XAxiEthernet *AxiEthernetInstancePtr, u16 AxiEthernetDeviceId)
 }
 
 
+/**
+ * Uninitialize Ethernet
+ */
+void PhyReset(XAxiEthernet *AxiEthernetInstancePtr)
+{
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, XPAR_AXIETHERNET_0_PHYADDR,
+			      PHY_R0_CTRL_REG, PHY_R0_RESET);
+}
+
+
 void TxCallBack(XAxiDma_BdRing *TxRingPtr)
 {
 	(void) TxRingPtr;
@@ -697,9 +712,6 @@ void TxIntrHandler(XAxiDma_BdRing *TxRingPtr)
 
 void RxCallBack(XAxiDma_BdRing *RxRingPtr)
 {
-	/*
-	 * Disable the receive related interrupts
-	 */
 	(void) RxRingPtr;
 	configASSERT( prvEMACDeferredInterruptHandlerTaskHandle != NULL);
 
@@ -823,6 +835,10 @@ void AxiEthernetDisableIntrSystem(plic_instance_t *IntcInstancePtr,
 					u16 DmaRxIntrId,
 					u16 DmaTxIntrId)
 {
+	/* Stop the tasks */
+	vTaskSuspend(DmaFreeBDTaskHandle);
+	vTaskSuspend(prvEMACDeferredInterruptHandlerTaskHandle);
+
 	/*
 	 * Disconnect the interrupts for the DMA TX and RX channels
 	 */
@@ -833,4 +849,8 @@ void AxiEthernetDisableIntrSystem(plic_instance_t *IntcInstancePtr,
 	 * Disconnect and disable the interrupt for the Axi Ethernet device
 	 */
     PLIC_unregister_interrupt_handler(IntcInstancePtr, AxiEthernetIntrId);
+
+	/* Now the callbacks won't be called we can delete the tasks */
+	vTaskDelete(DmaFreeBDTaskHandle);
+	vTaskDelete(prvEMACDeferredInterruptHandlerTaskHandle);
 }
