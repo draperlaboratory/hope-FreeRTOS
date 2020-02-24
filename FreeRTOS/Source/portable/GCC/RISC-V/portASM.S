@@ -122,80 +122,80 @@ at the top of this file. */
 
     // store a0 and x5 for use
     addi sp, sp, -2 * portWORD_SIZE
-    sw a0, 0(sp)
-    sw x5, portWORD_SIZE(sp)
+    store_x a0, 0(sp)
+    store_x x5, portWORD_SIZE(sp)
 
     la a0, global_exception_mc
 
-    sw x1, 1 * portWORD_SIZE( a0 )
+    store_x x1, 1 * portWORD_SIZE( a0 )
 
     // x2 is sp, get regular sp back to save
     addi sp, sp, 2 * portWORD_SIZE
-    sw x2, 2 * portWORD_SIZE( a0 )
+    store_x x2, 2 * portWORD_SIZE( a0 )
     addi sp, sp, -2 * portWORD_SIZE
 
-    sw x3, 3 * portWORD_SIZE( a0 )
-    sw x4, 4 * portWORD_SIZE( a0 )
-    sw x5, 5 * portWORD_SIZE( a0 )
-    sw x6, 6 * portWORD_SIZE( a0 )
-    sw x7, 7 * portWORD_SIZE( a0 )
-    sw x8, 8 * portWORD_SIZE( a0 )
-    sw x9, 9 * portWORD_SIZE( a0 )
+    store_x x3, 3 * portWORD_SIZE( a0 )
+    store_x x4, 4 * portWORD_SIZE( a0 )
+    store_x x5, 5 * portWORD_SIZE( a0 )
+    store_x x6, 6 * portWORD_SIZE( a0 )
+    store_x x7, 7 * portWORD_SIZE( a0 )
+    store_x x8, 8 * portWORD_SIZE( a0 )
+    store_x x9, 9 * portWORD_SIZE( a0 )
 
     // instead of sw x10, 10 * portWORD_SIZE( a0 )
-    lw x5, 0(sp)
-    sw x5, 10 * portWORD_SIZE( a0 )
+    load_x x5, 0(sp)
+    store_x x5, 10 * portWORD_SIZE( a0 )
 
-    sw x11, 11 * portWORD_SIZE( a0 )
-    sw x12, 12 * portWORD_SIZE( a0 )
-    sw x13, 13 * portWORD_SIZE( a0 )
-    sw x14, 14 * portWORD_SIZE( a0 )
-    sw x15, 15 * portWORD_SIZE( a0 )
-    sw x16, 16 * portWORD_SIZE( a0 )
-    sw x17, 17 * portWORD_SIZE( a0 )
-    sw x18, 18 * portWORD_SIZE( a0 )
-    sw x19, 19 * portWORD_SIZE( a0 )
-    sw x20, 20 * portWORD_SIZE( a0 )
-    sw x21, 21 * portWORD_SIZE( a0 )
-    sw x22, 22 * portWORD_SIZE( a0 )
-    sw x23, 23 * portWORD_SIZE( a0 )
-    sw x24, 24 * portWORD_SIZE( a0 )
-    sw x25, 25 * portWORD_SIZE( a0 )
-    sw x26, 26 * portWORD_SIZE( a0 )
-    sw x27, 27 * portWORD_SIZE( a0 )
-    sw x28, 28 * portWORD_SIZE( a0 )
-    sw x29, 29 * portWORD_SIZE( a0 )
-    sw x30, 30 * portWORD_SIZE( a0 )
-    sw x31, 31 * portWORD_SIZE( a0 )
+    store_x x11, 11 * portWORD_SIZE( a0 )
+    store_x x12, 12 * portWORD_SIZE( a0 )
+    store_x x13, 13 * portWORD_SIZE( a0 )
+    store_x x14, 14 * portWORD_SIZE( a0 )
+    store_x x15, 15 * portWORD_SIZE( a0 )
+    store_x x16, 16 * portWORD_SIZE( a0 )
+    store_x x17, 17 * portWORD_SIZE( a0 )
+    store_x x18, 18 * portWORD_SIZE( a0 )
+    store_x x19, 19 * portWORD_SIZE( a0 )
+    store_x x20, 20 * portWORD_SIZE( a0 )
+    store_x x21, 21 * portWORD_SIZE( a0 )
+    store_x x22, 22 * portWORD_SIZE( a0 )
+    store_x x23, 23 * portWORD_SIZE( a0 )
+    store_x x24, 24 * portWORD_SIZE( a0 )
+    store_x x25, 25 * portWORD_SIZE( a0 )
+    store_x x26, 26 * portWORD_SIZE( a0 )
+    store_x x27, 27 * portWORD_SIZE( a0 )
+    store_x x28, 28 * portWORD_SIZE( a0 )
+    store_x x29, 29 * portWORD_SIZE( a0 )
+    store_x x30, 30 * portWORD_SIZE( a0 )
+    store_x x31, 31 * portWORD_SIZE( a0 )
 
     // save CSRs
     csrr x5, mstatus
-    sw x5, MC_MSTATUS_OFF * portWORD_SIZE( a0 )
+    store_x x5, MC_MSTATUS_OFF * portWORD_SIZE( a0 )
 
     csrr x5, mtvec
-    sw x5, MC_MTVEC_OFF * portWORD_SIZE( a0 )
+    store_x x5, MC_MTVEC_OFF * portWORD_SIZE( a0 )
 
     csrr x5, mip
-    sw x5, MC_MIP_OFF * portWORD_SIZE( a0 )
+    store_x x5, MC_MIP_OFF * portWORD_SIZE( a0 )
 
     csrr x5, mie
-    sw x5, MC_MIE_OFF * portWORD_SIZE( a0 )
+    store_x x5, MC_MIE_OFF * portWORD_SIZE( a0 )
 
     csrr x5, mepc
-    sw x5, MC_MEPC_OFF * portWORD_SIZE( a0 )
+    store_x x5, MC_MEPC_OFF * portWORD_SIZE( a0 )
 
     csrr x5, mcause
-    sw x5, MC_MCAUSE_OFF * portWORD_SIZE( a0 )
+    store_x x5, MC_MCAUSE_OFF * portWORD_SIZE( a0 )
 
     csrr x5, mtval
-    sw x5, MC_MTVAL_OFF * portWORD_SIZE( a0 )
+    store_x x5, MC_MTVAL_OFF * portWORD_SIZE( a0 )
 
     csrr x5, misa
-    sw x5, MC_MISA_OFF * portWORD_SIZE( a0 )
+    store_x x5, MC_MISA_OFF * portWORD_SIZE( a0 )
 
     /* restore clobbered a0 and x5 */
-    lw a0, 0(sp)
-    lw x5, portWORD_SIZE(sp)       
+    load_x a0, 0(sp)
+    load_x x5, portWORD_SIZE(sp)       
     addi sp, sp, 2 * portWORD_SIZE
   
 .endm
@@ -208,8 +208,8 @@ freertos_risc_v_trap_handler:
     /* check for exception */
     /* save scratch regs */
     addi sp, sp, -2 * portWORD_SIZE
-    sw t0, 0(sp)
-    sw t1, portWORD_SIZE(sp)
+    store_x t0, 0(sp)
+    store_x t1, portWORD_SIZE(sp)
 
     csrr t1, mcause
 
@@ -245,8 +245,8 @@ freertos_risc_v_trap_handler:
 
 no_exception: 
     /* restore clobbered a0 and x5 */
-    lw t0, 0(sp)
-    lw t1, portWORD_SIZE(sp)       
+    load_x t0, 0(sp)
+    load_x t1, portWORD_SIZE(sp)       
     addi sp, sp, 2 * portWORD_SIZE
 
     /* beginning of regular trap handler. */
@@ -351,7 +351,7 @@ handle_asynchronous:
         test_if_machine_software_interrupt:
 	        addi t1, t0, 3                         /* 0x80000003 == machine software interrupt.*/
 	        bne a0, t1, as_yet_unhandled
-	        lw sp, xISRStackTop
+	        load_x sp, xISRStackTop
 	        jal portasmMSI_HANDLER
 	        j processed_source
 
@@ -375,8 +375,8 @@ test_if_environment_call:
 
 is_exception:
     /* restore clobbered a0 and x5 */
-    lw t0, 0(sp)
-    lw t1, portWORD_SIZE(sp)
+    load_x t0, 0(sp)
+    load_x t1, portWORD_SIZE(sp)
     addi sp, sp, 2 * portWORD_SIZE
 
     // save cpu context for exception printing
