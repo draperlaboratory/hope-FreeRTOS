@@ -124,7 +124,7 @@ netboot_load_trampoline:
 
 	.balign 4
 netboot_load_trampoline_trap:
-1:	j 1b /* Spin rather than ebreak to avoid clobbering mcause/mepcc */
+1:	j 1b /* Spin rather than ebreak to avoid clobbering mcause/mepc */
 
 	.global netboot_load_trampoline_end
 	.type netboot_load_trampoline_end, @object
