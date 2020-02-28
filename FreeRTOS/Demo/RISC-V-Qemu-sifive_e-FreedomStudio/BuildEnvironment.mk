@@ -35,7 +35,7 @@ ISP_ASMFLAGS += -ffunction-sections -fdata-sections
 ISP_ASMFLAGS += -x assembler-with-cpp
 
 LIBWRAP_SYMS := open lseek read write fstat stat close link unlink \
-	execve fork getpid kill wait isatty times sbrk _exit puts
+	execve fork getpid kill wait isatty times sbrk _exit puts printf
 
 # Linker arguments __________________________________________
 ISP_LDFLAGS := -Xlinker --defsym=__stack_size=1K
