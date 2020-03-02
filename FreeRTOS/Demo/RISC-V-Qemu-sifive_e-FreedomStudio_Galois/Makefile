@@ -41,6 +41,7 @@ SDK_SRC := \
 	$(SDK_DIR)/libwrap/sys/openat.c \
 	$(SDK_DIR)/libwrap/sys/puts.c \
 	$(SDK_DIR)/libwrap/sys/printf.c \
+	$(SDK_DIR)/libwrap/sys/printf.c \
 	$(SDK_DIR)/libwrap/sys/read.c \
 	$(SDK_DIR)/libwrap/sys/sbrk.c \
 	$(SDK_DIR)/libwrap/sys/stat.c \
