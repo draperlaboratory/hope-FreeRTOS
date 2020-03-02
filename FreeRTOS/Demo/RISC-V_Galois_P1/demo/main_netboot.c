@@ -215,7 +215,7 @@ static void prvShellCommandBoot(int argc, char **argv)
 			return;
 
 		bufs[i - argi - 1] = staging;
-		staging += (size + STAGING_BUFS_ALIGN - 1) % STAGING_BUFS_ALIGN;
+		staging += size + (-size % STAGING_BUFS_ALIGN);
 	}
 
 	printf("Booting\r\n");
