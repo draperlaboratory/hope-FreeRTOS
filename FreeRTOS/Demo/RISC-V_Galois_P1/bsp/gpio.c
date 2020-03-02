@@ -1,7 +1,9 @@
-#if !BSP_USE_GPIO
-#include "gpio.h"
-#include "xgpio.h"
 #include "bsp.h"
+#include "gpio.h"
+
+#if BSP_USE_GPIO
+
+#include "xgpio.h"
 
 #define GPIO1_MAX 7
 #define LED_MAX 7

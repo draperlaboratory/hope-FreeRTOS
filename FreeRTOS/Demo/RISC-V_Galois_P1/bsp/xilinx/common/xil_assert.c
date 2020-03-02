@@ -49,6 +49,10 @@
 #include "xil_assert.h"
 #include <stdio.h>
 
+#if AXI_DEBUG_PRINT
+#pragma message "AXI_DEBUG_PRINT defined"
+#endif
+
 /************************** Constant Definitions *****************************/
 
 /**************************** Type Definitions *******************************/
@@ -82,7 +86,11 @@ static Xil_AssertCallback Xil_AssertCallbackRoutine = CustomCallback;
 
 
 static void CustomCallback(const char8 *File, s32 Line) {
-	printf("Xil assert failed! %s: %li\r\n", File, Line);
+	#if defined(__clang__)
+	printf("Xil assert failed! %s: %i\r\n", File, Line);
+	#else
+	printf("Xil assert failed! %s: %i\r\n", File, (int)Line);
+	#endif
 }
 
 /*****************************************************************************/

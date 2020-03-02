@@ -73,8 +73,8 @@ void main_gpio(void)
 /*-----------------------------------------------------------*/
 
 #define GPIO_INPUTS 4
-#define GPIO_IN_4 4
-#define GPIO_IN_5 5
+#define GPIO_IN_4 0
+#define GPIO_IN_5 2
 #define GPIO_IN_6 6
 #define GPIO_IN_7 7
 void vTestGPIO_input(void *pvParameters)
@@ -110,10 +110,10 @@ void vTestGPIO_input(void *pvParameters)
     }
 }
 
-#define GPIO_OUT_0 0
-#define GPIO_OUT_1 1
-#define GPIO_OUT_2 2
-#define GPIO_OUT_3 3
+#define GPIO_OUT_0 1
+#define GPIO_OUT_1 3
+#define GPIO_OUT_2 4
+#define GPIO_OUT_3 5
 void vTestGPIO_output(void *pvParameters)
 {
     (void)pvParameters;
@@ -144,16 +144,16 @@ void vTestGPIO_output(void *pvParameters)
         gpio_write(GPIO_OUT_3);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
 
-        gpio_write(GPIO_OUT_0);
+        gpio_clear(GPIO_OUT_0);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
 
-        gpio_write(GPIO_OUT_1);
+        gpio_clear(GPIO_OUT_1);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
 
-        gpio_write(GPIO_OUT_2);
+        gpio_clear(GPIO_OUT_2);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
 
-        gpio_write(GPIO_OUT_3);
+        gpio_clear(GPIO_OUT_3);
         vTaskDelay(pdMS_TO_TICKS(MAIN_GPIO_DELAY_MS));
     }
 }

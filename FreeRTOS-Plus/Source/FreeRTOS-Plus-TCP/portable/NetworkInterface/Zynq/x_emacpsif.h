@@ -31,7 +31,10 @@ extern "C" {
 #include "xil_assert.h"
 #include "xil_io.h"
 #include "xil_exception.h"
-#include "xil_stubs.h"
+#include "xpseudo_asm.h"
+#include "xil_cache.h"
+#include "xuartps.h"
+#include "xscugic.h"
 #include "xemacps.h"		/* defines XEmacPs API */
 
 //#include "netif/xpqueue.h"

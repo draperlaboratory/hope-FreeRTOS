@@ -484,7 +484,7 @@ int XAxiEthernet_GetSgmiiStatus(XAxiEthernet *InstancePtr, u16 *SpeedPtr)
 	Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 	Xil_AssertNonvoid(SpeedPtr != NULL);
 
-	printf("XAxiEthernet_GetSgmiiStatus\r\n");
+	xaxi_debug_printf("XAxiEthernet_GetSgmiiStatus\r\n");
 
 	/* Make sure PHY is SGMII */
 	PhyType = XAxiEthernet_GetPhysicalInterface(InstancePtr);
@@ -516,7 +516,7 @@ int XAxiEthernet_GetSgmiiStatus(XAxiEthernet *InstancePtr, u16 *SpeedPtr)
 		*SpeedPtr = 0;
 	}
 
-	printf(
+	xaxi_debug_printf(
 		   "XAxiEthernet_GetSgmiiStatus: returning SUCCESS\r\n");
 	return (XST_SUCCESS);
 }

@@ -1,8 +1,11 @@
 # Ignore Build Directory
 FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio/build
+FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio_Galois/build
 # build objects
 *.o
 *.d
 *.elf
 *.a
 *~
+*.asm
+.DS_Store

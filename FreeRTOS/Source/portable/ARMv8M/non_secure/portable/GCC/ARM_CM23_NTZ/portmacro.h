@@ -97,7 +97,11 @@ typedef unsigned long										UBaseType_t;
 	#define portFORCE_INLINE								inline __attribute__(( always_inline ))
 #endif
 #define portHAS_STACK_OVERFLOW_CHECKING						1
+<<<<<<< HEAD:FreeRTOS/Source/portable/ARMv8M/non_secure/portable/IAR/ARM_CM23/portmacro.h
+#define portDONT_DISCARD									__root
+=======
 #define portDONT_DISCARD									__attribute__(( used ))
+>>>>>>> galois_develop:FreeRTOS/Source/portable/ARMv8M/non_secure/portable/GCC/ARM_CM23_NTZ/portmacro.h
 /*-----------------------------------------------------------*/
 
 /**

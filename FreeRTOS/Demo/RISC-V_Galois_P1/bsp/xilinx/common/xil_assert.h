@@ -82,6 +82,13 @@ typedef void (*Xil_AssertCallback) (const char8 *File, s32 Line);
 
 /***************** Macros (Inline Functions) Definitions *********************/
 
+#if AXI_DEBUG_PRINT
+#define xaxi_debug_printf printf
+#else
+#define xaxi_debug_printf(...)
+#endif /* AXI_ETHERNET_DEBUG_PRINT */
+
+
 #ifndef NDEBUG
 
 /*****************************************************************************/

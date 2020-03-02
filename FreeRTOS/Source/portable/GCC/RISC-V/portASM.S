@@ -72,8 +72,17 @@
 
 /* Check the freertos_risc_v_chip_specific_extensions.h and/or command line
 definitions. */
-#ifndef portasmHAS_CLINT
-	#error freertos_risc_v_chip_specific_extensions.h must define portasmHAS_CLINT to either 1 (CLINT present) or 0 (clint not present).
+#if defined( portasmHAS_CLINT ) && defined( portasmHAS_MTIME )
+	#error The portasmHAS_CLINT constant has been depracted.  Please replace it with portasmHAS_CLINT.  portasmHAS_CLINT and portasmHAS_MTIME cannot both be defined at once.
+#endif
+
+#ifdef portasmHAS_CLINT
+	#warning The portasmHAS_CLINT constant has been depracted.  Please replace it with portasmHAS_CLINT.  For now portasmHAS_MTIME is derived from portasmHAS_CLINT.
+	#define portasmHAS_MTIME portasmHAS_CLINT
+#endif
+
+#ifndef portasmHAS_MTIME
+	#error freertos_risc_v_chip_specific_extensions.h must define portasmHAS_MTIME to either 1 (MTIME clock present) or 0 (MTIME clock not present).
 #endif
 
 #ifndef portasmHANDLE_INTERRUPT
@@ -107,11 +116,13 @@ at the top of this file. */
 .extern pxCurrentTCB
 .extern ulPortTrapHandler
 .extern vTaskSwitchContext
+.extern xTaskIncrementTick
 .extern Timer_IRQHandler
 .extern pullMachineTimerCompareRegister
 .extern pullNextTime
 .extern uxTimerIncrementsForOneTick /* size_t type so 32-bit on 32-bit core and 64-bits on 64-bit core. */
 .extern xISRStackTop
+.extern portasmHANDLE_INTERRUPT
 
 .extern global_exception_mc
 
@@ -202,7 +213,7 @@ at the top of this file. */
 
 .text
 .align 8
-.global freertos_risc_v_trap_handler
+
 freertos_risc_v_trap_handler:
 
     /* check for exception */
@@ -298,7 +309,7 @@ test_if_asynchronous:
 
 handle_asynchronous:
 
-#if( portasmHAS_CLINT != 0 )
+#if( portasmHAS_MTIME != 0 )
 
 	test_if_mtimer:						/* If there is a CLINT then the mtimer is used to generate the tick interrupt. */
 
@@ -314,10 +325,12 @@ handle_asynchronous:
 		#if( __riscv_xlen == 32 )
 
 			/* Update the 64-bit mtimer compare match value in two 32-bit writes. */
+			li t4, -1
 			lw t2, 0(t1)				/* Load the low word of ullNextTime into t2. */
 			lw t3, 4(t1)				/* Load the high word of ullNextTime into t3. */
+			sw t4, 0(t0)				/* Low word no smaller than old value to start with - will be overwritten below. */
+			sw t3, 4(t0)				/* Store high word of ullNextTime into compare register.  No smaller than new value. */
 			sw t2, 0(t0)				/* Store low word of ullNextTime into compare register. */
-			sw t3, 4(t0)				/* Store high word of ullNextTime into compare register. */
 			lw t0, uxTimerIncrementsForOneTick	/* Load the value of ullTimerIncrementForOneTick into t0 (could this be optimized by storing in an array next to pullNextTime?). */
 			add t4, t0, t2				/* Add the low word of ullNextTime to the timer increments for one tick (assumes timer increment for one tick fits in 32-bits). */
 			sltu t5, t4, t2				/* See if the sum of low words overflowed (what about the zero case?). */
@@ -356,7 +369,7 @@ handle_asynchronous:
 	        j processed_source
 
 
-#endif /* portasmHAS_CLINT */
+#endif /* portasmHAS_MTIME */
 
 	load_x sp, xISRStackTop				/* Switch to ISR stack before function call. */
 	jal portasmHANDLE_INTERRUPT			/* Jump to the interrupt handler if there is no CLINT or if there is a CLINT and it has been determined that an external interrupt is pending. */
@@ -388,7 +401,7 @@ is_exception_loop:
 	j is_exception_loop
 
 as_yet_unhandled:
-	ebreak
+	csrr t0, mcause						/* For viewing in the debugger only. */
 	j as_yet_unhandled
 
 processed_source:
@@ -442,7 +455,7 @@ processed_source:
 .align 8
 xPortStartFirstTask:
 
-#if( portasmHAS_CLINT != 0 )
+#if( portasmHAS_MTIME != 0 )
 	/* If there is a clint then interrupts can branch directly to the FreeRTOS
 	trap handler.  Otherwise the interrupt controller will need to be configured
 	outside of this file. */
@@ -458,6 +471,7 @@ xPortStartFirstTask:
 	portasmRESTORE_ADDITIONAL_REGISTERS	/* Defined in freertos_risc_v_chip_specific_extensions.h to restore any registers unique to the RISC-V implementation. */
 
 	load_x  t0, 29 * portWORD_SIZE( sp )	/* mstatus */
+	addi t0, t0, 0x08						/* Set MIE bit so the first task starts with interrupts enabled - required as returns with ret not eret. */
 	csrrw  x0, mstatus, t0					/* Interrupts enabled from here! */
 
 	load_x  x5, 2 * portWORD_SIZE( sp )		/* t0 */
@@ -489,6 +503,7 @@ xPortStartFirstTask:
 	load_x  x31, 28 * portWORD_SIZE( sp )	/* t6 */
 	addi	sp, sp, portCONTEXT_SIZE
 	ret
+	
 /*-----------------------------------------------------------*/
 
 /*
@@ -554,6 +569,7 @@ xPortStartFirstTask:
  * pxCode
  */
 .align 8
+
 pxPortInitialiseStack:
 
 	csrr t0, mstatus					/* Obtain current mstatus value. */
@@ -578,4 +594,5 @@ chip_specific_stack_frame:				/* First add any chip specific registers to the st
 	addi a0, a0, -portWORD_SIZE
 	store_x a1, 0(a0)					/* mret value (pxCode parameter) onto the stack. */
 	ret
+	
 /*-----------------------------------------------------------*/

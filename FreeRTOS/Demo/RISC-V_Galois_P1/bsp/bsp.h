@@ -52,8 +52,17 @@
 
 extern plic_instance_t Plic;
 
+#if __riscv_xlen == 64
+#define MCAUSE_EXTERNAL_INTERRUPT 0x800000000000000b
+#define HANDLER_DATATYPE uint64_t
+#else
+#define MCAUSE_EXTERNAL_INTERRUPT 0x8000000b
+#define HANDLER_DATATYPE uint32_t
+#endif
+
 void prvSetupHardware(void);
-void external_interrupt_handler(uint32_t cause);
+void external_interrupt_handler(HANDLER_DATATYPE cause);
+
 
 /**
  * UART defines
@@ -68,8 +77,12 @@ void external_interrupt_handler(uint32_t cause);
 #define XPAR_UARTNS550_0_BASEADDR 0x62300000ULL
 #define XPAR_UARTNS550_0_CLOCK_HZ configPERIPH_CLOCK_HZ
 
-// UART1 is in use by the PEX, so avoid re-initializing it on the AP
+
+#if __riscv_xlen == 64
 #define BSP_USE_UART1 0
+#else
+#define BSP_USE_UART1 1
+#endif
 #define XPAR_UARTNS550_1_DEVICE_ID 1
 #define XPAR_UARTNS550_1_BAUD_RATE XPAR_DEFAULT_BAUD_RATE
 #define XPAR_UARTNS550_1_BASEADDR (0x62340000ULL)
@@ -79,7 +92,7 @@ void external_interrupt_handler(uint32_t cause);
 /**
  * DMA defines
  */
-#define BSP_USE_DMA 0
+#define BSP_USE_DMA 1
 #define XPAR_XAXIDMA_NUM_INSTANCES 1
 #define XPAR_AXI_DMA 1
 
@@ -111,7 +124,7 @@ void external_interrupt_handler(uint32_t cause);
 /**
  * Ethernet defines
  */
-#define BSP_USE_ETHERNET 0
+#define BSP_USE_ETHERNET 1
 #define XPAR_XAXIETHERNET_NUM_INSTANCES 1
 
 #define XPAR_AXIETHERNET_0_PHYADDR 0x03
@@ -163,7 +176,11 @@ void external_interrupt_handler(uint32_t cause);
  */
 #define XPAR_XIIC_NUM_INSTANCES 1
 
+#if __riscv_xlen == 64
 #define BSP_USE_IIC0 0
+#else
+#define BSP_USE_IIC0 1
+#endif
 #define XPAR_IIC_0_DEVICE_ID 0
 #define XPAR_IIC_0_BASEADDR (0x62310000ULL)
 #define XPAR_IIC_0_TEN_BIT_ADR 0
@@ -188,7 +205,12 @@ void external_interrupt_handler(uint32_t cause);
 #define XPAR_SPI_0_XIP_MODE 0
 #define XPAR_SPI_0_USE_STARTUP 0
 
-#define BSP_USE_SPI1 0 /* SPI1 is used for SD card (polled mode), and can be used for LCD screen (interrupt mode)*/ 
+/* SPI1 is used for SD card (polled mode), and can be used for LCD screen (interrupt mode)*/ 
+#if __riscv_xlen == 64
+#define BSP_USE_SPI1 0
+#else
+#define BSP_USE_SPI1 1
+#endif
 #define XPAR_SPI_1_DEVICE_ID 1
 #define XPAR_SPI_1_BASEADDR (0x62320000ULL)
 #define XPAR_SPI_1_FIFO_EXIST 0
@@ -204,7 +226,11 @@ void external_interrupt_handler(uint32_t cause);
 /**
  * GPIO defines
  */
+#if __riscv_xlen == 64
 #define BSP_USE_GPIO 0
+#else
+#define BSP_USE_GPIO 1
+#endif
 #define XPAR_XGPIO_NUM_INSTANCES 1
 #define XPAR_GPIO_0_DEVICE_ID 0
 #define XPAR_GPIO_0_BASEADDR 0x62330000ULL

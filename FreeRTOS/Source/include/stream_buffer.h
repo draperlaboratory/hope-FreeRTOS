@@ -43,13 +43,17 @@
  * (such as xStreamBufferSend()) inside a critical section and set the send
  * block time to 0.  Likewise, if there are to be multiple different readers
  * then the application writer must place each call to a reading API function
- * (such as xStreamBufferRead()) inside a critical section section and set the
+ * (such as xStreamBufferReceive()) inside a critical section section and set the
  * receive block time to 0.
  *
  */
 
 #ifndef STREAM_BUFFER_H
 #define STREAM_BUFFER_H
+
+#ifndef INC_FREERTOS_H
+	#error "include FreeRTOS.h must appear in source files before include stream_buffer.h"
+#endif
 
 #if defined( __cplusplus )
 extern "C" {
@@ -237,7 +241,7 @@ size_t xStreamBufferSend( StreamBufferHandle_t xStreamBuffer,
  * (such as xStreamBufferSend()) inside a critical section and set the send
  * block time to 0.  Likewise, if there are to be multiple different readers
  * then the application writer must place each call to a reading API function
- * (such as xStreamBufferRead()) inside a critical section and set the receive
+ * (such as xStreamBufferReceive()) inside a critical section and set the receive
  * block time to 0.
  *
  * Use xStreamBufferSend() to write to a stream buffer from a task.  Use
@@ -335,7 +339,7 @@ size_t xStreamBufferSendFromISR( StreamBufferHandle_t xStreamBuffer,
  * (such as xStreamBufferSend()) inside a critical section and set the send
  * block time to 0.  Likewise, if there are to be multiple different readers
  * then the application writer must place each call to a reading API function
- * (such as xStreamBufferRead()) inside a critical section and set the receive
+ * (such as xStreamBufferReceive()) inside a critical section and set the receive
  * block time to 0.
  *
  * Use xStreamBufferSend() to write to a stream buffer from a task.  Use
@@ -435,7 +439,7 @@ size_t xStreamBufferReceive( StreamBufferHandle_t xStreamBuffer,
  * (such as xStreamBufferSend()) inside a critical section and set the send
  * block time to 0.  Likewise, if there are to be multiple different readers
  * then the application writer must place each call to a reading API function
- * (such as xStreamBufferRead()) inside a critical section and set the receive
+ * (such as xStreamBufferReceive()) inside a critical section and set the receive
  * block time to 0.
  *
  * Use xStreamBufferReceive() to read from a stream buffer from a task.  Use

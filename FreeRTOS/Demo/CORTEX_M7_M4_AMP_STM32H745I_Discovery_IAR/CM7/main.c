@@ -27,7 +27,8 @@
 
 /*
  * See https://www.freertos.org/STM32H7_Dual_Core_AMP_RTOS_demo.html for usage
- * instructions (TBD, not available at the time of writing).
+ * instructions, and the following blog post for a more detailed explanation
+ * https://www.freertos.org/articles/001_simple_freertos_core_to_core_communication/simple_freertos_core_to_core_communication_AMP.html
  *
  * Behavior
  * --------

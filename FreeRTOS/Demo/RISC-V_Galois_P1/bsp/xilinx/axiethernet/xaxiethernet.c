@@ -61,13 +61,11 @@
 #include "xaxiethernet.h"
 // #include "sleep.h" To delay tasks xTaskDelay ?
 #include <string.h> // for memset
-#include <stdio.h> // for printf
+#include <stdio.h> // for xaxi_debug_printf
 #include "bsp.h" // for "sleep"
 /************************** Constant Definitions *****************************/
 
-
 /**************************** Type Definitions *******************************/
-
 
 /***************** Macros (Inline Functions) Definitions *********************/
 
@@ -160,7 +158,7 @@ int XAxiEthernet_CfgInitialize(XAxiEthernet *InstancePtr,
 	memset(InstancePtr, 0, sizeof(XAxiEthernet));
 	memcpy(&InstancePtr->Config, CfgPtr, sizeof(XAxiEthernet_Config));
 
-	printf("XAxiEthernet_CfgInitialize\r\n");
+	xaxi_debug_printf("XAxiEthernet_CfgInitialize\r\n");
 
 	/* Set device base address */
 	InstancePtr->Config.BaseAddress = EffectiveAddress;
@@ -170,7 +168,7 @@ int XAxiEthernet_CfgInitialize(XAxiEthernet *InstancePtr,
 
 	XAxiEthernet_Reset(InstancePtr);
 
-	printf("AxiTEthernet_CfgInitialize: returning SUCCESS\r\n");
+	xaxi_debug_printf("AxiTEthernet_CfgInitialize: returning SUCCESS\r\n");
 	return XST_SUCCESS;
 }
 
@@ -214,7 +212,7 @@ int XAxiEthernet_Initialize(XAxiEthernet *InstancePtr,
 	memset(InstancePtr, 0, sizeof(XAxiEthernet));
 	memcpy(&InstancePtr->Config, CfgPtr, sizeof(XAxiEthernet_Config));
 
-	printf("XAxiEthernet_CfgInitialize\r\n");
+	xaxi_debug_printf("XAxiEthernet_CfgInitialize\r\n");
 
 	/* Set device base address */
 	InstancePtr->Config.BaseAddress = EffectiveAddress;
@@ -253,42 +251,42 @@ void XAxiEthernet_Start(XAxiEthernet *InstancePtr)
 		return;
 	}
 
-	printf("XAxiEthernet_Start\r\n");
+	xaxi_debug_printf("XAxiEthernet_Start\r\n");
 
 	/* Enable transmitter if not already enabled */
 	if (InstancePtr->Options & XAE_TRANSMITTER_ENABLE_OPTION) {
-		printf("enabling transmitter\r\n");
+		xaxi_debug_printf("enabling transmitter\r\n");
 		Reg = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
 							XAE_TC_OFFSET);
 		if (!(Reg & XAE_TC_TX_MASK)) {
-			printf(
+			xaxi_debug_printf(
 				"transmitter not enabled, enabling now\r\n");
 			XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 							XAE_TC_OFFSET,
 							Reg | XAE_TC_TX_MASK);
 		}
-		printf("transmitter enabled\r\n");
+		xaxi_debug_printf("transmitter enabled\r\n");
 	}
 
 	/* Enable receiver */
 	if (InstancePtr->Options & XAE_RECEIVER_ENABLE_OPTION) {
-		printf("enabling receiver\r\n");
+		xaxi_debug_printf("enabling receiver\r\n");
 		Reg = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
 							XAE_RCW1_OFFSET);
 		if (!(Reg & XAE_RCW1_RX_MASK)) {
-			printf(
+			xaxi_debug_printf(
 				"receiver not enabled, enabling now\r\n");
 
 			XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 							XAE_RCW1_OFFSET,
 							Reg | XAE_RCW1_RX_MASK);
 		}
-		printf("receiver enabled\r\n");
+		xaxi_debug_printf("receiver enabled\r\n");
 	}
 
 	/* Mark as started */
 	InstancePtr->IsStarted = XIL_COMPONENT_IS_STARTED;
-	printf("XAxiEthernet_Start: done\r\n");
+	xaxi_debug_printf("XAxiEthernet_Start: done\r\n");
 }
 
 /*****************************************************************************/
@@ -312,7 +310,7 @@ void XAxiEthernet_Start(XAxiEthernet *InstancePtr)
 ******************************************************************************/
 void XAxiEthernet_Stop(XAxiEthernet *InstancePtr)
 {
-	printf("XAxiEthernet_Stop\r\n");
+	xaxi_debug_printf("XAxiEthernet_Stop\r\n");
 	u32 Reg;
 
 	Xil_AssertVoid(InstancePtr != NULL);
@@ -324,14 +322,14 @@ void XAxiEthernet_Stop(XAxiEthernet *InstancePtr)
 		return;
 	}
 
-	printf("XAxiEthernet_Stop\r\n");
-	printf("XAxiEthernet_Stop: disabling interrupts\r\n");
+	xaxi_debug_printf("XAxiEthernet_Stop\r\n");
+	xaxi_debug_printf("XAxiEthernet_Stop: disabling interrupts\r\n");
 
 	/* Disable interrupts */
 	XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 							XAE_IE_OFFSET, 0);
 
-	printf("XAxiEthernet_Stop: disabling receiver\r\n");
+	xaxi_debug_printf("XAxiEthernet_Stop: disabling receiver\r\n");
 
 	/* Disable the receiver */
 	Reg = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
@@ -355,7 +353,7 @@ void XAxiEthernet_Stop(XAxiEthernet *InstancePtr)
 
 	/* Mark as stopped */
 	InstancePtr->IsStarted = 0;
-	printf("XAxiEthernet_Stop: done\r\n");
+	xaxi_debug_printf("XAxiEthernet_Stop: done\r\n");
 }
 
 
@@ -410,7 +408,7 @@ void XAxiEthernet_Reset(XAxiEthernet *InstancePtr)
 		Xil_AssertVoidAlways();
 	}
 
-	printf("XAxiEthernet_Reset\r\n");
+	xaxi_debug_printf("XAxiEthernet_Reset\r\n");
 
 	/* Stop the device and reset HW */
 	XAxiEthernet_Stop(InstancePtr);
@@ -436,7 +434,7 @@ static void InitHw(XAxiEthernet *InstancePtr)
 {
 	u32 Reg;
 
-	printf("XAxiEthernet InitHw\r\n");
+	xaxi_debug_printf("XAxiEthernet InitHw\r\n");
 
 
 	/* Disable the receiver */
@@ -477,7 +475,7 @@ static void InitHw(XAxiEthernet *InstancePtr)
 	/* Set default MDIO divisor */
 	XAxiEthernet_PhySetMdioDivisor(InstancePtr, XAE_MDIO_DIV_DFT);
 
-	printf("XAxiEthernet InitHw: done\r\n");
+	xaxi_debug_printf("XAxiEthernet InitHw: done\r\n");
 }
 
 /*****************************************************************************/
@@ -516,7 +514,7 @@ int XAxiEthernet_SetMacAddress(XAxiEthernet *InstancePtr, void *AddressPtr)
 		return (XST_DEVICE_IS_STARTED);
 	}
 
-	printf(	"XAxiEthernet_SetMacAddress: setting mac address to:0x%08x%8x%8x%8x%8x%8x\r\n",
+	xaxi_debug_printf(	"XAxiEthernet_SetMacAddress: setting mac address to:0x%08x%8x%8x%8x%8x%8x\r\n",
 		Aptr[0],  Aptr[1], Aptr[2], Aptr[3], Aptr[4], Aptr[5]);
 
 	/* Prepare MAC bits in either UAW0/UAWL */
@@ -690,10 +688,10 @@ static u32 XAxiEthernet_UpdateDepOptions(XAxiEthernet *InstancePtr)
 		 */
 		if (XAxiEthernet_IsExtMcast(InstancePtr)) {
 			DepOptions |= XAE_PROMISC_OPTION;
-			printf(
+			xaxi_debug_printf(
 				"CheckDepOptions: enabling ext multicast\r\n");
 		} else {
-			printf(
+			xaxi_debug_printf(
 			"EXT MULTICAST is not built in hardware\r\n");
 		}
 	}
@@ -707,10 +705,10 @@ static u32 XAxiEthernet_UpdateDepOptions(XAxiEthernet *InstancePtr)
 		if (XAxiEthernet_IsTxVlanTran(InstancePtr)) {
 			DepOptions |= XAE_FCS_INSERT_OPTION;
 			DepOptions &= ~XAE_VLAN_OPTION;
-			printf(
+			xaxi_debug_printf(
 			"CheckDepOptions: enabling ext Tx VLAN trans\r\n");
 		} else {
-			printf(
+			xaxi_debug_printf(
 			"TX VLAN TRANSLATION is not built in hardware\r\n");
 		}
 	}
@@ -724,10 +722,10 @@ static u32 XAxiEthernet_UpdateDepOptions(XAxiEthernet *InstancePtr)
 		if (XAxiEthernet_IsRxVlanTran(InstancePtr)) {
 			DepOptions |= XAE_FCS_STRIP_OPTION;
 			DepOptions &= ~XAE_VLAN_OPTION;
-			printf(
+			xaxi_debug_printf(
 			"CheckDepOptions: enabling ext Rx VLAN trans\r\n");
 		} else {
-			printf(
+			xaxi_debug_printf(
 			"RX VLAN TRANSLATION is not built in hardware\r\n");
 		}
 	}
@@ -742,10 +740,10 @@ static u32 XAxiEthernet_UpdateDepOptions(XAxiEthernet *InstancePtr)
 			DepOptions |= XAE_FCS_INSERT_OPTION;
 			DepOptions &= ~XAE_VLAN_OPTION;
 			DepOptions |= XAE_JUMBO_OPTION;
-			printf(
+			xaxi_debug_printf(
 			"CheckDepOptions: enabling ext Tx VLAN tag\r\n");
 		} else {
-			printf("TX VLAN TAG is not built in hardware\r\n");
+			xaxi_debug_printf("TX VLAN TAG is not built in hardware\r\n");
 		}
 	}
 
@@ -759,10 +757,10 @@ static u32 XAxiEthernet_UpdateDepOptions(XAxiEthernet *InstancePtr)
 			DepOptions |= XAE_FCS_STRIP_OPTION;
 			DepOptions &= ~XAE_VLAN_OPTION;
 			DepOptions |= XAE_JUMBO_OPTION;
-			printf(
+			xaxi_debug_printf(
 			"CheckDepOptions: enabling ext Rx VLAN tag\r\n");
 		} else {
-			printf(
+			xaxi_debug_printf(
 			"RX VLAN TAG is not built in hardware\r\n");
 		}
 	}
@@ -777,10 +775,10 @@ static u32 XAxiEthernet_UpdateDepOptions(XAxiEthernet *InstancePtr)
 			DepOptions |= XAE_FCS_INSERT_OPTION;
 			DepOptions &= ~XAE_VLAN_OPTION;
 			DepOptions |= XAE_JUMBO_OPTION;
-			printf(
+			xaxi_debug_printf(
 			"CheckDepOptions: enabling ext Tx VLAN strip\r\n");
 		} else {
-			printf("TX VLAN STRIP is not built in hardware\r\n");
+			xaxi_debug_printf("TX VLAN STRIP is not built in hardware\r\n");
 		}
 	}
 
@@ -794,10 +792,10 @@ static u32 XAxiEthernet_UpdateDepOptions(XAxiEthernet *InstancePtr)
 			DepOptions |= XAE_FCS_STRIP_OPTION;
 			DepOptions &= ~XAE_VLAN_OPTION;
 			DepOptions |= XAE_JUMBO_OPTION;
-			printf(
+			xaxi_debug_printf(
 			"CheckDepOptions: enabling ext Rx VLAN strip\r\n");
 		} else {
-			printf("RX VLAN STRIP is not built in hardware\r\n");
+			xaxi_debug_printf("RX VLAN STRIP is not built in hardware\r\n");
 		}
 	}
 
@@ -849,7 +847,7 @@ int XAxiEthernet_SetOptions(XAxiEthernet *InstancePtr, u32 Options)
 		return (XST_DEVICE_IS_STARTED);
 	}
 
-	printf("XAxiEthernet_SetOptions\r\n");
+	xaxi_debug_printf("XAxiEthernet_SetOptions\r\n");
 
 	/*
 	 * Set options word to its new value.
@@ -896,10 +894,10 @@ int XAxiEthernet_SetOptions(XAxiEthernet *InstancePtr, u32 Options)
 	RegNewRcw1 = RegRcw1;
 	RegNewTc = RegTc;
 
-	printf(
+	xaxi_debug_printf(
 			"current control regs: RCW1: 0x%0lx; TC: 0x%0lx\r\n",
 			RegRcw1, RegTc);
-	printf(
+	xaxi_debug_printf(
 			"Options: 0x%0lx; default options: 0x%0x\r\n",Options,
 							XAE_DEFAULT_OPTIONS);
 
@@ -917,14 +915,14 @@ int XAxiEthernet_SetOptions(XAxiEthernet *InstancePtr, u32 Options)
 
 	/* Turn on FCS stripping on receive packets */
 	if (DepOptions & XAE_FCS_STRIP_OPTION) {
-		printf(
+		xaxi_debug_printf(
 				"setOptions: enabling fcs stripping\r\n");
 		RegNewRcw1 &= ~XAE_RCW1_FCS_MASK;
 	}
 
 	/* Turn on FCS insertion on transmit packets */
 	if (DepOptions & XAE_FCS_INSERT_OPTION) {
-		printf(
+		xaxi_debug_printf(
 				"setOptions: enabling fcs insertion\r\n");
 		RegNewTc &= ~XAE_TC_FCS_MASK;
 	}
@@ -946,14 +944,14 @@ int XAxiEthernet_SetOptions(XAxiEthernet *InstancePtr, u32 Options)
 
 	/* Change the TC or RCW1 registers if they need to be modified */
 	if (RegTc != RegNewTc) {
-		printf(
+		xaxi_debug_printf(
 				"setOptions: writing tc: 0x%0lx\r\n", RegNewTc);
 		XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 						XAE_TC_OFFSET, RegNewTc);
 	}
 
 	if (RegRcw1 != RegNewRcw1) {
-		printf(
+		xaxi_debug_printf(
 			"setOptions: writing rcw1: 0x%0lx\r\n", RegNewRcw1);
 		XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 						XAE_RCW1_OFFSET, RegNewRcw1);
@@ -966,7 +964,7 @@ int XAxiEthernet_SetOptions(XAxiEthernet *InstancePtr, u32 Options)
 
 	/* Turn on flow control */
 	if (DepOptions & XAE_FLOW_CONTROL_OPTION) {
-		printf(
+		xaxi_debug_printf(
 				"setOptions: enabling flow control\r\n");
 		Reg = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
 							XAE_FCC_OFFSET);
@@ -974,14 +972,14 @@ int XAxiEthernet_SetOptions(XAxiEthernet *InstancePtr, u32 Options)
 		XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 							XAE_FCC_OFFSET, Reg);
 	}
-	printf(
+	xaxi_debug_printf(
 	"setOptions: rcw1 is now (fcc):0x%0lx\r\n",
 	XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
 							XAE_RCW1_OFFSET));
 
 	/* Turn on promiscuous frame filtering (all frames are received ) */
 	if (DepOptions & XAE_PROMISC_OPTION) {
-		printf(
+		xaxi_debug_printf(
 				"setOptions: enabling promiscuous mode\r\n");
 		Reg = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
 							XAE_FMI_OFFSET);
@@ -989,7 +987,7 @@ int XAxiEthernet_SetOptions(XAxiEthernet *InstancePtr, u32 Options)
 		XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 							XAE_FMI_OFFSET, Reg);
 	}
-	printf(
+	xaxi_debug_printf(
 	"setOptions: rcw1 is now (afm):0x%0lx\r\n",
 	XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
 							XAE_RCW1_OFFSET));
@@ -1002,7 +1000,7 @@ int XAxiEthernet_SetOptions(XAxiEthernet *InstancePtr, u32 Options)
 		XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 							XAE_RAF_OFFSET, Reg);
 	}
-	printf(
+	xaxi_debug_printf(
 	"setOptions: rcw1 is now (raf):0x%0lx\r\n",
 	XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
 							XAE_RCW1_OFFSET));
@@ -1015,12 +1013,12 @@ int XAxiEthernet_SetOptions(XAxiEthernet *InstancePtr, u32 Options)
 		XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 							XAE_RAF_OFFSET, Reg);
 	}
-	printf(
+	xaxi_debug_printf(
 	"setOptions: rcw1 is now (raf2): 0x%0lx\r\n",
 	XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
 							XAE_RCW1_OFFSET));
 
-	printf(
+	xaxi_debug_printf(
 	"setOptions: rcw1 is now (raf2):0x%0lx\r\n",
 	XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
 							XAE_RCW1_OFFSET));
@@ -1096,7 +1094,7 @@ int XAxiEthernet_SetOptions(XAxiEthernet *InstancePtr, u32 Options)
 	 * Reflecting the option in InstancePtr->Options is good enough for
 	 * now.
 	 */
-	printf("setOptions: returning SUCCESS\r\n");
+	xaxi_debug_printf("setOptions: returning SUCCESS\r\n");
 	return (XST_SUCCESS);
 }
 
@@ -1132,7 +1130,7 @@ int XAxiEthernet_ClearOptions(XAxiEthernet *InstancePtr, u32 Options)
 	Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
 
-	printf("XAxiEthernet_ClearOptions: 0x%08lx\r\n",
+	xaxi_debug_printf("XAxiEthernet_ClearOptions: 0x%08lx\r\n",
 								Options);
 	/* Be sure device has been stopped */
 	if (InstancePtr->IsStarted == XIL_COMPONENT_IS_STARTED) {
@@ -1187,7 +1185,7 @@ int XAxiEthernet_ClearOptions(XAxiEthernet *InstancePtr, u32 Options)
 
 	/* Turn off jumbo packet support for both Rx and Tx */
 	if (DepOptions & XAE_JUMBO_OPTION) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions: disabling jumbo\r\n");
 		RegNewTc &= ~XAE_TC_JUM_MASK;
 		RegNewRcw1 &= ~XAE_RCW1_JUM_MASK;
@@ -1195,7 +1193,7 @@ int XAxiEthernet_ClearOptions(XAxiEthernet *InstancePtr, u32 Options)
 
 	/* Turn off VLAN packet support for both Rx and Tx */
 	if (DepOptions & XAE_VLAN_OPTION) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions: disabling vlan\r\n");
 		RegNewTc &= ~XAE_TC_VLAN_MASK;
 		RegNewRcw1 &= ~XAE_RCW1_VLAN_MASK;
@@ -1203,35 +1201,35 @@ int XAxiEthernet_ClearOptions(XAxiEthernet *InstancePtr, u32 Options)
 
 	/* Turn off FCS stripping on receive packets */
 	if (DepOptions & XAE_FCS_STRIP_OPTION) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions: disabling fcs strip\r\n");
 		RegNewRcw1 |= XAE_RCW1_FCS_MASK;
 	}
 
 	/* Turn off FCS insertion on transmit packets */
 	if (DepOptions & XAE_FCS_INSERT_OPTION) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions: disabling fcs insert\r\n");
 		RegNewTc |= XAE_TC_FCS_MASK;
 	}
 
 	/* Turn off length/type field checking on receive packets */
 	if (DepOptions & XAE_LENTYPE_ERR_OPTION) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions: disabling lentype err\r\n");
 		RegNewRcw1 |= XAE_RCW1_LT_DIS_MASK;
 	}
 
 	/* Disable transmitter */
 	if (DepOptions & XAE_TRANSMITTER_ENABLE_OPTION) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions: disabling transmitter\r\n");
 		RegNewTc &= ~XAE_TC_TX_MASK;
 	}
 
 	/* Disable receiver */
 	if (DepOptions & XAE_RECEIVER_ENABLE_OPTION) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions: disabling receiver\r\n");
 		RegNewRcw1 &= ~XAE_RCW1_RX_MASK;
 	}
@@ -1240,14 +1238,14 @@ int XAxiEthernet_ClearOptions(XAxiEthernet *InstancePtr, u32 Options)
 	 * modified
 	 */
 	if (RegTc != RegNewTc) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions: setting TC: 0x%0lx\r\n", RegNewTc);
 		XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 						XAE_TC_OFFSET, RegNewTc);
 	}
 
 	if (RegRcw1 != RegNewRcw1) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions: setting RCW1: 0x%0lx\r\n",RegNewRcw1);
 		XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 						XAE_RCW1_OFFSET, RegNewRcw1);
@@ -1260,7 +1258,7 @@ int XAxiEthernet_ClearOptions(XAxiEthernet *InstancePtr, u32 Options)
 
 	/* Turn off flow control */
 	if (DepOptions & XAE_FLOW_CONTROL_OPTION) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions: disabling flow control\r\n");
 		Reg = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
 							XAE_FCC_OFFSET);
@@ -1271,7 +1269,7 @@ int XAxiEthernet_ClearOptions(XAxiEthernet *InstancePtr, u32 Options)
 
 	/* Turn off promiscuous frame filtering */
 	if (DepOptions & XAE_PROMISC_OPTION) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions: disabling promiscuous mode\r\n");
 		Reg = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
 							XAE_FMI_OFFSET);
@@ -1282,7 +1280,7 @@ int XAxiEthernet_ClearOptions(XAxiEthernet *InstancePtr, u32 Options)
 
 	/* Disable broadcast address filtering */
 	if (DepOptions & XAE_BROADCAST_OPTION) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions: disabling broadcast mode\r\n");
 		Reg = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
 							XAE_RAF_OFFSET);
@@ -1294,7 +1292,7 @@ int XAxiEthernet_ClearOptions(XAxiEthernet *InstancePtr, u32 Options)
 	/* Disable multicast address filtering */
 	if ((DepOptions & XAE_MULTICAST_OPTION) &&
 		(DepOptions & XAE_EXT_MULTICAST_OPTION)) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions:disabling multicast mode\r\n");
 		Reg = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
 							XAE_RAF_OFFSET);
@@ -1305,7 +1303,7 @@ int XAxiEthernet_ClearOptions(XAxiEthernet *InstancePtr, u32 Options)
 
 	/* Disable extended multicast option */
 	if (DepOptions & XAE_EXT_MULTICAST_OPTION) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions:disabling extended multicast mode\r\n");
 		XAxiEthernet_WriteReg((InstancePtr)->Config.BaseAddress,
 			XAE_RAF_OFFSET,
@@ -1315,7 +1313,7 @@ int XAxiEthernet_ClearOptions(XAxiEthernet *InstancePtr, u32 Options)
 
 	/* Disable extended transmit VLAN tag option */
 	if (DepOptions & XAE_EXT_TXVLAN_TAG_OPTION) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions:disabling extended TX VLAN tag mode\r\n");
 		XAxiEthernet_WriteReg((InstancePtr)->Config.BaseAddress,
 			XAE_RAF_OFFSET,
@@ -1325,7 +1323,7 @@ int XAxiEthernet_ClearOptions(XAxiEthernet *InstancePtr, u32 Options)
 
 	/* Disable extended receive VLAN tag option */
 	if (DepOptions & XAE_EXT_RXVLAN_TAG_OPTION) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions:disabling extended RX VLAN tag mode\r\n");
 		XAxiEthernet_WriteReg((InstancePtr)->Config.BaseAddress,
 			XAE_RAF_OFFSET,
@@ -1335,7 +1333,7 @@ int XAxiEthernet_ClearOptions(XAxiEthernet *InstancePtr, u32 Options)
 
 	/* Disable extended transmit VLAN strip option */
 	if (DepOptions & XAE_EXT_TXVLAN_STRP_OPTION) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions:disabling extended TX VLAN strip mode\r\n");
 		XAxiEthernet_WriteReg((InstancePtr)->Config.BaseAddress,
 			XAE_RAF_OFFSET,
@@ -1345,7 +1343,7 @@ int XAxiEthernet_ClearOptions(XAxiEthernet *InstancePtr, u32 Options)
 
 	/* Disable extended receive VLAN strip option */
 	if (DepOptions & XAE_EXT_RXVLAN_STRP_OPTION) {
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_ClearOptions:disabling extended RX VLAN strip mode\r\n");
 		XAxiEthernet_WriteReg((InstancePtr)->Config.BaseAddress,
 			XAE_RAF_OFFSET,
@@ -1359,7 +1357,7 @@ int XAxiEthernet_ClearOptions(XAxiEthernet *InstancePtr, u32 Options)
 	 * Reflecting the option in InstancePtr->Options is good enough for
 	 * now.
 	 */
-	printf("ClearOptions: returning SUCCESS\r\n");
+	xaxi_debug_printf("ClearOptions: returning SUCCESS\r\n");
 	return (XST_SUCCESS);
 }
 
@@ -1407,22 +1405,22 @@ u16 XAxiEthernet_GetOperatingSpeed(XAxiEthernet *InstancePtr)
 	Xil_AssertNonvoid(InstancePtr != NULL);
 	Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 
-	printf("XAxiEthernet_GetOperatingSpeed\r\n");
+	xaxi_debug_printf("XAxiEthernet_GetOperatingSpeed\r\n");
 	switch (XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
 			XAE_EMMC_OFFSET) & XAE_EMMC_LINKSPEED_MASK) {
 
 	case XAE_EMMC_LINKSPD_1000:
-		printf(
+		xaxi_debug_printf(
 			"XAxiEthernet_GetOperatingSpeed: returning 1000\r\n");
 		return XAE_SPEED_1000_MBPS;
 
 	case XAE_EMMC_LINKSPD_100:
-		printf(
+		xaxi_debug_printf(
 			"XAxiEthernet_GetOperatingSpeed: returning 100\r\n");
 		return XAE_SPEED_100_MBPS;
 
 	case XAE_EMMC_LINKSPD_10:
-		printf(
+		xaxi_debug_printf(
 			"XAxiEthernet_GetOperatingSpeed: returning 10\r\n");
 		return (XAE_SPEED_10_MBPS);
 
@@ -1466,8 +1464,8 @@ int XAxiEthernet_SetOperatingSpeed(XAxiEthernet *InstancePtr, u16 Speed)
 			(Speed == XAE_SPEED_2500_MBPS));
 
 
-	printf("XAxiEthernet_SetOperatingSpeed\r\n");
-	printf(	"XAxiEthernet_SetOperatingSpeed: setting speed to:%d (0x%0x)\r\n",
+	xaxi_debug_printf("XAxiEthernet_SetOperatingSpeed\r\n");
+	xaxi_debug_printf(	"XAxiEthernet_SetOperatingSpeed: setting speed to:%d (0x%0x)\r\n",
 		Speed, Speed);
 
 	TemacType = XAxiEthernet_GetTemacType(InstancePtr);
@@ -1502,7 +1500,7 @@ int XAxiEthernet_SetOperatingSpeed(XAxiEthernet *InstancePtr, u16 Speed)
 		EmmcReg = XAxiEthernet_ReadReg(InstancePtr->Config.BaseAddress,
 				XAE_EMMC_OFFSET) & ~XAE_EMMC_LINKSPEED_MASK;
 
-		printf(
+		xaxi_debug_printf(
 		"XAxiEthernet_SetOperatingSpeed: current speed: 0x%0lx\r\n",
 								EmmcReg);
 		switch (Speed) {
@@ -1525,18 +1523,18 @@ int XAxiEthernet_SetOperatingSpeed(XAxiEthernet *InstancePtr, u16 Speed)
 			return (XST_FAILURE);
 		}
 
-		printf(
+		xaxi_debug_printf(
 			"XAxiEthernet_SetOperatingSpeed: new speed: 0x%0lx\r\n",
 								EmmcReg);
 		/* Set register and return */
 		XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 				XAE_EMMC_OFFSET, EmmcReg);
-		printf(
+		xaxi_debug_printf(
 				"XAxiEthernet_SetOperatingSpeed: done\r\n");
 		return (XST_SUCCESS);
 	}
 	else {
-		printf("Speed not compatible with the Axi Ethernet Phy type\r\n");
+		xaxi_debug_printf("Speed not compatible with the Axi Ethernet Phy type\r\n");
 		return (XST_FAILURE);
 	}
 
@@ -1683,7 +1681,7 @@ void XAxiEthernet_PhySetMdioDivisor(XAxiEthernet *InstancePtr, u8 Divisor)
 	Xil_AssertVoid(Divisor <= XAE_MDIO_MC_CLOCK_DIVIDE_MAX);
 
 
-	printf("XAxiEthernet_PhySetMdioDivisor\r\n");
+	xaxi_debug_printf("XAxiEthernet_PhySetMdioDivisor\r\n");
 
 	XAxiEthernet_WriteReg(InstancePtr->Config.BaseAddress,
 				XAE_MDIO_MC_OFFSET,
@@ -1734,7 +1732,7 @@ void XAxiEthernet_PhyRead(XAxiEthernet *InstancePtr, u32 PhyAddress,
 	u32 value=0U;
 	volatile s32 TimeoutLoops;
 
-	printf("XAxiEthernet_PhyRead: BaseAddress: 0x%08x, register: 0x%lx\r\n",
+	xaxi_debug_printf("XAxiEthernet_PhyRead: BaseAddress: 0x%08x, register: 0x%lx\r\n",
 		InstancePtr->Config.BaseAddress, RegisterNum);
 
 	/*
@@ -1778,7 +1776,7 @@ void XAxiEthernet_PhyRead(XAxiEthernet *InstancePtr, u32 PhyAddress,
 	/* Read data */
 	*PhyDataPtr = (u16) XAxiEthernet_ReadReg
 			(InstancePtr->Config.BaseAddress,XAE_MDIO_MRD_OFFSET);
-	printf(
+	xaxi_debug_printf(
 		"XAxiEthernet_PhyRead: Value retrieved: 0x%0x\r\n", *PhyDataPtr);
 
 }
@@ -1834,7 +1832,7 @@ void XAxiEthernet_PhyWrite(XAxiEthernet *InstancePtr, u32 PhyAddress,
 	Xil_AssertVoid(RegisterNum <= XAE_PHY_REG_NUM_LIMIT);
 
 
-	printf("XAxiEthernet_PhyWrite\r\n");
+	xaxi_debug_printf("XAxiEthernet_PhyWrite\r\n");
 
 	/*
 	 * Wait till the MDIO interface is ready to accept a new transaction.
