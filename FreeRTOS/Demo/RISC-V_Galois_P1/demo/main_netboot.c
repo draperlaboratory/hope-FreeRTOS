@@ -183,22 +183,23 @@ void vApplicationIPNetworkEventHook(eIPCallbackEvent_t eNetworkEvent)
 static void prvShellCommandBoot(int argc, char **argv)
 {
 	char *bufs[2];
-	if (argc < 3)
+	size_t argi = 1;
+	bool halt = false;
+
+	if ((size_t)argc > argi && strcmp(argv[argi], "-h") == 0)
+	{
+		halt = true;
+		++argi;
+	}
+
+	if ((size_t)argc < argi + 2)
 	{
 		printf("Error: too few arguments\r\n");
 		printf("Usage: boot [-h] <host> <file> [file]\r\n");
 		return;
 	}
 
-	bool halt = false;
-	size_t argi = 1;
-	if (strcmp(argv[argi], "-h") == 0)
-	{
-		halt = true;
-		++argi;
-	}
-
-	if ((size_t)argc > argi + halt + ARRAY_SIZE(bufs))
+	if ((size_t)argc > argi + 1 + ARRAY_SIZE(bufs))
 	{
 		printf("Error: too many arguments\r\n");
 		printf("Usage: boot [-h] <host> <file> [file]\r\n");
