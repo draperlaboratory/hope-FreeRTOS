@@ -103,7 +103,13 @@
 #define configTICK_RATE_HZ				( ( TickType_t ) 20 )
 #define configMAX_PRIORITIES			( 7 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 70 )
-#define configTOTAL_HEAP_SIZE			( ( size_t ) 0x10000 )
+#if __riscv_xlen == 64
+	#define configTOTAL_HEAP_SIZE			( ( size_t ) 0x20000 )
+#elif __riscv_xlen == 32
+	#define configTOTAL_HEAP_SIZE			( ( size_t ) 0x10000 )
+#else
+	#error Assembler did not define __riscv_xlen
+#endif
 #define configMAX_TASK_NAME_LEN			( 16 )
 #define configUSE_TRACE_FACILITY		0
 #define configUSE_16_BIT_TICKS			0

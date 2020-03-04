@@ -2,6 +2,8 @@
 
 /* This is defined in sifive/platform.h, but that can't be included from
  * assembly. */
+ #include "encoding.h"
+
 #define CLINT_CTRL_ADDR 0x02000000
 
 	.section .init

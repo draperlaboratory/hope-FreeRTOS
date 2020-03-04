@@ -4,3 +4,4 @@
 int __wrap_puts(const char *s);
 
 #endif // LIBWRAP_PUTS_H
+
