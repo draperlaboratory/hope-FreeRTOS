@@ -33,7 +33,7 @@ ifeq ($(USE_CLANG),yes)
 	OBJDUMP	= $(TARGET)-objdump
 	AR		= llvm-ar
 	RANLIB	= llvm-ranlib
-	WERROR = 
+	WERROR = -Werror
 else
 	CC		= $(TARGET)-gcc
 	CPP		= $(TARGET)-g++
