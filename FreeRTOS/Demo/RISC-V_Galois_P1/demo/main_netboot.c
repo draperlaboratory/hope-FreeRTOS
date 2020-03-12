@@ -1,6 +1,8 @@
 /* Standard includes. */
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
@@ -144,7 +146,7 @@ const uint8_t ucMACAddress[6] = {configMAC_ADDR0, configMAC_ADDR1, configMAC_ADD
 void main_netboot(void);
 static void prvShellTask(void *pvParameters);
 static void prvLoadAndBoot(int n, char **names, char **bufs, bool halt);
-static int prvTftpReceive(const char *host, const char *name, char *buf, size_t *size);
+static int prvTftpReceive(const char *host, uint16_t port, const char *name, char *buf, size_t *size);
 
 void main_netboot(void)
 {
@@ -185,6 +187,7 @@ static void prvShellCommandBoot(int argc, char **argv)
 	char *bufs[2];
 	size_t argi = 1;
 	bool halt = false;
+        unsigned long port = 69;
 
 	if ((size_t)argc > argi && strcmp(argv[argi], "-h") == 0)
 	{
@@ -192,17 +195,38 @@ static void prvShellCommandBoot(int argc, char **argv)
 		++argi;
 	}
 
+        if ((size_t)argc > argi && strcmp(argv[argi], "-p") == 0)
+        {
+		++argi;
+		if ((size_t)argc > argi)
+		{
+			errno = 0;
+			port = strtoul(argv[argi], NULL, 10);
+			if (port == 0 && errno != 0)
+			{
+				printf("Error: port must be a number\r\n");
+				return;
+			}
+			if (port > UINT16_MAX)
+			{
+				printf("Error: port out of range\r\n");
+				return;
+			}
+			++argi;
+		}
+        }
+
 	if ((size_t)argc < argi + 2)
 	{
 		printf("Error: too few arguments\r\n");
-		printf("Usage: boot [-h] <host> <file> [file]\r\n");
+		printf("Usage: boot [-h] [-p <port>] <host> <file> [file]\r\n");
 		return;
 	}
 
 	if ((size_t)argc > argi + 1 + ARRAY_SIZE(bufs))
 	{
 		printf("Error: too many arguments\r\n");
-		printf("Usage: boot [-h] <host> <file> [file]\r\n");
+		printf("Usage: boot [-h] [-p <port>] <host> <file> [file]\r\n");
 		return;
 	}
 
@@ -212,7 +236,7 @@ static void prvShellCommandBoot(int argc, char **argv)
 	{
 		size_t size;
 		printf("Requesting %s\r\n", argv[i]);
-		if (prvTftpReceive(host, argv[i], staging, &size))
+		if (prvTftpReceive(host, port, argv[i], staging, &size))
 			return;
 
 		bufs[i - argi - 1] = staging;
@@ -229,7 +253,7 @@ static void prvShellCommandHelp(int argc, char **argv)
 	(void)argv;
 
 	printf("Supported commands:\r\n");
-	printf("    boot [-h] <host> <file> [file]\r\n");
+	printf("    boot [-h] [-p <port>] <host> <file> [file]\r\n");
 	printf("                              Load and boot the given file(s) via TFTP\r\n");
 	printf("                              Optionally halts just before jumping\r\n");
 	printf("    help                      Display this message\r\n");
@@ -692,7 +716,7 @@ static int prvTftpAck(struct tftp_client_state *state)
 	return 0;
 }
 
-static int prvTftpReceive(const char *host, const char *name, char *buf, size_t *size)
+static int prvTftpReceive(const char *host, uint16_t port, const char *name, char *buf, size_t *size)
 {
 	struct tftp_client_state state;
 	memset(&state, 0, sizeof(state));
@@ -703,7 +727,7 @@ static int prvTftpReceive(const char *host, const char *name, char *buf, size_t 
 		printf("Invalid IPv4 address: %s\r\n", host);
 		return 1;
 	}
-	state.dstaddr.sin_port = FreeRTOS_htons(69);
+	state.dstaddr.sin_port = FreeRTOS_htons(port);
 	state.dstaddrlen = sizeof(state.dstaddr);
 
 	state.sock = FreeRTOS_socket(FREERTOS_AF_INET, FREERTOS_SOCK_DGRAM,
@@ -840,7 +864,7 @@ static int prvTftpReceive(const char *host, const char *name, char *buf, size_t 
 				state.retries = 0;
 				state.havetid = 0;
 				state.pastrrq = 0;
-				state.dstaddr.sin_port = FreeRTOS_htons(69);
+				state.dstaddr.sin_port = FreeRTOS_htons(port);
 				if (prvTftpRrq(&state, name))
 					return 1;
 				break;
