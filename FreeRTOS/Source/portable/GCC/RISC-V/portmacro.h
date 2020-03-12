@@ -125,11 +125,7 @@ not need to be guarded with a critical section. */
 #define portSTACK_GROWTH			( -1 )
 #define portTICK_PERIOD_MS			( ( TickType_t ) 1000 / configTICK_RATE_HZ )
 
-#if __riscv_xlen == 64
-	#define portBYTE_ALIGNMENT 16
-#else
-	#define portBYTE_ALIGNMENT 8
-#endif
+#define portBYTE_ALIGNMENT (__riscv_xlen / 8)
 /*-----------------------------------------------------------*/
 
 
