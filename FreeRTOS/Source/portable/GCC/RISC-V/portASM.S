@@ -57,12 +57,12 @@
  */
 #if __riscv_xlen == 64
 	#define portWORD_SIZE 8
-	#define store_x sd
-	#define load_x ld
+	#define STORE    sd
+	#define LOAD     ld
 #elif __riscv_xlen == 32
-	#define store_x sw
-	#define load_x lw
 	#define portWORD_SIZE 4
+	#define STORE    sw
+	#define LOAD     lw
 #else
 	#error Assembler did not define __riscv_xlen
 #endif
@@ -122,82 +122,82 @@ at the top of this file. */
 
     // store a0 and x5 for use
     addi sp, sp, -2 * portWORD_SIZE
-    store_x a0, 0(sp)
-    store_x x5, portWORD_SIZE(sp)
+    STORE a0, 0(sp)
+    STORE x5, portWORD_SIZE(sp)
 
     la a0, global_exception_mc
 
-    store_x x1, 1 * portWORD_SIZE( a0 )
+    STORE x1, 1 * portWORD_SIZE( a0 )
 
     // x2 is sp, get regular sp back to save
     addi sp, sp, 2 * portWORD_SIZE
-    store_x x2, 2 * portWORD_SIZE( a0 )
+    STORE x2, 2 * portWORD_SIZE( a0 )
     addi sp, sp, -2 * portWORD_SIZE
 
-    store_x x3, 3 * portWORD_SIZE( a0 )
-    store_x x4, 4 * portWORD_SIZE( a0 )
-    store_x x5, 5 * portWORD_SIZE( a0 )
-    store_x x6, 6 * portWORD_SIZE( a0 )
-    store_x x7, 7 * portWORD_SIZE( a0 )
-    store_x x8, 8 * portWORD_SIZE( a0 )
-    store_x x9, 9 * portWORD_SIZE( a0 )
+    STORE x3, 3 * portWORD_SIZE( a0 )
+    STORE x4, 4 * portWORD_SIZE( a0 )
+    STORE x5, 5 * portWORD_SIZE( a0 )
+    STORE x6, 6 * portWORD_SIZE( a0 )
+    STORE x7, 7 * portWORD_SIZE( a0 )
+    STORE x8, 8 * portWORD_SIZE( a0 )
+    STORE x9, 9 * portWORD_SIZE( a0 )
 
     // instead of sw x10, 10 * portWORD_SIZE( a0 )
-    load_x x5, 0(sp)
-    store_x x5, 10 * portWORD_SIZE( a0 )
+    LOAD x5, 0(sp)
+    STORE x5, 10 * portWORD_SIZE( a0 )
 
-    store_x x11, 11 * portWORD_SIZE( a0 )
-    store_x x12, 12 * portWORD_SIZE( a0 )
-    store_x x13, 13 * portWORD_SIZE( a0 )
-    store_x x14, 14 * portWORD_SIZE( a0 )
-    store_x x15, 15 * portWORD_SIZE( a0 )
-    store_x x16, 16 * portWORD_SIZE( a0 )
-    store_x x17, 17 * portWORD_SIZE( a0 )
-    store_x x18, 18 * portWORD_SIZE( a0 )
-    store_x x19, 19 * portWORD_SIZE( a0 )
-    store_x x20, 20 * portWORD_SIZE( a0 )
-    store_x x21, 21 * portWORD_SIZE( a0 )
-    store_x x22, 22 * portWORD_SIZE( a0 )
-    store_x x23, 23 * portWORD_SIZE( a0 )
-    store_x x24, 24 * portWORD_SIZE( a0 )
-    store_x x25, 25 * portWORD_SIZE( a0 )
-    store_x x26, 26 * portWORD_SIZE( a0 )
-    store_x x27, 27 * portWORD_SIZE( a0 )
-    store_x x28, 28 * portWORD_SIZE( a0 )
-    store_x x29, 29 * portWORD_SIZE( a0 )
-    store_x x30, 30 * portWORD_SIZE( a0 )
-    store_x x31, 31 * portWORD_SIZE( a0 )
+    STORE x11, 11 * portWORD_SIZE( a0 )
+    STORE x12, 12 * portWORD_SIZE( a0 )
+    STORE x13, 13 * portWORD_SIZE( a0 )
+    STORE x14, 14 * portWORD_SIZE( a0 )
+    STORE x15, 15 * portWORD_SIZE( a0 )
+    STORE x16, 16 * portWORD_SIZE( a0 )
+    STORE x17, 17 * portWORD_SIZE( a0 )
+    STORE x18, 18 * portWORD_SIZE( a0 )
+    STORE x19, 19 * portWORD_SIZE( a0 )
+    STORE x20, 20 * portWORD_SIZE( a0 )
+    STORE x21, 21 * portWORD_SIZE( a0 )
+    STORE x22, 22 * portWORD_SIZE( a0 )
+    STORE x23, 23 * portWORD_SIZE( a0 )
+    STORE x24, 24 * portWORD_SIZE( a0 )
+    STORE x25, 25 * portWORD_SIZE( a0 )
+    STORE x26, 26 * portWORD_SIZE( a0 )
+    STORE x27, 27 * portWORD_SIZE( a0 )
+    STORE x28, 28 * portWORD_SIZE( a0 )
+    STORE x29, 29 * portWORD_SIZE( a0 )
+    STORE x30, 30 * portWORD_SIZE( a0 )
+    STORE x31, 31 * portWORD_SIZE( a0 )
 
     // save CSRs
     csrr x5, mstatus
-    store_x x5, MC_MSTATUS_OFF * portWORD_SIZE( a0 )
+    STORE x5, MC_MSTATUS_OFF * portWORD_SIZE( a0 )
 
     csrr x5, mtvec
-    store_x x5, MC_MTVEC_OFF * portWORD_SIZE( a0 )
+    STORE x5, MC_MTVEC_OFF * portWORD_SIZE( a0 )
 
     csrr x5, mip
-    store_x x5, MC_MIP_OFF * portWORD_SIZE( a0 )
+    STORE x5, MC_MIP_OFF * portWORD_SIZE( a0 )
 
     csrr x5, mie
-    store_x x5, MC_MIE_OFF * portWORD_SIZE( a0 )
+    STORE x5, MC_MIE_OFF * portWORD_SIZE( a0 )
 
     csrr x5, mepc
-    store_x x5, MC_MEPC_OFF * portWORD_SIZE( a0 )
+    STORE x5, MC_MEPC_OFF * portWORD_SIZE( a0 )
 
     csrr x5, mcause
-    store_x x5, MC_MCAUSE_OFF * portWORD_SIZE( a0 )
+    STORE x5, MC_MCAUSE_OFF * portWORD_SIZE( a0 )
 
     csrr x5, mtval
-    store_x x5, MC_MTVAL_OFF * portWORD_SIZE( a0 )
+    STORE x5, MC_MTVAL_OFF * portWORD_SIZE( a0 )
 
     csrr x5, misa
-    store_x x5, MC_MISA_OFF * portWORD_SIZE( a0 )
+    STORE x5, MC_MISA_OFF * portWORD_SIZE( a0 )
 
     /* restore clobbered a0 and x5 */
-    load_x a0, 0(sp)
-    load_x x5, portWORD_SIZE(sp)       
+    LOAD a0, 0(sp)
+    LOAD x5, portWORD_SIZE(sp)
     addi sp, sp, 2 * portWORD_SIZE
-  
+
 .endm
 
 .text
@@ -208,8 +208,8 @@ freertos_risc_v_trap_handler:
     /* check for exception */
     /* save scratch regs */
     addi sp, sp, -2 * portWORD_SIZE
-    store_x t0, 0(sp)
-    store_x t1, portWORD_SIZE(sp)
+    STORE t0, 0(sp)
+    STORE t1, portWORD_SIZE(sp)
 
     csrr t1, mcause
 
@@ -245,48 +245,48 @@ freertos_risc_v_trap_handler:
 
 no_exception: 
     /* restore clobbered a0 and x5 */
-    load_x t0, 0(sp)
-    load_x t1, portWORD_SIZE(sp)       
+    LOAD t0, 0(sp)
+    LOAD t1, portWORD_SIZE(sp)
     addi sp, sp, 2 * portWORD_SIZE
 
     /* beginning of regular trap handler. */
 	addi sp, sp, -portCONTEXT_SIZE
-	store_x x1, 1 * portWORD_SIZE( sp )
-	store_x x5, 2 * portWORD_SIZE( sp )
-	store_x x6, 3 * portWORD_SIZE( sp )
-	store_x x7, 4 * portWORD_SIZE( sp )
-	store_x x8, 5 * portWORD_SIZE( sp )
-	store_x x9, 6 * portWORD_SIZE( sp )
-	store_x x10, 7 * portWORD_SIZE( sp )
-	store_x x11, 8 * portWORD_SIZE( sp )
-	store_x x12, 9 * portWORD_SIZE( sp )
-	store_x x13, 10 * portWORD_SIZE( sp )
-	store_x x14, 11 * portWORD_SIZE( sp )
-	store_x x15, 12 * portWORD_SIZE( sp )
-	store_x x16, 13 * portWORD_SIZE( sp )
-	store_x x17, 14 * portWORD_SIZE( sp )
-	store_x x18, 15 * portWORD_SIZE( sp )
-	store_x x19, 16 * portWORD_SIZE( sp )
-	store_x x20, 17 * portWORD_SIZE( sp )
-	store_x x21, 18 * portWORD_SIZE( sp )
-	store_x x22, 19 * portWORD_SIZE( sp )
-	store_x x23, 20 * portWORD_SIZE( sp )
-	store_x x24, 21 * portWORD_SIZE( sp )
-	store_x x25, 22 * portWORD_SIZE( sp )
-	store_x x26, 23 * portWORD_SIZE( sp )
-	store_x x27, 24 * portWORD_SIZE( sp )
-	store_x x28, 25 * portWORD_SIZE( sp )
-	store_x x29, 26 * portWORD_SIZE( sp )
-	store_x x30, 27 * portWORD_SIZE( sp )
-	store_x x31, 28 * portWORD_SIZE( sp )
+	STORE x1, 1 * portWORD_SIZE( sp )
+	STORE x5, 2 * portWORD_SIZE( sp )
+	STORE x6, 3 * portWORD_SIZE( sp )
+	STORE x7, 4 * portWORD_SIZE( sp )
+	STORE x8, 5 * portWORD_SIZE( sp )
+	STORE x9, 6 * portWORD_SIZE( sp )
+	STORE x10, 7 * portWORD_SIZE( sp )
+	STORE x11, 8 * portWORD_SIZE( sp )
+	STORE x12, 9 * portWORD_SIZE( sp )
+	STORE x13, 10 * portWORD_SIZE( sp )
+	STORE x14, 11 * portWORD_SIZE( sp )
+	STORE x15, 12 * portWORD_SIZE( sp )
+	STORE x16, 13 * portWORD_SIZE( sp )
+	STORE x17, 14 * portWORD_SIZE( sp )
+	STORE x18, 15 * portWORD_SIZE( sp )
+	STORE x19, 16 * portWORD_SIZE( sp )
+	STORE x20, 17 * portWORD_SIZE( sp )
+	STORE x21, 18 * portWORD_SIZE( sp )
+	STORE x22, 19 * portWORD_SIZE( sp )
+	STORE x23, 20 * portWORD_SIZE( sp )
+	STORE x24, 21 * portWORD_SIZE( sp )
+	STORE x25, 22 * portWORD_SIZE( sp )
+	STORE x26, 23 * portWORD_SIZE( sp )
+	STORE x27, 24 * portWORD_SIZE( sp )
+	STORE x28, 25 * portWORD_SIZE( sp )
+	STORE x29, 26 * portWORD_SIZE( sp )
+	STORE x30, 27 * portWORD_SIZE( sp )
+	STORE x31, 28 * portWORD_SIZE( sp )
 
 	csrr t0, mstatus					/* Required for MPIE bit. */
-	store_x t0, 29 * portWORD_SIZE( sp )
+	STORE t0, 29 * portWORD_SIZE( sp )
 
 	portasmSAVE_ADDITIONAL_REGISTERS	/* Defined in freertos_risc_v_chip_specific_extensions.h to save any registers unique to the RISC-V implementation. */
 
-	load_x  t0, pxCurrentTCB			/* Load pxCurrentTCB. */
-	store_x  sp, 0( t0 )				/* Write sp to first TCB member. */
+	LOAD  t0, pxCurrentTCB			/* Load pxCurrentTCB. */
+	STORE  sp, 0( t0 )				/* Write sp to first TCB member. */
 
 	csrr a0, mcause
 	csrr a1, mepc
@@ -294,7 +294,7 @@ no_exception:
 test_if_asynchronous:
 	srli a2, a0, __riscv_xlen - 1		/* MSB of mcause is 1 if handing an asynchronous interrupt - shift to LSB to clear other bits. */
 	beq a2, x0, handle_synchronous		/* Branch past interrupt handing if not asynchronous. */
-	store_x a1, 0( sp )					/* Asynch so save unmodified exception return address. */
+	STORE a1, 0( sp )					/* Asynch so save unmodified exception return address. */
 
 handle_asynchronous:
 
@@ -308,8 +308,8 @@ handle_asynchronous:
 		addi t1, t0, 7					/* 0x8000[]0007 == machine timer interrupt. */
 		bne a0, t1, test_if_external_interrupt
 
-		load_x t0, pullMachineTimerCompareRegister  /* Load address of compare register into t0. */
-		load_x t1, pullNextTime  		/* Load the address of ullNextTime into t1. */
+		LOAD t0, pullMachineTimerCompareRegister  /* Load address of compare register into t0. */
+		LOAD t1, pullNextTime  		/* Load the address of ullNextTime into t1. */
 
 		#if( __riscv_xlen == 32 )
 
@@ -338,7 +338,7 @@ handle_asynchronous:
 
 		#endif /* __riscv_xlen == 64 */
 
-		load_x sp, xISRStackTop			/* Switch to ISR stack before function call. */
+		LOAD sp, xISRStackTop			/* Switch to ISR stack before function call. */
 		jal xTaskIncrementTick
 		beqz a0, processed_source		/* Don't switch context if incrementing tick didn't unblock a task. */
 		jal vTaskSwitchContext
@@ -351,32 +351,32 @@ handle_asynchronous:
         test_if_machine_software_interrupt:
 	        addi t1, t0, 3                         /* 0x80000003 == machine software interrupt.*/
 	        bne a0, t1, as_yet_unhandled
-	        load_x sp, xISRStackTop
+	        LOAD sp, xISRStackTop
 	        jal portasmMSI_HANDLER
 	        j processed_source
 
 
 #endif /* portasmHAS_CLINT */
 
-	load_x sp, xISRStackTop				/* Switch to ISR stack before function call. */
+	LOAD sp, xISRStackTop				/* Switch to ISR stack before function call. */
 	jal portasmHANDLE_INTERRUPT			/* Jump to the interrupt handler if there is no CLINT or if there is a CLINT and it has been determined that an external interrupt is pending. */
 	j processed_source
 
 handle_synchronous:
 	addi a1, a1, 4						/* Synchronous so updated exception return address to the instruction after the instruction that generated the exeption. */
-	store_x a1, 0( sp )					/* Save updated exception return address. */
+	STORE a1, 0( sp )					/* Save updated exception return address. */
 
 test_if_environment_call:
 	li t0, 11 							/* 11 == environment call. */
 	bne a0, t0, is_exception			/* Not an M environment call, so some other exception. */
-	load_x sp, xISRStackTop				/* Switch to ISR stack before function call. */
+	LOAD sp, xISRStackTop				/* Switch to ISR stack before function call. */
 	jal vTaskSwitchContext
 	j processed_source
 
 is_exception:
     /* restore clobbered a0 and x5 */
-    load_x t0, 0(sp)
-    load_x t1, portWORD_SIZE(sp)
+    LOAD t0, 0(sp)
+    LOAD t1, portWORD_SIZE(sp)
     addi sp, sp, 2 * portWORD_SIZE
 
     // save cpu context for exception printing
@@ -392,47 +392,47 @@ as_yet_unhandled:
 	j as_yet_unhandled
 
 processed_source:
-	load_x  t1, pxCurrentTCB			/* Load pxCurrentTCB. */
-	load_x  sp, 0( t1 )				 	/* Read sp from first TCB member. */
+	LOAD  t1, pxCurrentTCB			/* Load pxCurrentTCB. */
+	LOAD  sp, 0( t1 )				 	/* Read sp from first TCB member. */
 
 	/* Load mret with the address of the next instruction in the task to run next. */
-	load_x t0, 0( sp )
+	LOAD t0, 0( sp )
 	csrw mepc, t0
 
 	portasmRESTORE_ADDITIONAL_REGISTERS	/* Defined in freertos_risc_v_chip_specific_extensions.h to restore any registers unique to the RISC-V implementation. */
 
 	/* Load mstatus with the interrupt enable bits used by the task. */
-	load_x  t0, 29 * portWORD_SIZE( sp )
+	LOAD  t0, 29 * portWORD_SIZE( sp )
 	csrw mstatus, t0						/* Required for MPIE bit. */
 
-	load_x  x1, 1 * portWORD_SIZE( sp )
-	load_x  x5, 2 * portWORD_SIZE( sp )		/* t0 */
-	load_x  x6, 3 * portWORD_SIZE( sp )		/* t1 */
-	load_x  x7, 4 * portWORD_SIZE( sp )		/* t2 */
-	load_x  x8, 5 * portWORD_SIZE( sp )		/* s0/fp */
-	load_x  x9, 6 * portWORD_SIZE( sp )		/* s1 */
-	load_x  x10, 7 * portWORD_SIZE( sp )	/* a0 */
-	load_x  x11, 8 * portWORD_SIZE( sp )	/* a1 */
-	load_x  x12, 9 * portWORD_SIZE( sp )	/* a2 */
-	load_x  x13, 10 * portWORD_SIZE( sp )	/* a3 */
-	load_x  x14, 11 * portWORD_SIZE( sp )	/* a4 */
-	load_x  x15, 12 * portWORD_SIZE( sp )	/* a5 */
-	load_x  x16, 13 * portWORD_SIZE( sp )	/* a6 */
-	load_x  x17, 14 * portWORD_SIZE( sp )	/* a7 */
-	load_x  x18, 15 * portWORD_SIZE( sp )	/* s2 */
-	load_x  x19, 16 * portWORD_SIZE( sp )	/* s3 */
-	load_x  x20, 17 * portWORD_SIZE( sp )	/* s4 */
-	load_x  x21, 18 * portWORD_SIZE( sp )	/* s5 */
-	load_x  x22, 19 * portWORD_SIZE( sp )	/* s6 */
-	load_x  x23, 20 * portWORD_SIZE( sp )	/* s7 */
-	load_x  x24, 21 * portWORD_SIZE( sp )	/* s8 */
-	load_x  x25, 22 * portWORD_SIZE( sp )	/* s9 */
-	load_x  x26, 23 * portWORD_SIZE( sp )	/* s10 */
-	load_x  x27, 24 * portWORD_SIZE( sp )	/* s11 */
-	load_x  x28, 25 * portWORD_SIZE( sp )	/* t3 */
-	load_x  x29, 26 * portWORD_SIZE( sp )	/* t4 */
-	load_x  x30, 27 * portWORD_SIZE( sp )	/* t5 */
-	load_x  x31, 28 * portWORD_SIZE( sp )	/* t6 */
+	LOAD  x1, 1 * portWORD_SIZE( sp )
+	LOAD  x5, 2 * portWORD_SIZE( sp )		/* t0 */
+	LOAD  x6, 3 * portWORD_SIZE( sp )		/* t1 */
+	LOAD  x7, 4 * portWORD_SIZE( sp )		/* t2 */
+	LOAD  x8, 5 * portWORD_SIZE( sp )		/* s0/fp */
+	LOAD  x9, 6 * portWORD_SIZE( sp )		/* s1 */
+	LOAD  x10, 7 * portWORD_SIZE( sp )	/* a0 */
+	LOAD  x11, 8 * portWORD_SIZE( sp )	/* a1 */
+	LOAD  x12, 9 * portWORD_SIZE( sp )	/* a2 */
+	LOAD  x13, 10 * portWORD_SIZE( sp )	/* a3 */
+	LOAD  x14, 11 * portWORD_SIZE( sp )	/* a4 */
+	LOAD  x15, 12 * portWORD_SIZE( sp )	/* a5 */
+	LOAD  x16, 13 * portWORD_SIZE( sp )	/* a6 */
+	LOAD  x17, 14 * portWORD_SIZE( sp )	/* a7 */
+	LOAD  x18, 15 * portWORD_SIZE( sp )	/* s2 */
+	LOAD  x19, 16 * portWORD_SIZE( sp )	/* s3 */
+	LOAD  x20, 17 * portWORD_SIZE( sp )	/* s4 */
+	LOAD  x21, 18 * portWORD_SIZE( sp )	/* s5 */
+	LOAD  x22, 19 * portWORD_SIZE( sp )	/* s6 */
+	LOAD  x23, 20 * portWORD_SIZE( sp )	/* s7 */
+	LOAD  x24, 21 * portWORD_SIZE( sp )	/* s8 */
+	LOAD  x25, 22 * portWORD_SIZE( sp )	/* s9 */
+	LOAD  x26, 23 * portWORD_SIZE( sp )	/* s10 */
+	LOAD  x27, 24 * portWORD_SIZE( sp )	/* s11 */
+	LOAD  x28, 25 * portWORD_SIZE( sp )	/* t3 */
+	LOAD  x29, 26 * portWORD_SIZE( sp )	/* t4 */
+	LOAD  x30, 27 * portWORD_SIZE( sp )	/* t5 */
+	LOAD  x31, 28 * portWORD_SIZE( sp )	/* t6 */
 	addi sp, sp, portCONTEXT_SIZE
 
 	mret
@@ -450,43 +450,43 @@ xPortStartFirstTask:
 	csrw mtvec, t0
 #endif /* portasmHAS_CLINT */
 
-	load_x  sp, pxCurrentTCB			/* Load pxCurrentTCB. */
-	load_x  sp, 0( sp )				 	/* Read sp from first TCB member. */
+	LOAD  sp, pxCurrentTCB			/* Load pxCurrentTCB. */
+	LOAD  sp, 0( sp )				 	/* Read sp from first TCB member. */
 
-	load_x  x1, 0( sp ) /* Note for starting the scheduler the exception return address is used as the function return address. */
+	LOAD  x1, 0( sp ) /* Note for starting the scheduler the exception return address is used as the function return address. */
 
 	portasmRESTORE_ADDITIONAL_REGISTERS	/* Defined in freertos_risc_v_chip_specific_extensions.h to restore any registers unique to the RISC-V implementation. */
 
-	load_x  t0, 29 * portWORD_SIZE( sp )	/* mstatus */
+	LOAD  t0, 29 * portWORD_SIZE( sp )	/* mstatus */
 	csrrw  x0, mstatus, t0					/* Interrupts enabled from here! */
 
-	load_x  x5, 2 * portWORD_SIZE( sp )		/* t0 */
-	load_x  x6, 3 * portWORD_SIZE( sp )		/* t1 */
-	load_x  x7, 4 * portWORD_SIZE( sp )		/* t2 */
-	load_x  x8, 5 * portWORD_SIZE( sp )		/* s0/fp */
-	load_x  x9, 6 * portWORD_SIZE( sp )		/* s1 */
-	load_x  x10, 7 * portWORD_SIZE( sp )	/* a0 */
-	load_x  x11, 8 * portWORD_SIZE( sp )	/* a1 */
-	load_x  x12, 9 * portWORD_SIZE( sp )	/* a2 */
-	load_x  x13, 10 * portWORD_SIZE( sp )	/* a3 */
-	load_x  x14, 11 * portWORD_SIZE( sp )	/* a4 */
-	load_x  x15, 12 * portWORD_SIZE( sp )	/* a5 */
-	load_x  x16, 13 * portWORD_SIZE( sp )	/* a6 */
-	load_x  x17, 14 * portWORD_SIZE( sp )	/* a7 */
-	load_x  x18, 15 * portWORD_SIZE( sp )	/* s2 */
-	load_x  x19, 16 * portWORD_SIZE( sp )	/* s3 */
-	load_x  x20, 17 * portWORD_SIZE( sp )	/* s4 */
-	load_x  x21, 18 * portWORD_SIZE( sp )	/* s5 */
-	load_x  x22, 19 * portWORD_SIZE( sp )	/* s6 */
-	load_x  x23, 20 * portWORD_SIZE( sp )	/* s7 */
-	load_x  x24, 21 * portWORD_SIZE( sp )	/* s8 */
-	load_x  x25, 22 * portWORD_SIZE( sp )	/* s9 */
-	load_x  x26, 23 * portWORD_SIZE( sp )	/* s10 */
-	load_x  x27, 24 * portWORD_SIZE( sp )	/* s11 */
-	load_x  x28, 25 * portWORD_SIZE( sp )	/* t3 */
-	load_x  x29, 26 * portWORD_SIZE( sp )	/* t4 */
-	load_x  x30, 27 * portWORD_SIZE( sp )	/* t5 */
-	load_x  x31, 28 * portWORD_SIZE( sp )	/* t6 */
+	LOAD  x5, 2 * portWORD_SIZE( sp )		/* t0 */
+	LOAD  x6, 3 * portWORD_SIZE( sp )		/* t1 */
+	LOAD  x7, 4 * portWORD_SIZE( sp )		/* t2 */
+	LOAD  x8, 5 * portWORD_SIZE( sp )		/* s0/fp */
+	LOAD  x9, 6 * portWORD_SIZE( sp )		/* s1 */
+	LOAD  x10, 7 * portWORD_SIZE( sp )	/* a0 */
+	LOAD  x11, 8 * portWORD_SIZE( sp )	/* a1 */
+	LOAD  x12, 9 * portWORD_SIZE( sp )	/* a2 */
+	LOAD  x13, 10 * portWORD_SIZE( sp )	/* a3 */
+	LOAD  x14, 11 * portWORD_SIZE( sp )	/* a4 */
+	LOAD  x15, 12 * portWORD_SIZE( sp )	/* a5 */
+	LOAD  x16, 13 * portWORD_SIZE( sp )	/* a6 */
+	LOAD  x17, 14 * portWORD_SIZE( sp )	/* a7 */
+	LOAD  x18, 15 * portWORD_SIZE( sp )	/* s2 */
+	LOAD  x19, 16 * portWORD_SIZE( sp )	/* s3 */
+	LOAD  x20, 17 * portWORD_SIZE( sp )	/* s4 */
+	LOAD  x21, 18 * portWORD_SIZE( sp )	/* s5 */
+	LOAD  x22, 19 * portWORD_SIZE( sp )	/* s6 */
+	LOAD  x23, 20 * portWORD_SIZE( sp )	/* s7 */
+	LOAD  x24, 21 * portWORD_SIZE( sp )	/* s8 */
+	LOAD  x25, 22 * portWORD_SIZE( sp )	/* s9 */
+	LOAD  x26, 23 * portWORD_SIZE( sp )	/* s10 */
+	LOAD  x27, 24 * portWORD_SIZE( sp )	/* s11 */
+	LOAD  x28, 25 * portWORD_SIZE( sp )	/* t3 */
+	LOAD  x29, 26 * portWORD_SIZE( sp )	/* t4 */
+	LOAD  x30, 27 * portWORD_SIZE( sp )	/* t5 */
+	LOAD  x31, 28 * portWORD_SIZE( sp )	/* t6 */
 	addi	sp, sp, portCONTEXT_SIZE
 	ret
 /*-----------------------------------------------------------*/
@@ -562,20 +562,20 @@ pxPortInitialiseStack:
 	or t0, t0, t1						/* Set MPIE and MPP bits in mstatus value. */
 
 	addi a0, a0, -portWORD_SIZE
-	store_x t0, 0(a0)					/* mstatus onto the stack. */
+	STORE t0, 0(a0)					/* mstatus onto the stack. */
 	addi a0, a0, -(22 * portWORD_SIZE)	/* Space for registers x11-x31. */
-	store_x a2, 0(a0)					/* Task parameters (pvParameters parameter) goes into register X10/a0 on the stack. */
+	STORE a2, 0(a0)					/* Task parameters (pvParameters parameter) goes into register X10/a0 on the stack. */
 	addi a0, a0, -(6 * portWORD_SIZE)	/* Space for registers x5-x9. */
-	store_x x0, 0(a0)					/* Return address onto the stack, could be portTASK_RETURN_ADDRESS */
+	STORE x0, 0(a0)					/* Return address onto the stack, could be portTASK_RETURN_ADDRESS */
 	addi t0, x0, portasmADDITIONAL_CONTEXT_SIZE /* The number of chip specific additional registers. */
 chip_specific_stack_frame:				/* First add any chip specific registers to the stack frame being created. */
 	beq t0, x0, 1f						/* No more chip specific registers to save. */
 	addi a0, a0, -portWORD_SIZE			/* Make space for chip specific register. */
-	store_x x0, 0(a0)					/* Give the chip specific register an initial value of zero. */
+	STORE x0, 0(a0)					/* Give the chip specific register an initial value of zero. */
 	addi t0, t0, -1						/* Decrement the count of chip specific registers remaining. */
 	j chip_specific_stack_frame			/* Until no more chip specific registers. */
 1:
 	addi a0, a0, -portWORD_SIZE
-	store_x a1, 0(a0)					/* mret value (pxCode parameter) onto the stack. */
+	STORE a1, 0(a0)					/* mret value (pxCode parameter) onto the stack. */
 	ret
 /*-----------------------------------------------------------*/
