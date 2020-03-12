@@ -144,7 +144,7 @@ void vFullDemoTickHook( void );
 register check tasks to the check task.  If the variables keep incrementing,
 then the register check tasks have not discovered any errors.  If a variable
 stops incrementing, then an error has been found. */
-volatile uint32_t ulRegTest1LoopCounter = 0UL, ulRegTest2LoopCounter = 0UL;
+volatile uintptr_t ulRegTest1LoopCounter = 0UL, ulRegTest2LoopCounter = 0UL;
 
 /*-----------------------------------------------------------*/
 

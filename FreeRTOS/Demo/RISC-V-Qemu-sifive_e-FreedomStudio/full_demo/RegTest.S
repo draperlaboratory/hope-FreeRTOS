@@ -33,6 +33,16 @@
 
 /*-----------------------------------------------------------*/
 
+#if __riscv_xlen == 64
+# define PTR_DATA .dword
+# define STORE    sd
+# define LOAD     ld
+#else
+# define PTR_DATA .word
+# define STORE    sw
+# define LOAD     lw
+#endif
+
 /*
  * The register check tasks are described in the comments at the top of
  * main_full.c.
@@ -127,17 +137,10 @@ reg1_loop:
 	bne x31, x30, reg1_error_loop
 
 	/* Everything passed, increment the loop counter. */
-	#if __riscv_xlen == 64
-		lwu x31, ulRegTest1LoopCounterConst
-		lwu x30, 0(x31)
-	#elif __riscv_xlen == 32
-		lw x31, ulRegTest1LoopCounterConst
-		lw x30, 0(x31)
-	#else
-		#error Assembler did not define __riscv_xlen
-	#endif
+	LOAD x31, ulRegTest1LoopCounterConst
+	LOAD x30, 0(x31)
 	addi x30, x30, 1
-	sw x30, 0(x31)
+	STORE x30, 0(x31)
 
 	/* Restore clobbered register reading for next loop. */
 	li x30, 0x1e
@@ -154,7 +157,7 @@ reg1_error_loop:
 //	ebreak
 	jal reg1_error_loop
 
-ulRegTest1LoopCounterConst: .word ulRegTest1LoopCounter
+ulRegTest1LoopCounterConst: PTR_DATA ulRegTest1LoopCounter
 
 /*-----------------------------------------------------------*/
 
@@ -247,17 +250,10 @@ Reg2_loop:
 	bne x5, x31, reg2_error_loop
 
 	/* Everything passed, increment the loop counter. */
-	#if __riscv_xlen == 64
-		lwu x5, ulRegTest2LoopCounterConst
-		lwu x6, 0(x5)
-	#elif __riscv_xlen == 32
-		lw x5, ulRegTest2LoopCounterConst
-		lw x6, 0(x5)
-	#else
-		#error Assembler did not define __riscv_xlen
-	#endif
+	LOAD x5, ulRegTest2LoopCounterConst
+	LOAD x6, 0(x5)
 	addi x6, x6, 1
-	sw x6, 0(x5)
+	STORE x6, 0(x5)
 
 	/* Restore clobbered register reading for next loop. */
 	li x6, 0x61
@@ -271,6 +267,6 @@ reg2_error_loop:
 //	ebreak
 	jal reg2_error_loop
 
-ulRegTest2LoopCounterConst: .word ulRegTest2LoopCounter
+ulRegTest2LoopCounterConst: PTR_DATA ulRegTest2LoopCounter
 
 
