@@ -3482,6 +3482,11 @@ void vSocketWakeUpUser( FreeRTOS_Socket_t *pxSocket )
 			{
 				pxEnd = ( const MiniListItem_t* )listGET_END_MARKER( &xBoundTCPSocketsList );
 			}
+		#else
+			else
+			{
+				pxEnd=NULL;
+			}
 		#endif /* ipconfigUSE_TCP == 1 */
 			for( pxIterator = ( const ListItem_t * ) ( listGET_NEXT( pxEnd ) );
 				 pxIterator != ( const ListItem_t * ) pxEnd;
