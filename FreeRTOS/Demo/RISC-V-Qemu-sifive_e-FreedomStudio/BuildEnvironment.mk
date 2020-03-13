@@ -3,10 +3,10 @@
 # Copyright (c) 2019, Dornerworks Ltd.
 #
 
-CROSS_COMPILE_PREFIX := riscv$(RV_XLEN)-unknown-elf
+CROSS_COMPILE_PREFIX := riscv$(ARCH_XLEN)-unknown-elf
 #-----------------------------------------------------------
 GCC     = $(ISP_PREFIX)/bin/clang
-ifeq ($(RVXX), RV64)
+ifeq ($(ARCH), rv64)
 GCC     = $(CROSS_COMPILE_PREFIX)-gcc
 endif
 OBJCOPY = $(CROSS_COMPILE_PREFIX)-objcopy
@@ -20,7 +20,7 @@ MSI_HANDLER = as_yet_unhandled
 
 # if using the multi-arch (riscv64-unknown-elf-gcc):
 ARCH_FLAGS = -march=rv32ima -mabi=ilp32 -mcmodel=medium
-ifeq ($(RVXX), RV64)
+ifeq ($(ARCH), rv64)
 ARCH_FLAGS = -march=rv64imafd -mabi=lp64d -mcmodel=medany
 endif
 

@@ -4,15 +4,11 @@
 #
 
 PROJ_NAME ?= simple
-RVXX ?= RV32
-RV_XLEN = $(subst RV,,$(RVXX))
+ARCH ?= rv32
+ARCH_XLEN = $(subst rv,,$(ARCH))
 
-BUILD_DIR = ./build
-OUT_LIB = $(BUILD_DIR)/libfreertos-hifive.a
-ifeq ($(RVXX), RV64)
-BUILD_DIR = ./build64
-OUT_LIB = $(BUILD_DIR)/libfreertos-hifive64.a
-endif
+BUILD_DIR = ./build/$(ARCH)
+OUT_LIB = $(BUILD_DIR)/libfreertos-hifive$(ARCH_XLEN).a
 
 include BuildEnvironment.mk
 include FreeRTOS.mk
@@ -25,10 +21,12 @@ ASMFLAGS := $(ISP_ASMFLAGS)
 ASMFLAGS += $(CONFIG_ASMFLAGS)
 LDFLAGS := $(ISP_LDFLAGS)
 
-ARCH = RISC-V
-ARCH_PORTABLE_INC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/
-ARCH_PORTABLE_SRC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/port.c
-ARCH_PORTABLE_ASM = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/portASM.S
+ifneq ($(filter rv64 rv32,$(ARCH)),"")
+   BASE_ARCH = RISC-V
+endif
+ARCH_PORTABLE_INC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(BASE_ARCH)/
+ARCH_PORTABLE_SRC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(BASE_ARCH)/port.c
+ARCH_PORTABLE_ASM = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(BASE_ARCH)/portASM.S
 
 SDK_DIR = ./freedom-e-sdk
 
@@ -78,7 +76,7 @@ VPATH += \
 PORT_OBJS := $(patsubst %.c,$(FREERTOS_BUILD_DIR)/%.o,$(notdir $(ARCH_PORTABLE_SRC)))
 PORT_OBJS += $(patsubst %.S,$(FREERTOS_BUILD_DIR)/%.o,$(notdir $(ARCH_PORTABLE_ASM)))
 FREERTOS_OBJS += $(PORT_OBJS) $(SDK_OBJS)
-VPATH += $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)
+VPATH += $(FREERTOS_SOURCE_DIR)/portable/GCC/$(BASE_ARCH)
 
 
 CFLAGS += -DportasmHANDLE_INTERRUPT=$(INTERRUPT_HANDLER)
@@ -256,7 +254,7 @@ clean-libfreertos-objs:
 	rm -rfv $(LIB_OBJS)
 
 sim-qemu: $(OUT_ELF)
-	qemu-system-riscv$(RV_XLEN) -kernel $^  -S -s -machine sifive_e -nographic
+	qemu-system-riscv$(ARCH_XLEN) -kernel $^  -S -s -machine sifive_e -nographic
 
 gdb: $(OUT_ELF)
-	$(GDB) -iex "set mem inaccessible-by-default off" -iex "set arch riscv:rv$(RV_XLEN)" -iex "set riscv use_compressed_breakpoint off"
+	$(GDB) -iex "set mem inaccessible-by-default off" -iex "set arch riscv:$(ARCH)" -iex "set riscv use_compressed_breakpoint off"

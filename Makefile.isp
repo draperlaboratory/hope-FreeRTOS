@@ -11,8 +11,8 @@ DEMO_DIR   := FreeRTOS/Demo
 HIFIVE_DIR := $(DEMO_DIR)/RISC-V-Qemu-sifive_e-FreedomStudio
 VCU118_DIR := $(DEMO_DIR)/RISC-V_Galois_P1
 
-DEMO_LIBS := $(HIFIVE_DIR)/build/libfreertos-hifive.a
-DEMO_LIBS += $(HIFIVE_DIR)/build64/libfreertos-hifive64.a
+DEMO_LIBS := $(HIFIVE_DIR)/build/rv32/libfreertos-hifive32.a
+DEMO_LIBS += $(HIFIVE_DIR)/build/rv64/libfreertos-hifive64.a
 DEMO_LIBS += $(VCU118_DIR)/libfreertos-vcu118.a
 
 INSTALL_DIR := $(ISP_PREFIX)/FreeRTOS
@@ -22,7 +22,7 @@ INSTALL_BUILD_DIR := $(INSTALL_DIR)/build
 
 all:
 	$(MAKE) -C $(HIFIVE_DIR) lib
-	$(MAKE) -C $(HIFIVE_DIR) lib RVXX=RV64
+	$(MAKE) -C $(HIFIVE_DIR) lib ARCH=rv64
 	CLANG=1 $(MAKE) -C $(VCU118_DIR) lib
 
 install: install-libs install-headers install-build
@@ -46,5 +46,5 @@ install-headers:
 
 clean:
 	$(MAKE) -C $(HIFIVE_DIR) clean
-	$(MAKE) -C $(HIFIVE_DIR) clean RVXX=RV64
+	$(MAKE) -C $(HIFIVE_DIR) clean ARCH=rv64
 	$(MAKE) -C $(VCU118_DIR) clean
