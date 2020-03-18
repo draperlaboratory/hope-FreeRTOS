@@ -229,7 +229,7 @@ $(OUT_LIB): directories $(LIB_OBJS)
 	@echo '___________________________________________________________________________________'
 	@echo 'Building target: $@'
 	@echo '_______________________________'
-	$(AR) rcs $@ $(LIB_OBJS)
+	$(AR)  rcs $(AR_FLAGS) $@ $(LIB_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -237,7 +237,7 @@ $(BUILD_DIR)/libfreertos%.a: directories $(LIB_OBJS)
 	@echo '___________________________________________________________________________________'
 	@echo 'Building libfreertos variant target: $@'
 	@echo '_______________________________'
-	$(AR) rcs $@ $(LIB_OBJS)
+	$(AR) rcs $(AR_FLAGS) $@ $(LIB_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

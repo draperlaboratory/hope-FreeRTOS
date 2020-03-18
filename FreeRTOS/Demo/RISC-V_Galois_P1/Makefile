@@ -5,7 +5,7 @@ ARCH 		= -march=rv32im
 ABI 		= -mabi=ilp32
 
 
-TARGET=$(CCPATH)riscv${RISCV_XLEN}-unknown-${RISCV_LIB}
+TARGET=$(CCPATH)riscv64-unknown-${RISCV_LIB}
 
 ifdef CLANG
 GCC     = $(ISP_PREFIX)/bin/clang
@@ -65,6 +65,7 @@ ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GC
 CFLAGS = $(WARNINGS) $(INCLUDES) -ffunction-sections -fdata-sections
 CFLAGS += -O0 -g3 $(ARCH) $(ABI)
 CFLAGS += -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
+AR_FLAGS = --target=elf32-littleriscv
 
 ifdef CLANG
 CFLAGS += -mcmodel=medium

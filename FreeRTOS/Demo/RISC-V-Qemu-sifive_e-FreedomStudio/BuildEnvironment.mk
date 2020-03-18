@@ -3,7 +3,8 @@
 # Copyright (c) 2019, Dornerworks Ltd.
 #
 
-CROSS_COMPILE_PREFIX := riscv$(ARCH_XLEN)-unknown-elf
+# CROSS_COMPILE_PREFIX := riscv$(ARCH_XLEN)-unknown-elf
+CROSS_COMPILE_PREFIX := riscv64-unknown-elf
 #-----------------------------------------------------------
 GCC     = $(ISP_PREFIX)/bin/clang
 ifeq ($(ARCH), rv64)
@@ -20,8 +21,10 @@ MSI_HANDLER = as_yet_unhandled
 
 # if using the multi-arch (riscv64-unknown-elf-gcc):
 ARCH_FLAGS = -march=rv32ima -mabi=ilp32 -mcmodel=medium
+AR_FLAGS = --target=elf32-littleriscv
 ifeq ($(ARCH), rv64)
 ARCH_FLAGS = -march=rv64imafd -mabi=lp64d -mcmodel=medany
+AR_FLAGS = --target=elf64-littleriscv
 endif
 
 # Basic ISP_CFLAGS:
