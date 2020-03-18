@@ -4,8 +4,8 @@ ENTRY( _start )
 
 MEMORY
 {
-  flash (rxai!w) : ORIGIN = 0x20400000, LENGTH = 512M
-  ram (wxa!ri) : ORIGIN = 0x80000000, LENGTH = 8M
+  flash (rxa!w) : ORIGIN = 0x20400000, LENGTH = 512M
+  ram (wxa!r) : ORIGIN = 0x80000000, LENGTH = 8M
 }
 
 PHDRS
@@ -30,6 +30,8 @@ SECTIONS
     *(.text.startup .text.startup.*)
     *(.text .text.*)
     *(.gnu.linkonce.t.*)
+    *(.eh_frame_hdr)
+    *(.eh_frame)
   } >flash AT>flash :flash
 
   .fini       ALIGN(4):
@@ -156,7 +158,7 @@ SECTIONS
   .stack ORIGIN(ram) + LENGTH(ram) - __stack_size :
   {
     PROVIDE( _heap_end = . );
-    . = __stack_size;
+    . += __stack_size;
     PROVIDE( _sp = . );
     __freertos_irq_stack_top = .;
   } >ram AT>ram :ram
