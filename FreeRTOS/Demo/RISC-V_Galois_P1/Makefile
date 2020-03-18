@@ -3,6 +3,7 @@ RISCV_LIB  ?= elf
 CCPATH =
 ARCH 		= -march=rv32im
 ABI 		= -mabi=ilp32
+CLANG = yes
 
 
 TARGET=$(CCPATH)riscv${RISCV_XLEN}-unknown-${RISCV_LIB}
@@ -13,10 +14,10 @@ else
 GCC     = $(TARGET)-gcc
 endif
 
-OBJCOPY	= $(TARGET)-objcopy
-OBJDUMP	= $(TARGET)-objdump
-AR		= $(TARGET)-ar
-RANLIB	= $(TARGET)-ranlib
+OBJCOPY	= $(ISP_PREFIX)/bin/llvm-objcopy
+OBJDUMP	= $(ISP_PREFIX)/bin/llvm-objdump
+AR		= $(ISP_PREFIX)/bin/llvm-ar
+RANLIB	= $(ISP_PREFIX)/bin/llvm-ranlib
 
 # Use main_blinky as demo source and target file name if not specified
 PROG 	?= main_blinky
@@ -58,13 +59,15 @@ INCLUDES = \
 	-I./bsp \
 	-I$(FREERTOS_SOURCE_DIR)/include \
 	-I../Common/include \
-	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V
+	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V \
+	-I$(ISP_PREFIX)/clang_sysroot/riscv$(RISCV_XLEN)-unknown-elf/include
 
 ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
 CFLAGS = $(WARNINGS) $(INCLUDES) -ffunction-sections -fdata-sections
-CFLAGS += -O0 -g3 $(ARCH) $(ABI)
+CFLAGS += -O0 -g3 $(ARCH) $(ABI) --target=riscv32-unknown-elf
 CFLAGS += -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
+AR_FLAGS = --target=riscv32-unknown-elf 
 
 ifdef CLANG
 CFLAGS += -mcmodel=medium
@@ -141,9 +144,10 @@ INCLUDES = \
 	-I./bsp/xilinx/gpio \
 	-I$(FREERTOS_SOURCE_DIR)/include \
 	-I../Common/include \
-	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V
+	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V \
+	-I$(ISP_PREFIX)/clang_sysroot/riscv$(RISCV_XLEN)-unknown-elf/include
 
-ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy \
+ASFLAGS  += -g $(ARCH) $(ABI) --target=riscv32-unknown-elf -Wa,-Ilegacy \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions \
 	-DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
