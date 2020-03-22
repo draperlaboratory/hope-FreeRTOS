@@ -24,6 +24,7 @@ MSI_HANDLER = as_yet_unhandled
 ARCH_FLAGS = -march=rv32ima -mabi=ilp32 -mcmodel=medium
 # Basic ISP_CFLAGS:
 ISP_CFLAGS  = -Wall -Wextra -O0 -g3 -std=gnu11
+ISP_CFLAGS += -include $(ISP_PREFIX)/include/inline_libs.h
 ISP_CFLAGS += -ffunction-sections -fdata-sections -fno-builtin-printf
 ISP_CFLAGS += -DDONT_USE_PLIC -DDONT_USE_M_TIME -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
 ISP_CFLAGS += -include sys/cdefs.h
