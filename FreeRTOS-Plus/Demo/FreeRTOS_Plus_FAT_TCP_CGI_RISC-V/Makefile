@@ -265,8 +265,8 @@ clean-libxil:
 
 # Policy/Runtime Variables ______________________________________________________________
 POLICY_DIR = $(ISP_PREFIX)/kernels
-POLICY_RUNTIME ?= bare
-POLICY ?= none
+POLICY_RUNTIME ?= frtos
+POLICY ?= compartmentalization
 ISP_PREFIX ?= $(HOME)/.local/isp/
 PROJ_NAME = web-server
 HTTP_PORT ?= 5555
@@ -290,6 +290,10 @@ sim-qemu: sim-qemu-user
 
 sim-qemu-user: $(OUT_ELF)
 	isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r $(POLICY_RUNTIME) -o $(BUILD_DIR) \
+		-e "-net nic -net user,net=10.10.70.0,dhcpstart=10.10.70.1,hostfwd=tcp::$(HTTP_PORT)-:80" $(_QEMU_DEBUG)
+
+sim-qemu-cache: $(OUT_ELF)
+	isp_run_app $(OUT_ELF) -p $(POLICY) -s qemu -r $(POLICY_RUNTIME) -C finite -c $(CACHE_SIZE) -o $(BUILD_DIR) \
 		-e "-net nic -net user,net=10.10.70.0,dhcpstart=10.10.70.1,hostfwd=tcp::$(HTTP_PORT)-:80" $(_QEMU_DEBUG)
 
 sim-qemu-tap: $(OUT_ELF)
