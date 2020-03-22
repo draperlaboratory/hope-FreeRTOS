@@ -21,6 +21,12 @@ ARCH_PORTABLE_INC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/
 ARCH_PORTABLE_SRC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/port.c
 ARCH_PORTABLE_ASM = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(ARCH)/portASM.S
 
+BUILD_DIR = ./build
+SDK_DIR = ./freedom-e-sdk
+
+LDFLAGS += -Lbuild/
+LDFLAGS += -Wl,-Map,"$(BUILD_DIR)/$(PROJ_NAME).map"
+
 SDK_SRC := \
 	$(SDK_DIR)/libwrap/sys/_exit.c \
 	$(SDK_DIR)/libwrap/sys/close.c \
@@ -41,7 +47,6 @@ SDK_SRC := \
 	$(SDK_DIR)/libwrap/sys/unlink.c \
 	$(SDK_DIR)/libwrap/sys/wait.c \
 	$(SDK_DIR)/libwrap/sys/write.c \
-	$(SDK_DIR)/libwrap/stdlib/malloc.c \
 	$(SDK_DIR)/libwrap/misc/write_hex.c \
 	$(SDK_DIR)/env/freedom-e300-hifive1/init.c \
 	$(SDK_DIR)/drivers/plic/plic_driver.c \
@@ -72,7 +77,6 @@ CFLAGS += -DportasmHANDLE_INTERRUPT=$(INTERRUPT_HANDLER)
 # Set up application source, include, and object files for compilation: ______________________
 APP_SRC_DIR = .
 APP_SRC = \
-	$(APP_SRC_DIR)/isp/utils.c \
 	$(APP_SRC_DIR)/main.c \
 	$(APP_SRC_DIR)/blinky_demo/main_blinky.c \
 	$(APP_SRC_DIR)/full_demo/main_full.c
@@ -123,7 +127,7 @@ VPATH += \
 	$(APP_SRC_DIR)/isp
 
 OUT_ELF = $(BUILD_DIR)/FreeRTOS-$(PROJ_NAME).elf
-OUT_LIB = $(BUILD_DIR)/libfreertos.a
+OUT_LIB = $(BUILD_DIR)/libfreertos-hifive.a
 
 # Need to tell FreeRTOS where to find the FreeRTOSConfig.h __________________________________
 FREERTOS_INCLUDES += \
@@ -143,16 +147,14 @@ OUT_OBJS = \
 
 # List of object files to compile for the system:
 LIB_OBJS = \
-	$(APP_OBJS) \
 	$(DEMO_COMMON_OBJS) \
-	$(FREERTOS_OBJS)
+	$(FREERTOS_OBJS) 
+#	$(APP_BUILD_DIR)/lib.o
 
 BUILD_DIRECTORIES = \
 	$(APP_BUILD_DIR) \
 	$(TEST_BUILD_DIR) \
 	$(FREERTOS_BUILD_DIR)
-
-LDFLAGS += -Wl,-Map,"$(BUILD_DIR)/$(PROJ_NAME).map"
 
 .PHONY: debug clean app_compile debug-app frtos_compile print-info out_elf sim-qemu gdb lib clean-libfreertos-objs
 all: directories $(OUT_OBJS) $(OUT_ELF) $(OUT_LIB) $(BUILD_DIR)/libfreertos%.a

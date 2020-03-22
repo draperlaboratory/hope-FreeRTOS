@@ -31,7 +31,7 @@ install-build:
 	mkdir -p $(INSTALL_BUILD_DIR)/vcu118
 	cp $(HIFIVE_DIR)/BuildEnvironment.mk $(INSTALL_BUILD_DIR)/hifive
 	cp $(HIFIVE_DIR)/freedom-e-sdk/env/freedom-e300-hifive1/flash.lds $(INSTALL_BUILD_DIR)/hifive
-	cp $(VCU118_DIR)/link.ld $(INSTALL_BUILD_DIR)/vcu118
+#	cp $(VCU118_DIR)/link.ld $(INSTALL_BUILD_DIR)/vcu118
 
 install-libs: all
 	mkdir -p $(INSTALL_LIB_DIR)
@@ -41,7 +41,7 @@ install-headers:
 	mkdir -p $(INSTALL_INCLUDE_DIR)/Demo
 	rsync -avm --include='*.h' -f 'hide,! */' $(SOURCE_DIR) $(INSTALL_INCLUDE_DIR)
 	rsync -avm --include='*.h' -f 'hide,! */' $(HIFIVE_DIR) $(INSTALL_INCLUDE_DIR)/Demo
-	rsync -avm --include='*.h' -f 'hide,! */' $(VCU118_DIR) $(INSTALL_INCLUDE_DIR)/Demo
+#	rsync -avm --include='*.h' -f 'hide,! */' $(VCU118_DIR) $(INSTALL_INCLUDE_DIR)/Demo
 
 clean:
 	$(MAKE) -C $(HIFIVE_DIR) clean
