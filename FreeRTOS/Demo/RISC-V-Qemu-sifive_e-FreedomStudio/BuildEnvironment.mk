@@ -7,9 +7,7 @@
 CROSS_COMPILE_PREFIX := riscv64-unknown-elf
 #-----------------------------------------------------------
 GCC     = $(ISP_PREFIX)/bin/clang
-ifeq ($(ARCH), rv64)
-GCC     = $(CROSS_COMPILE_PREFIX)-gcc
-endif
+
 OBJCOPY = $(CROSS_COMPILE_PREFIX)-objcopy
 OBJDUMP = $(CROSS_COMPILE_PREFIX)-objdump
 AR      = $(CROSS_COMPILE_PREFIX)-ar
