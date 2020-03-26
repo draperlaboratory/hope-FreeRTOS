@@ -77,6 +77,12 @@ void sifive_fail_finish(void)
   *test_device = SIFIVE_TEST_FAIL;
 }
 
+void sifive_pass_finish(void)
+{
+  volatile uint32_t *test_device = (uint32_t *)SIFIVE_TEST_ADDR;
+  *test_device = SIFIVE_TEST_PASS;
+}
+
 /* XXX: Hack to pull in __wrap__ syms to fix a linker error */
 void wrap_hack()
 {
@@ -86,4 +92,14 @@ void wrap_hack()
   read();
   fstat();
   malloc(0);
+}
+
+void isp_test_device_pass(void)
+{
+   sifive_pass_finish();
+}
+
+void isp_test_device_fail(void)
+{
+   sifive_fail_finish();
 }
