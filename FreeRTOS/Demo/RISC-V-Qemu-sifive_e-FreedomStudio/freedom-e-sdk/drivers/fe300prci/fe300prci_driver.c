@@ -1,11 +1,15 @@
 // See LICENSE file for license details
 
 #include "platform.h"
+#include "encoding.h"
 
 #ifdef PRCI_CTRL_ADDR
 #include "fe300prci/fe300prci_driver.h"
 #include <unistd.h>
 
+#if __riscv_xlen == 64
+#define rdmcycle(x) {*(x) = read_csr(mcycle); }
+#elif __riscv_xlen == 32
 #define rdmcycle(x)  {				       \
     uint32_t lo, hi, hi2;			       \
     __asm__ __volatile__ ("1:\n\t"		       \
@@ -16,6 +20,7 @@
 			  : "=r" (hi), "=r" (lo), "=r" (hi2)) ;	\
     *(x) = lo | ((uint64_t) hi << 32); 				\
   }
+#endif
 
 uint32_t PRCI_measure_mcycle_freq(uint32_t mtime_ticks, uint32_t mtime_freq)
 {
