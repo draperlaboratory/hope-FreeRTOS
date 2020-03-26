@@ -89,11 +89,7 @@ CFLAGS += -DportasmHANDLE_INTERRUPT=$(INTERRUPT_HANDLER)
 APP_SRC_DIR = .
 APP_SRC = \
 	$(APP_SRC_DIR)/main.c \
-	$(APP_SRC_DIR)/blinky_demo/main_blinky.c \
-	$(APP_SRC_DIR)/full_demo/main_full.c
-
-APP_ASM = \
-	$(APP_SRC_DIR)/full_demo/RegTest.S
+	$(APP_SRC_DIR)/isp/isp_main.c
 
 APP_INCLUDES = \
 	-I ./ \
@@ -108,8 +104,6 @@ APP_BUILD_DIR = $(BUILD_DIR)/app
 APP_OBJS := $(patsubst %.c,$(APP_BUILD_DIR)/%.o,$(notdir $(APP_SRC)))
 APP_OBJS += $(patsubst %.S,$(APP_BUILD_DIR)/%.o,$(notdir $(APP_ASM)))
 VPATH += \
-	$(APP_SRC_DIR)/blinky_demo \
-	$(APP_SRC_DIR)/full_demo \
 	$(APP_SRC_DIR)/isp \
 	$(APP_SRC_DIR)
 

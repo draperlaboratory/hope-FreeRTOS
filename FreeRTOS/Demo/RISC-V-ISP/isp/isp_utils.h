@@ -30,4 +30,6 @@ int t_printf(const char *s, ...);
 extern void isp_test_device_pass(void) __attribute__((weak_import));
 extern void isp_test_device_fail(void) __attribute__((weak_import));
 
+extern int isp_main(void) __attribute__((weak_import));
+
 #endif
