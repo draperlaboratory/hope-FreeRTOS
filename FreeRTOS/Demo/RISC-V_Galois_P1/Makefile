@@ -1,7 +1,7 @@
 RISCV_XLEN ?= 32
 RISCV_LIB  ?= elf
 CCPATH =
-ARCH 		= -march=rv32im
+ARCH 		= -march=rv32ima
 ABI 		= -mabi=ilp32
 
 
