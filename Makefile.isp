@@ -8,7 +8,7 @@ ISP_PREFIX ?= $(HOME)/.local/isp/
 SOURCE_DIR := FreeRTOS/Source
 
 DEMO_DIR   := FreeRTOS/Demo
-HIFIVE_DIR := $(DEMO_DIR)/RISC-V-Qemu-sifive_e-FreedomStudio
+HIFIVE_DIR := $(DEMO_DIR)/RISC-V-ISP
 VCU118_DIR := $(DEMO_DIR)/RISC-V_Galois_P1
 
 DEMO_LIBS := $(HIFIVE_DIR)/build/rv32/libfreertos-hifive32.a
