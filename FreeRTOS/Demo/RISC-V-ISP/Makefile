@@ -193,7 +193,7 @@ lib: directories $(OUT_LIB)
 $(APP_BUILD_DIR)/%.o : %.c
 	@echo "[APP Objects] : $@ ______________________________________________________________"
 	@echo "Building: $<"
-	$(GCC) $(CFLAGS) $(APP_INCLUDES) -o $@ -c $<
+	$(GCC) $(CFLAGS) $(TEST_INCLUDES) $(APP_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
 $(APP_BUILD_DIR)/%.o : %.S
