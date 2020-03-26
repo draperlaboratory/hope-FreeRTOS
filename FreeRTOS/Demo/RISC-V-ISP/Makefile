@@ -246,7 +246,7 @@ $(BUILD_DIRECTORIES):
 	mkdir -p $@
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf ./build
 
 clean-libfreertos-objs:
 	@echo "Cleaning libfreertos objects"
