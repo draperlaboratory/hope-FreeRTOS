@@ -127,7 +127,8 @@ VPATH += $(FREERTOS_DIR)/Demo/Common/Minimal
 
 TEST_SRC_DIR = ./isp
 TEST_SRC = \
-	$(APP_SRC_DIR)/isp/test_stub.c
+	$(APP_SRC_DIR)/isp/test_stub.c \
+	$(APP_SRC_DIR)/isp/utils.c
 
 TEST_INCLUDES = \
 	-I ./isp
