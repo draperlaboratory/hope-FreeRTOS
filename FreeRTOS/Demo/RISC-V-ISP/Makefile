@@ -10,6 +10,12 @@ ARCH_XLEN = $(subst rv,,$(ARCH))
 BUILD_DIR = ./build/$(ARCH)
 OUT_LIB = $(BUILD_DIR)/libfreertos-hifive$(ARCH_XLEN).a
 
+SDK_DIR = ./freedom-e-sdk
+PLAT_DIR = $(SDK_DIR)/env/freedom-e300-hifive1/
+PLAT_LINK_SCRIPT = flash.lds
+
+LINKER_SCRIPT ?= $(PLAT_DIR)/$(PLAT_LINK_SCRIPT)
+
 include BuildEnvironment.mk
 include FreeRTOS.mk
 -include $(wildcard $(OUTDIR)/*.d)
@@ -27,8 +33,6 @@ endif
 ARCH_PORTABLE_INC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(BASE_ARCH)/
 ARCH_PORTABLE_SRC = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(BASE_ARCH)/port.c
 ARCH_PORTABLE_ASM = $(FREERTOS_SOURCE_DIR)/portable/GCC/$(BASE_ARCH)/portASM.S
-
-SDK_DIR = ./freedom-e-sdk
 
 LDFLAGS += -L$(BUILD_DIR)
 LDFLAGS += -Wl,-Map,"$(BUILD_DIR)/$(PROJ_NAME).map"
