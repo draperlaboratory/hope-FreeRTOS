@@ -1831,7 +1831,7 @@ uint8_t ucProtocol;
 	{
 		return ipINVALID_LENGTH;
 	}
-	if( uxBufferLength < FreeRTOS_ntohs( pxIPPacket->xIPHeader.usLength ) )
+	if( uxBufferLength < ( size_t ) ( ipSIZE_OF_ETH_HEADER + FreeRTOS_ntohs( pxIPPacket->xIPHeader.usLength ) ) )
 	{
 		return ipINVALID_LENGTH;
 	}
@@ -2323,3 +2323,9 @@ BaseType_t FreeRTOS_IsNetworkUp( void )
 	}
 #endif
 /*-----------------------------------------------------------*/
+
+/* Provide access to private members for verification. */
+#ifdef FREERTOS_TCP_ENABLE_VERIFICATION
+	#include "aws_freertos_ip_verification_access_ip_define.h"
+#endif
+

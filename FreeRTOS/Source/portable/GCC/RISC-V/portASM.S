@@ -1,5 +1,5 @@
 /*
- * FreeRTOS Kernel V10.2.1
+ * FreeRTOS Kernel V10.2.0
  * Copyright (C) 2019 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -202,7 +202,7 @@ at the top of this file. */
 
 .text
 .align 8
-.global freertos_risc_v_trap_handler
+.func
 freertos_risc_v_trap_handler:
 
     /* check for exception */
@@ -436,10 +436,12 @@ processed_source:
 	addi sp, sp, portCONTEXT_SIZE
 
 	mret
+	.endfunc
 .size freertos_risc_v_trap_handler, [.-freertos_risc_v_trap_handler]
 /*-----------------------------------------------------------*/
 
 .align 8
+.func
 xPortStartFirstTask:
 
 #if( portasmHAS_CLINT != 0 )
@@ -489,6 +491,7 @@ xPortStartFirstTask:
 	LOAD  x31, 28 * portWORD_SIZE( sp )	/* t6 */
 	addi	sp, sp, portCONTEXT_SIZE
 	ret
+	.endfunc
 /*-----------------------------------------------------------*/
 
 /*
@@ -554,6 +557,7 @@ xPortStartFirstTask:
  * pxCode
  */
 .align 8
+.func
 pxPortInitialiseStack:
 
 	csrr t0, mstatus					/* Obtain current mstatus value. */
@@ -578,4 +582,5 @@ chip_specific_stack_frame:				/* First add any chip specific registers to the st
 	addi a0, a0, -portWORD_SIZE
 	STORE a1, 0(a0)					/* mret value (pxCode parameter) onto the stack. */
 	ret
+	.endfunc
 /*-----------------------------------------------------------*/
