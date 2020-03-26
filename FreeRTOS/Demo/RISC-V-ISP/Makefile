@@ -153,8 +153,7 @@ OUT_OBJS = \
 # List of object files to compile for the system:
 LIB_OBJS = \
 	$(DEMO_COMMON_OBJS) \
-	$(FREERTOS_OBJS) \
-	$(APP_BUILD_DIR)/lib.o
+	$(FREERTOS_OBJS)
 
 BUILD_DIRECTORIES = \
 	$(APP_BUILD_DIR) \
