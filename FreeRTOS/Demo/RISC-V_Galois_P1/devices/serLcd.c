@@ -27,6 +27,15 @@ uint8_t go_to_line_2[] = {
 	LCD_LINE_2_CODE,
 };
 
+void serLcdClear(void)
+{
+#if LCD_USE_SPI
+    configASSERT(spi1_transmit(LCD_SPI_SLAVE_IDX, cmd_mode, sizeof(cmd_mode)) != -1);
+#else
+    configASSERT(iic_transmit(&LCD_DEFAULT_BUS, LCD_DEFAULT_ADDRESS, cmd_mode, sizeof(cmd_mode)) != -1);
+#endif
+}
+
 void serLcdPrintf(char *str, uint8_t len)
 {
     if (len > LCD_MAX_LINELEN)

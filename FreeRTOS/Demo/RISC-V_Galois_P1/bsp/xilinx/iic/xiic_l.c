@@ -94,12 +94,10 @@
 
 /***************************** Include Files *******************************/
 
+#include "bsp.h"
 #include "xil_types.h"
 #include "xil_assert.h"
 #include "xiic_l.h"
-
-#include "portmacro.h"
-#include "FreeRTOSConfig.h"
 
 /************************** Constant Definitions ***************************/
 
@@ -1091,7 +1089,7 @@ u32 XIic_WaitBusFree(UINTPTR BaseAddress)
 		if (BusyCount++ > 10000) {
 			return XST_FAILURE;
 		}
-    vTaskDelay(100 / portTICK_PERIOD_MS);
+		msleep(0.1);
 	}
 
 	return XST_SUCCESS;

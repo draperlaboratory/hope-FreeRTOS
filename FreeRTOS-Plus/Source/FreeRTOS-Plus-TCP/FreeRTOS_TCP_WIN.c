@@ -1277,7 +1277,7 @@ const int32_t l500ms = 500;
 	{
 	TCPSegment_t *pxSegment;
 	uint32_t ulMaxTime;
-	uint32_t ulReturn  = ~0UL;
+	uint32_t ulReturn  = ~0U;
 
 
 		/* Fetches data to be sent-out now.

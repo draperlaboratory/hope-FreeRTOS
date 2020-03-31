@@ -3415,16 +3415,16 @@ void vSocketWakeUpUser( FreeRTOS_Socket_t *pxSocket )
 						( int ) pxSocket->u.xTCP.usBacklog);
 					/* These should never evaluate to false since the buffers are both shorter than 5-6 characters (<=65535) */
 					configASSERT( copied_len >= 0 );
-					configASSERT( copied_len < sizeof( ucChildText ) );
+					configASSERT( copied_len < (int32_t) sizeof( ucChildText ) );
 				}
-				FreeRTOS_printf( ( "TCP %5d %-16lxip:%5d %d/%d %-13.13s %6lu %6u%s\n",
+				FreeRTOS_printf( ( "TCP %5d %-16xip:%5d %d/%d %-13.13s %6u %6u%s\n",
 					pxSocket->usLocalPort,		/* Local port on this machine */
-					pxSocket->u.xTCP.ulRemoteIP,	/* IP address of remote machine */
+					(unsigned int)pxSocket->u.xTCP.ulRemoteIP,	/* IP address of remote machine */
 					pxSocket->u.xTCP.usRemotePort,	/* Port on remote machine */
 					pxSocket->u.xTCP.rxStream != NULL,
 					pxSocket->u.xTCP.txStream != NULL,
 					FreeRTOS_GetTCPStateName( pxSocket->u.xTCP.ucTCPState ),
-					(age > 999999 ? 999999 : age), /* Format 'age' for printing */
+					(unsigned int)(age > 999999 ? 999999 : age), /* Format 'age' for printing */
 					pxSocket->u.xTCP.usTimeout,
 					ucChildText ) );
 					/* Remove compiler warnings if FreeRTOS_debug_printf() is not defined. */
@@ -3442,10 +3442,10 @@ void vSocketWakeUpUser( FreeRTOS_Socket_t *pxSocket )
 				count++;
 			}
 
-			FreeRTOS_printf( ( "FreeRTOS_netstat: %lu sockets %lu < %lu < %d buffers free\n",
-				count,
-				uxGetMinimumFreeNetworkBuffers( ),
-				uxGetNumberOfFreeNetworkBuffers( ),
+			FreeRTOS_printf( ( "FreeRTOS_netstat: %u sockets %u < %u < %d buffers free\n",
+				(unsigned int)count,
+				(unsigned int)uxGetMinimumFreeNetworkBuffers( ),
+				(unsigned int)uxGetNumberOfFreeNetworkBuffers( ),
 				ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS ) );
 		}
 	}
@@ -3481,6 +3481,11 @@ void vSocketWakeUpUser( FreeRTOS_Socket_t *pxSocket )
 			else
 			{
 				pxEnd = ( const MiniListItem_t* )listGET_END_MARKER( &xBoundTCPSocketsList );
+			}
+		#else
+			else
+			{
+				pxEnd=NULL;
 			}
 		#endif /* ipconfigUSE_TCP == 1 */
 			for( pxIterator = ( const ListItem_t * ) ( listGET_NEXT( pxEnd ) );

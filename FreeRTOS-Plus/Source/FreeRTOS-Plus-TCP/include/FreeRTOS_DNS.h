@@ -89,7 +89,7 @@ uint32_t ulDNSHandlePacket( NetworkBufferDescriptor_t *pxNetworkBuffer );
 	uint32_t FreeRTOS_dnslookup( const char *pcHostName );
 
 	/* Remove all entries from the DNS cache. */
-	void FreeRTOS_dnsclear();
+	void FreeRTOS_dnsclear(void);
 #endif /* ipconfigUSE_DNS_CACHE != 0 */
 
 #if( ipconfigDNS_USE_CALLBACKS != 0 )

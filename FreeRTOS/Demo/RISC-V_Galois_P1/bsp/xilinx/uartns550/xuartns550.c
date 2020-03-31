@@ -628,7 +628,6 @@ unsigned int XUartNs550_ReceiveBuffer(XUartNs550 *InstancePtr)
 * @note		None.
 *
 *****************************************************************************/
-
 int XUartNs550_SetBaudRate(XUartNs550 *InstancePtr, u32 BaudRate)
 {
 
@@ -651,10 +650,8 @@ int XUartNs550_SetBaudRate(XUartNs550 *InstancePtr, u32 BaudRate)
 	 * rater based upon the input clock frequency and a baud clock prescaler
 	 * of 16
 	 */
-  
 	Divisor = ((InstancePtr->InputClockHz +((BaudRate * 16UL)/2)) /
 			(BaudRate * 16UL));
-
 	/*
 	 * check for too much error between the baud rate that will be generated
 	 * using the divisor and the expected baud rate, integer division also

@@ -73,6 +73,18 @@ BaseType_t xNetworkInterfaceInitialise( void )
 }
 /*-----------------------------------------------------------*/
 
+BaseType_t xNetworkInterfaceDestroy( void )
+{
+	FreeRTOS_debug_printf( ("xNetworkInterfaceDestroy\r\n") );
+	XAxiEthernet_IntDisable(&AxiEthernetInstance, XAE_INT_RECV_ERROR_MASK);
+	AxiEthernetDisableIntrSystem(&Plic, PLIC_SOURCE_ETH, XPAR_AXIETHERNET_0_DMA_RX_INTR, XPAR_AXIETHERNET_0_DMA_TX_INTR);
+	XAxiDma_Reset(&AxiDmaInstance);
+	XAxiEthernet_Reset(&AxiEthernetInstance);
+	PhyReset(&AxiEthernetInstance);
+	return pdPASS;
+}
+/*-----------------------------------------------------------*/
+
 BaseType_t xNetworkInterfaceOutput( NetworkBufferDescriptor_t * const pxNetworkBuffer, BaseType_t xReleaseAfterSend )
 {
 	/* get BD ring descriptor */
@@ -89,11 +101,19 @@ BaseType_t xNetworkInterfaceOutput( NetworkBufferDescriptor_t * const pxNetworkB
 	/* configure BD */
 	uint8_t* xTxBuffer = AxiEthernetGetTxBuffer();
 	memcpy(xTxBuffer, pxNetworkBuffer->pucEthernetBuffer, pxNetworkBuffer->xDataLength);
+#if defined(__clang__)
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
+#endif
 	XAxiDma_BdSetBufAddr(BdPtr,(u32)xTxBuffer);
 	XAxiDma_BdSetLength(BdPtr, pxNetworkBuffer->xDataLength, TxRingPtr->MaxTransferLen);
 	XAxiDma_BdSetCtrl(BdPtr, XAXIDMA_BD_CTRL_TXSOF_MASK |
 			     XAXIDMA_BD_CTRL_TXEOF_MASK);
-	
+#if defined(__clang__)
+#else
+#pragma GCC diagnostic pop
+#endif	
 	/* pass BD to HW */
 	taskENTER_CRITICAL();
 	configASSERT( XAxiDma_BdRingToHw(TxRingPtr, 1, BdPtr) == 0 );

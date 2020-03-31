@@ -194,7 +194,7 @@ static void prvEchoClientTask(void *pvParameters)
 				lStringLength = prvCreateTxData(pcTransmittedString, echoBUFFER_SIZES);
 
 				/* Add in some unique text at the front of the string. */
-				sprintf(pcTransmittedString, "TxRx message number %lu", ulTxCount);
+				sprintf(pcTransmittedString, "TxRx message number %u", (unsigned int)ulTxCount);
 				ulTxCount++;
 
 				FreeRTOS_debug_printf(("prvEchoClientTask [%li]: sending %lu bytes\r\n", xInstance, lStringLength));

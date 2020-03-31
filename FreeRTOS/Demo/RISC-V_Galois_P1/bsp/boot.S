@@ -70,11 +70,22 @@
     1 tab == 4 spaces!
 */
 
+#if mainDEMO_TYPE == 0xB002
+.extern xDtbAddr
+#endif
+
 /* Startup code */
 .globl boot
 boot:
     li t6, 0x1800
     csrw mstatus, t6
+#if mainDEMO_TYPE == 0xB002
+#if __riscv_xlen == 64
+    sd              a1, xDtbAddr, t6
+#else
+    sw              a1, xDtbAddr, t6
+#endif
+#endif
     j _mstart
 
 _mstart:

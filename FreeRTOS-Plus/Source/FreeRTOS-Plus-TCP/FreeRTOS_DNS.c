@@ -655,6 +655,11 @@ static const DNSMessage_t xDefaultPartDNSHeader =
 
 		/* Fill in the byte count, then move the pucStart pointer up to
 		the found byte position. */
+#if defined(__clang__)
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
+#endif
 		*pucStart = ( uint8_t ) ( ( uint32_t ) pucByte - ( uint32_t ) pucStart );
 		( *pucStart )--;
 
@@ -672,6 +677,10 @@ static const DNSMessage_t xDefaultPartDNSHeader =
 	/* Return the total size of the generated message, which is the space from
 	the last written byte to the beginning of the buffer. */
 	return ( ( uint32_t ) pucByte - ( uint32_t ) pucUDPPayloadBuffer + 1 ) + sizeof( *pxTail );
+#if defined(__clang__)
+#else
+#pragma GCC diagnostic pop
+#endif
 }
 /*-----------------------------------------------------------*/
 

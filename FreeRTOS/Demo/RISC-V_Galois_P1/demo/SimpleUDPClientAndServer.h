@@ -26,8 +26,12 @@
  */
 
 #ifndef SIMPLE_UDP_CLIENT_AND_SERVER_H
-#define SIMPLE_UDPCLIENT_AND_SERVER_H
+#define SIMPLE_UDP_CLIENT_AND_SERVER_H
 
+#if __riscv_xlen == 64
+void vStartSimpleUDPClientServerTasks(uint16_t usStackSize, uint64_t ulsPort, UBaseType_t uxPriority);
+#else
 void vStartSimpleUDPClientServerTasks(uint16_t usStackSize, uint32_t ulsPort, UBaseType_t uxPriority);
+#endif
 
 #endif /* SIMPLE_UDPCLIENT_AND_SERVER_H */

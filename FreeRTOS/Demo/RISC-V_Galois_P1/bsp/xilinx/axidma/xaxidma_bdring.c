@@ -73,6 +73,7 @@
 
 #include "xaxidma_bdring.h"
 #include <stdio.h>
+#include "FreeRTOS.h" // pvPortMalloc
 
 /************************** Constant Definitions *****************************/
 /* Use 100 milliseconds for 100 MHz
@@ -470,7 +471,7 @@ u32 XAxiDma_BdRingCreate(XAxiDma_BdRing *RingPtr, UINTPTR PhysAddr,
 	RingPtr->HwTail = (XAxiDma_Bd *) VirtAddr;
 	RingPtr->PostHead = (XAxiDma_Bd *) VirtAddr;
 	RingPtr->BdaRestart = (XAxiDma_Bd *) VirtAddr;
-	RingPtr->CyclicBd = (XAxiDma_Bd *) malloc(sizeof(XAxiDma_Bd));
+	RingPtr->CyclicBd = (XAxiDma_Bd *) pvPortMalloc(sizeof(XAxiDma_Bd));
 
 	return XST_SUCCESS;
 }
@@ -1311,6 +1312,12 @@ int XAxiDma_BdRingFromHw(XAxiDma_BdRing * RingPtr, int BdLimit,
 			BdPartialCount++;
 		}
 
+		if (RingPtr->Cyclic) {
+			BdSts = BdSts & ~XAXIDMA_BD_STS_COMPLETE_MASK;
+			XAxiDma_BdWrite(CurBdPtr, XAXIDMA_BD_STS_OFFSET, BdSts);
+			XAXIDMA_CACHE_FLUSH(CurBdPtr);
+		}
+
 		/* Reached the end of the work group */
 		if (CurBdPtr == RingPtr->HwTail) {
 			break;
@@ -1389,8 +1396,8 @@ int XAxiDma_BdRingFree(XAxiDma_BdRing * RingPtr, int NumBd,
 		printf("BdRingFree: Error free BDs: "
 		"post count %d to free %d, PostHead %x to free ptr %x\r\n",
 			RingPtr->PostCnt, NumBd,
-			(UINTPTR)RingPtr->PostHead,
-			(UINTPTR)BdSetPtr);
+			(unsigned int)(UINTPTR)RingPtr->PostHead,
+			(unsigned int)(UINTPTR)BdSetPtr);
 
 		return XST_DMA_SG_LIST_ERROR;
 	}

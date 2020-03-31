@@ -1006,7 +1006,7 @@ static TickType_t uxTick = ( TickType_t ) -1;
 static void prvAutoReloadTimerCallback( TimerHandle_t pxExpiredTimer )
 {
 size_t uxTimerID;
-
+	#pragma GCC diagnostic ignored "-Wbad-function-cast"
 	uxTimerID = ( size_t ) pvTimerGetTimerID( pxExpiredTimer );
 	if( uxTimerID <= ( configTIMER_QUEUE_LENGTH + 1 ) )
 	{

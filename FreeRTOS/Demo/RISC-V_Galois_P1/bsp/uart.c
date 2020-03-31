@@ -260,7 +260,7 @@ static uint8_t uart_txchar(struct UartDriver *Uart, uint8_t c)
 }
 
 /**
- * Transmit a buffer. Waits for @UART_TX_DELAY ms. Synchronous API.
+ * Transmit a buffer. Synchronous API.
  * Returns number of transmitted bytes or -1 in case of a timeout.
  */
 static int uart_txbuffer(struct UartDriver *Uart, uint8_t *ptr, int len)
@@ -271,11 +271,16 @@ static int uart_txbuffer(struct UartDriver *Uart, uint8_t *ptr, int len)
     configASSERT(xSemaphoreTake(Uart->tx_mutex, portMAX_DELAY) == pdTRUE);
 
 #if XPAR_UART_USE_POLLING_MODE
-    for (int i = 0; i < len; i++)
-    {
-        XUartNs550_SendByte(Uart->Device.BaseAddress, ptr[i]);
+    int idx = 0;
+    int remaining = len;
+    int sent = 0;
+    while (remaining > 0) {
+        sent = XUartNs550_Send(&Uart->Device, &ptr[idx], remaining);
+        configASSERT(sent >= 0);
+        remaining -= sent;
+        idx += sent;
     }
-    returnval = len;
+    returnval = idx;
 #else
     /* Get current task handle */
     Uart->tx_task = xTaskGetCurrentTaskHandle();
@@ -300,8 +305,9 @@ static int uart_txbuffer(struct UartDriver *Uart, uint8_t *ptr, int len)
 }
 
 /**
- * Receive a buffer of data. Synchronous API. Note that right now it waits
- * indefinitely until the buffer is filled.
+ * Receive a buffer of data. Asynchronous API - can return 0 if no data are
+ * available, and less than `len` data. The UART device can hold max 16 bytes
+ * in the internal FIFO, hence returnval will never be more than 16
  */
 static int uart_rxbuffer(struct UartDriver *Uart, uint8_t *ptr, int len)
 {
@@ -311,11 +317,7 @@ static int uart_rxbuffer(struct UartDriver *Uart, uint8_t *ptr, int len)
     configASSERT(xSemaphoreTake(Uart->rx_mutex, portMAX_DELAY) == pdTRUE);
 
 #if XPAR_UART_USE_POLLING_MODE
-    for (int i = 0; i < len; i++)
-    {
-        ptr[i] = XUartNs550_RecvByte(Uart->Device.BaseAddress);
-    }
-    returnval = len;
+    returnval = XUartNs550_Recv(&Uart->Device, ptr, len);;
 #else
     /* Get current task handle */
     Uart->rx_task = xTaskGetCurrentTaskHandle();

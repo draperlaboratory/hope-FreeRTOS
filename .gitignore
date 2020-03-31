@@ -3,6 +3,7 @@ FreeRTOS/Demo/RISC-V-ISP/build
 # build objects
 *.o
 *.d
+*.asm
 *.elf
 *.a
 *~
