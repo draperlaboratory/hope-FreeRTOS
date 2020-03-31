@@ -19,12 +19,12 @@ SECTIONS
 {
   __stack_size = DEFINED(__stack_size) ? __stack_size : 4K;
 
-  .init           :
+  .init       ALIGN(4):
   {
     KEEP (*(SORT_NONE(.init)))
   } >flash AT>flash :flash
 
-  .text           :
+  .text       ALIGN(4):
   {
     *(.text.unlikely .text.unlikely.*)
     *(.text.startup .text.startup.*)
@@ -32,7 +32,7 @@ SECTIONS
     *(.gnu.linkonce.t.*)
   } >flash AT>flash :flash
 
-  .fini           :
+  .fini       ALIGN(4):
   {
     KEEP (*(SORT_NONE(.fini)))
   } >flash AT>flash :flash
@@ -41,8 +41,9 @@ SECTIONS
   PROVIDE (_etext = .);
   PROVIDE (etext = .);
 
-  .rodata         :
+  .rodata     ALIGN(4):
   {
+    . = ALIGN(4);
     *(.rdata)
     *(.rodata .rodata.*)
     *(.gnu.linkonce.r.*)
@@ -50,14 +51,14 @@ SECTIONS
 
   . = ALIGN(4);
 
-  .preinit_array  :
+  .preinit_array  ALIGN(4):
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array))
     PROVIDE_HIDDEN (__preinit_array_end = .);
   } >flash AT>flash :flash
 
-  .init_array     :
+  .init_array ALIGN(4):
   {
     PROVIDE_HIDDEN (__init_array_start = .);
     KEEP (*(SORT_BY_INIT_PRIORITY(.init_array.*) SORT_BY_INIT_PRIORITY(.ctors.*)))
@@ -65,7 +66,7 @@ SECTIONS
     PROVIDE_HIDDEN (__init_array_end = .);
   } >flash AT>flash :flash
 
-  .fini_array     :
+  .fini_array ALIGN(4):
   {
     PROVIDE_HIDDEN (__fini_array_start = .);
     KEEP (*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
@@ -73,7 +74,7 @@ SECTIONS
     PROVIDE_HIDDEN (__fini_array_end = .);
   } >flash AT>flash :flash
 
-  .ctors          :
+  .ctors      ALIGN(4):
   {
     /* gcc uses crtbegin.o to find the start of
        the constructors, so we make sure it is
@@ -95,7 +96,7 @@ SECTIONS
     KEEP (*(.ctors))
   } >flash AT>flash :flash
 
-  .dtors          :
+  .dtors      ALIGN(4):
   {
     KEEP (*crtbegin.o(.dtors))
     KEEP (*crtbegin?.o(.dtors))
@@ -104,19 +105,19 @@ SECTIONS
     KEEP (*(.dtors))
   } >flash AT>flash :flash
 
-  .lalign         :
+  .lalign     ALIGN(4):
   {
     . = ALIGN(4);
     PROVIDE( _data_lma = . );
   } >flash AT>flash :flash
 
-  .dalign         :
+  .dalign     ALIGN(4):
   {
     . = ALIGN(4);
     PROVIDE( _data = . );
   } >ram AT>flash :ram_init
 
-  .data          :
+  .data      ALIGN(4):
   {
     *(.data .data.*)
     *(.gnu.linkonce.d.*)
@@ -138,7 +139,7 @@ SECTIONS
 
   PROVIDE( _fbss = . );
   PROVIDE( __bss_start = . );
-  .bss            :
+  .bss        ALIGN(4):
   {
     *(.sbss*)
     *(.gnu.linkonce.sb.*)
