@@ -170,10 +170,17 @@
   asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
   __tmp; })
 
+/* TODO: */
+/*
+  The conditional here does not work. It seems to see the value as less than 32
+ */
+/* #define write_csr(reg, val) ({ \ */
+/*   if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \ */
+/*     asm volatile ("csrwi " #reg ", %0" :: "i"(val)); \ */
+/*   else \ */
+/*     asm volatile ("csrw " #reg ", %0" :: "r"(val)); }) */
+
 #define write_csr(reg, val) ({ \
-  if (__builtin_constant_p(val) && (unsigned long)(val) < 32) \
-    asm volatile ("csrw " #reg ", %0" :: "i"(val)); \
-  else \
     asm volatile ("csrw " #reg ", %0" :: "r"(val)); })
 
 #define swap_csr(reg, val) ({ unsigned long __tmp; \
