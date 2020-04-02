@@ -86,11 +86,6 @@ VPATH += $(FREERTOS_SOURCE_DIR)/portable/GCC/$(BASE_ARCH)
 CFLAGS += -DportasmHANDLE_INTERRUPT=$(INTERRUPT_HANDLER)
 
 # Set up application source, include, and object files for compilation: ______________________
-APP_SRC_DIR = .
-APP_SRC = \
-	$(APP_SRC_DIR)/main.c \
-	$(APP_SRC_DIR)/isp/isp_main.c
-
 APP_INCLUDES = \
 	-I ./ \
 	-I $(SDK_DIR)/include \
@@ -101,11 +96,6 @@ APP_INCLUDES = \
 	-I $(FREERTOS_DIR)/Demo/Common/include
 
 APP_BUILD_DIR = $(BUILD_DIR)/app
-APP_OBJS := $(patsubst %.c,$(APP_BUILD_DIR)/%.o,$(notdir $(APP_SRC)))
-APP_OBJS += $(patsubst %.S,$(APP_BUILD_DIR)/%.o,$(notdir $(APP_ASM)))
-VPATH += \
-	$(APP_SRC_DIR)/isp \
-	$(APP_SRC_DIR)
 
 DEMO_COMMON_SRC =  \
 	$(FREERTOS_DIR)/Demo/Common/Minimal/EventGroupsDemo.c \
@@ -118,21 +108,6 @@ DEMO_COMMON_SRC =  \
 
 DEMO_COMMON_OBJS := $(patsubst %.c,$(APP_BUILD_DIR)/%.o,$(notdir $(DEMO_COMMON_SRC)))
 VPATH += $(FREERTOS_DIR)/Demo/Common/Minimal
-
-TEST_SRC_DIR = ./isp
-TEST_SRC = \
-	$(APP_SRC_DIR)/isp/test_stub.c \
-	$(APP_SRC_DIR)/isp/utils.c
-
-TEST_INCLUDES = \
-	-I ./isp
-
-TEST_BUILD_DIR = $(BUILD_DIR)/isp
-TEST_OBJS := $(patsubst %.c,$(TEST_BUILD_DIR)/%.o,$(notdir $(TEST_SRC)))
-VPATH += \
-	$(APP_SRC_DIR)/isp
-
-OUT_ELF = $(BUILD_DIR)/FreeRTOS-$(PROJ_NAME).elf
 
 # Need to tell FreeRTOS where to find the FreeRTOSConfig.h __________________________________
 FREERTOS_INCLUDES += \
@@ -161,11 +136,10 @@ BUILD_DIRECTORIES = \
 	$(FREERTOS_BUILD_DIR)
 
 .PHONY: debug clean app_compile debug-app frtos_compile print-info out_elf sim-qemu gdb lib clean-libfreertos-objs
-all: directories $(OUT_OBJS) $(OUT_ELF) $(OUT_LIB) $(BUILD_DIR)/libfreertos%.a
+all: directories $(OUT_OBJS) $(OUT_LIB) $(BUILD_DIR)/libfreertos%.a
 directories: $(BUILD_DIRECTORIES)
 app_compile: directories $(APP_OBJS)
 frtos_compile: directories $(FREERTOS_OBJS)
-out_elf: directories $(OUT_ELF)
 lib: directories $(OUT_LIB)
 
 # Notes
@@ -213,15 +187,6 @@ $(TEST_BUILD_DIR)/%.o : %.c
 	$(GCC) $(CFLAGS) $(TEST_INCLUDES) -o $@ -c $<
 	@echo "Finished Building: $<"
 
-# Generate ELF ___________________________________________________________________________
-$(OUT_ELF): $(OUT_OBJS) $(TEST_OBJS)
-	@echo '___________________________________________________________________________________'
-	@echo 'Building target: $@'
-	@echo '_______________________________'
-	$(GCC) $(LDFLAGS) $(LDOPTS) -o $@ $(OUT_OBJS) $(TEST_OBJS) $(LIB_FLAGS)
-	@echo 'Finished building target: $@'
-	@echo ' '
-
 # Generate lib___________________________________________________________________________
 $(OUT_LIB): directories $(LIB_OBJS)
 	@echo '___________________________________________________________________________________'
@@ -250,9 +215,3 @@ clean:
 clean-libfreertos-objs:
 	@echo "Cleaning libfreertos objects"
 	rm -rfv $(LIB_OBJS)
-
-sim-qemu: $(OUT_ELF)
-	qemu-system-riscv$(ARCH_XLEN) -kernel $^  -S -s -machine sifive_e -nographic
-
-gdb: $(OUT_ELF)
-	$(GDB) -iex "set mem inaccessible-by-default off" -iex "set arch riscv:$(ARCH)" -iex "set riscv use_compressed_breakpoint off"
