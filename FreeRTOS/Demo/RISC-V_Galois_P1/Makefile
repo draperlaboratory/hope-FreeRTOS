@@ -64,8 +64,8 @@ INCLUDES = \
 
 ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
-CFLAGS = $(WARNINGS) $(INCLUDES) -ffunction-sections -fdata-sections
-CFLAGS += -O0 -g3 $(ARCH) $(ABI) --target=riscv32-unknown-elf
+CFLAGS = $(WARNINGS) $(INCLUDES) -ffunction-sections -fdata-sections -mno-relax
+CFLAGS += -O0 -g3 $(ARCH) $(ABI) --target=riscv32-unknown-elf 
 CFLAGS += -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
 AR_FLAGS = --target=riscv32-unknown-elf 
 
@@ -149,7 +149,7 @@ INCLUDES = \
 
 ASFLAGS  += -g $(ARCH) $(ABI) --target=riscv32-unknown-elf -Wa,-Ilegacy \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions \
-	-DportasmHANDLE_INTERRUPT=external_interrupt_handler
+	-DportasmHANDLE_INTERRUPT=external_interrupt_handler -mno-relax
 
 ifeq ($(PROG),main_blinky)
 	CFLAGS += -DmainDEMO_TYPE=1

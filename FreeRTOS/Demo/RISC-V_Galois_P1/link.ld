@@ -72,8 +72,8 @@
 
 OUTPUT_ARCH( "riscv" )
 
-_STACK_SIZE = DEFINED(_STACK_SIZE) ? _STACK_SIZE : 0x4000;
-_HEAP_SIZE = DEFINED(_HEAP_SIZE) ? _HEAP_SIZE : 0x4000;
+_STACK_SIZE = 0x4000;
+_HEAP_SIZE  = 0x8000;
 
 /*****************************************************************************
  * Define memory layout
@@ -120,6 +120,8 @@ SECTIONS {
        __rodata_end = .;
 	} > dmem
 
+    .tohost ALIGN(0x1000) : { *(.tohost) } > dmem
+
 	.sbss : {
 	   __sbss_start = .;
 	   *(.sbss)
@@ -127,7 +129,7 @@ SECTIONS {
 	   *(.gnu.linkonce.sb.*)
 	   __sbss_end = .;
 	} > dmem
-	
+
     .sdata : {
         _gp = . + 0x800;
         *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata*)
@@ -154,23 +156,27 @@ SECTIONS {
        __bss_end = .;
     } > dmem
 
-    /* Generate Stack and Heap definitions */
+   /* Generate Stack and Heap definitions
+    * Stack is used by the ISR and the main() for initialization
+    * Stack grows downwards
+    */
+   .stack : {
+       _stack_end = .;
+       . += _STACK_SIZE;
+       . = ALIGN(8);
+       _stack = .;
+       __stack = _stack;
+       . = ALIGN(64);
+       __freertos_irq_stack_top = .;
+    } > dmem
 
+   /* Heap grows upwards */
     .heap : {
        . = ALIGN(8);
        _heap = .;
        _heap_start = .;
        . += _HEAP_SIZE;
        _heap_end = .;
-    } > dmem
-
-    .stack : {
-       _stack_end = .;
-       . += _STACK_SIZE;
-       . = ALIGN(8);
-       _stack = .;
-       __stack = _stack;
-       __freertos_irq_stack_top = .;
     } > dmem
 
     .dover_metadata : {
