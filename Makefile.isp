@@ -23,7 +23,7 @@ INSTALL_BUILD_DIR := $(INSTALL_DIR)/build
 all:
 	$(MAKE) -C $(HIFIVE_DIR) lib
 	$(MAKE) -C $(HIFIVE_DIR) lib ARCH=rv64
-	CLANG=1 $(MAKE) -C $(VCU118_DIR) lib
+	CLANG=1 USE_CLANG=yes $(MAKE) -C $(VCU118_DIR) lib
 
 install: install-libs install-headers install-build
 

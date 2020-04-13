@@ -20,7 +20,7 @@ endif
 
 # Decide which compiler to use
 ifeq ($(USE_CLANG),yes)
-	CC		= clang --target=$(CLANG_ARCH)
+	CC		= $(ISP_PREFIX)/bin/clang -arch=$(CLANG_ARCH)
 	# CPP		= clang++ --target=$(CLANG_ARCH)
 	# TODO: clang has problems with system includes, use g++ for now
 	CPP		= $(TARGET)-g++
