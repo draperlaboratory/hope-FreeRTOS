@@ -28,7 +28,7 @@ ISP_CFLAGS += -ffunction-sections -fdata-sections -fno-builtin-printf
 ISP_CFLAGS += -DDONT_USE_PLIC -DDONT_USE_M_TIME -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
 ISP_CFLAGS += -include sys/cdefs.h
 ISP_CFLAGS += $(ARCH_FLAGS)
-ISP_CFLAGS += -I $(ISP_PREFIX)/clang_sysroot/riscv$(ARCH_XLEN)-unknown-elf/include
+ISP_CFLAGS += -I $(ISP_PREFIX)/clang_sysroot/riscv64-unknown-elf/include
 # These flags are for outputing *.d dependency files for make
 
 ISP_ASMFLAGS =  -O0 -g3 -mno-relax

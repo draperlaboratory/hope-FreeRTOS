@@ -60,7 +60,7 @@ INCLUDES = \
 	-I$(FREERTOS_SOURCE_DIR)/include \
 	-I../Common/include \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V \
-	-I$(ISP_PREFIX)/clang_sysroot/riscv$(RISCV_XLEN)-unknown-elf/include
+	-I$(ISP_PREFIX)/clang_sysroot/riscv64-unknown-elf/include
 
 ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
@@ -145,7 +145,7 @@ INCLUDES = \
 	-I$(FREERTOS_SOURCE_DIR)/include \
 	-I../Common/include \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V \
-	-I$(ISP_PREFIX)/clang_sysroot/riscv$(RISCV_XLEN)-unknown-elf/include
+	-I$(ISP_PREFIX)/clang_sysroot/riscv64-unknown-elf/include
 
 ASFLAGS  += -g $(ARCH) $(ABI) --target=riscv32-unknown-elf -Wa,-Ilegacy \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions \
