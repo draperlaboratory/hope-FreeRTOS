@@ -33,7 +33,6 @@ SDK_SOURCE := \
 	$(SDK_WRAP_DIR)/sys/unlink.c \
 	$(SDK_WRAP_DIR)/sys/wait.c \
 	$(SDK_WRAP_DIR)/sys/write.c \
-	$(SDK_WRAP_DIR)/stdlib/malloc.c \
 	$(SDK_WRAP_DIR)/misc/write_hex.c \
 	$(SDK_DRIVER_DIR)/plic/plic_driver.c \
 	$(SDK_E300_DIR)/init.c \
