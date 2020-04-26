@@ -30,7 +30,6 @@ APP_SRC = \
 	$(APP_SRC_DIR)/sleep.c \
 	$(APP_SRC_DIR)/hr_gettime.c \
 	$(APP_SRC_DIR)/main.c \
-	$(APP_SRC_DIR)/memcpy.c \
 	$(APP_SRC_DIR)/platform.c \
 	$(APP_SRC_DIR)/uncached_memory.c \
 	$(APP_SRC_DIR)/add-record.c \
@@ -49,6 +48,7 @@ APP_SRC = \
 	$(APP_SRC_DIR)/user.c \
 	$(APP_SRC_DIR)/sample.c \
 	$(APP_SRC_DIR)/negative_tests.c
+#	$(APP_SRC_DIR)/memcpy.c \
 
 APP_INCLUDES = \
 	-I ./include \
