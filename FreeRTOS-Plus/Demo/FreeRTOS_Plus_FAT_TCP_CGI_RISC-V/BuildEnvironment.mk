@@ -20,6 +20,7 @@ COMMON_FLAGS += -ffunction-sections -fdata-sections -fno-builtin-printf
 ARCH_FLAGS = -march=rv32ima -mabi=ilp32 -mcmodel=medium
 
 CFLAGS = -std=gnu11
+CFLAGS += -include ${ISP_PREFIX}/include/inline_libs.h
 CFLAGS += $(COMMON_FLAGS)
 CFLAGS += $(ARCH_FLAGS)
 CFLAGS += -DDONT_USE_PLIC -DDONT_USE_M_TIME -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
