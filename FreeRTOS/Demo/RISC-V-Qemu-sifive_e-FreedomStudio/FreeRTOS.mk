@@ -8,6 +8,8 @@
 FREERTOS_DIR = ../..
 FREERTOS_SOURCE_DIR = $(FREERTOS_DIR)/Source
 
+MALLOC_VERSION ?= heap_2
+
 FREERTOS_SRC = \
 	$(FREERTOS_SOURCE_DIR)/croutine.c \
 	$(FREERTOS_SOURCE_DIR)/list.c \
@@ -16,7 +18,7 @@ FREERTOS_SRC = \
 	$(FREERTOS_SOURCE_DIR)/timers.c \
 	$(FREERTOS_SOURCE_DIR)/event_groups.c \
 	$(FREERTOS_SOURCE_DIR)/stream_buffer.c \
-	$(FREERTOS_SOURCE_DIR)/portable/MemMang/heap_2.c
+	$(FREERTOS_SOURCE_DIR)/portable/MemMang/$(MALLOC_VERSION).c
 
 FREERTOS_INC = $(FREERTOS_SOURCE_DIR)/include
 FREERTOS_CONFIG_INC ?= ./
