@@ -282,7 +282,7 @@ gen-tags: $(OUT_ELF)
 	@echo 'Generating Tags for $^'
 	isp_run_app $^ \
 	-r bare \
-	--policy none \
+	-p none \
 	-o ./isp-output \
 	--tag-only
 
