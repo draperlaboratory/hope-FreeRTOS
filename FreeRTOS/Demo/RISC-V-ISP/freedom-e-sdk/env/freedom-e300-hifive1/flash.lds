@@ -12,7 +12,7 @@ PHDRS
 {
   flash PT_LOAD;
   ram_init PT_LOAD;
-  ram PT_NULL;
+  ram PT_LOAD;
 }
 
 SECTIONS
