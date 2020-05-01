@@ -1,4 +1,4 @@
-SDK_PATH := FreeRTOS/Demo/RISC-V-Qemu-sifive_e-FreedomStudio/freedom-e-sdk
+SDK_PATH := FreeRTOS/Demo/RISC-V-ISP/freedom-e-sdk
 SDK_DIR := $(FREERTOS_DIR)/$(SDK_PATH)
 
 SDK_WRAP_DIR := $(SDK_DIR)/libwrap
