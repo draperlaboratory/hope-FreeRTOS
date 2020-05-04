@@ -66,7 +66,7 @@ ASMFLAGS += -DportasmHANDLE_INTERRUPT=handle_trap
 
 SDK_CFLAGS := -include sys/cdefs.h
 
-LDFLAGS += -Wl,--wrap=malloc -Wl,--wrap=free -Wl,--wrap=open -Wl,--wrap=lseek
+LDFLAGS += -Wl,--wrap=free -Wl,--wrap=open -Wl,--wrap=lseek
 LDFLAGS += -Wl,--wrap=fstat -Wl,--wrap=stat -Wl,--wrap=close -Wl,--wrap=link
 LDFLAGS += -Wl,--wrap=fork -Wl,--wrap=getpid -Wl,--wrap=kill -Wl,--wrap=wait
 LDFLAGS += -Wl,--wrap=sbrk -Wl,--wrap=_exit -Wl,--wrap=puts -Wl,--wrap=_malloc
