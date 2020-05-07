@@ -55,7 +55,7 @@ VPATH += \
 	$(SDK_DRIVER_DIR)/plic \
 	$(SDK_DRIVER_DIR)/fe300prci
 
-ARCH_FLAGS := -march=rv32ima -mabi=ilp32 -mcmodel=medium
+ARCH_FLAGS := -march=rv32ima -mabi=ilp32 -mcmodel=medium --target=riscv32-unknown-elf
 CFLAGS     += $(ARCH_FLAGS)
 ASMFLAGS   += $(ARCH_FLAGS)
 LDFLAGS    += $(ARCH_FLAGS)

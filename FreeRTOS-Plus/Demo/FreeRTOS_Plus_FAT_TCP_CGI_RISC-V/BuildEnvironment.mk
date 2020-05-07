@@ -1,30 +1,31 @@
 
 BUILD_DIR = ./build
-CROSS_COMPILE_PREFIX = riscv32-unknown-elf
 
 LINKER_SCRIPT = lscript.ld
 #-----------------------------------------------------------
 GCC     = $(ISP_PREFIX)/bin/clang
-OBJCOPY = $(CROSS_COMPILE_PREFIX)-objcopy
-OBJDUMP = $(CROSS_COMPILE_PREFIX)-objdump
-AR      = $(CROSS_COMPILE_PREFIX)-ar
-RANLIB  = $(CROSS_COMPILE_PREFIX)-ranlib
-GDB     = $(CROSS_COMPILE_PREFIX)-gdb
+
+OBJCOPY = $(ISP_PREFIX)/bin/llvm-objcopy
+OBJDUMP = $(ISP_PREFIX)/bin/llvm-objdump
+AR      = $(ISP_PREFIX)/bin/llvm-ar
+RANLIB  = $(ISP_PREFIX)/bin/llvm-ranlib
+GDB     = $(ISP_PREFIX)/bin/riscv64-unknown-elf-gdb
 
 OUT_ELF = FreeRTOS-web-server.elf
 CRT0    := UNKNOWN
 
 COMMON_FLAGS = -MT"$@" -Wall -O0 -g3 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)"
-COMMON_FLAGS += -ffunction-sections -fdata-sections -fno-builtin-printf
+COMMON_FLAGS += -ffunction-sections -fdata-sections -fno-builtin-printf -mno-relax
 
-ARCH_FLAGS = -march=rv32ima -mabi=ilp32 -mcmodel=medium
+ARCH_FLAGS = -march=rv32ima -mabi=ilp32 -mcmodel=medium --target=riscv32-unknown-elf
 
 CFLAGS = -std=gnu11
 CFLAGS += $(COMMON_FLAGS)
 CFLAGS += $(ARCH_FLAGS)
 CFLAGS += -DDONT_USE_PLIC -DDONT_USE_M_TIME -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
 CFLAGS += -include sys/cdefs.h
-CFLAGS += -I ${ISP_PREFIX}/riscv32-unknown-elf/include
+CFLAGS += -I $(ISP_PREFIX)/clang_sysroot/riscv64-unknown-elf/include
+CFLAGS += --sysroot=$(ISP_PREFIX)/clang_sysroot/riscv64-unknown-elf
 
 ASMFLAGS =
 ASMFLAGS += $(COMMON_FLAGS)
@@ -33,7 +34,7 @@ ASMFLAGS += -DportasmHANDLE_INTERRUPT=handle_trap
 
 LDFLAGS := -Xlinker --defsym=__stack_size=1K -O0 -g3
 LDFLAGS += -ffunction-sections -fdata-sections --specs=nano.specs -nostartfiles
-LDFLAGS += -T $(LINKER_SCRIPT)
+LDFLAGS += -T $(LINKER_SCRIPT) -fuse-ld=lld
 LDFLAGS += -L../
 LDFLAGS += -Wl,--start-group -Wl,--end-group
 LDFLAGS += -Wl,--wrap=open -Wl,--wrap=lseek -Wl,--wrap=read -Wl,--wrap=write
