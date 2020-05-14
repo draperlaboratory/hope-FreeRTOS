@@ -372,7 +372,7 @@ handle_synchronous:
 	STORE a1, 0( sp )					/* Save updated exception return address. */
 
 test_if_invalid:
-	li t0, 0x11 							/* 17 == policy violation. */
+	li t0, portRV_POLICY_VIOLATION_FAULT
 	bne a0, t0, test_if_environment_call
    jal end_test_print
    lw t0, test_dev_addr
