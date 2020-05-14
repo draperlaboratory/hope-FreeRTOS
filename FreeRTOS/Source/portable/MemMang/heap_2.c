@@ -184,14 +184,16 @@ void * __attribute__ ((noinline)) dover_tag(volatile uintptr_t *ptr, size_t byte
 #endif
   xTaskResumeAll();
 
- uintptr_t zero;
+  uintptr_t zero;
 
+  zero = (uintptr_t)dover_ptr_zero;
   count = 0;
   while(count < words) {
-    *p = dover_ptr_zero; // Tag the word
+    *p = zero; // Tag the word
     p++;
     count++;
   }
+  zero = 0;
 
   return res;
 }
@@ -205,14 +207,17 @@ void __attribute__ ((noinline)) dover_untag(volatile uintptr_t *ptr, size_t byte
   size_t words = btow(bytes);
   size_t count;
   volatile uintptr_t *p;
+  uintptr_t zero;
 
   p = ptr;
+  zero = (uintptr_t)dover_ptr_zero;
   count = 0;
   while(count < words) {
-    *p = (uintptr_t)dover_ptr_zero; // write specially tagged zero
+    *p = zero; // write specially tagged zero
     p++;
     count++;
   }
+  zero = 0;
 }
 
 /*-----------------------------------------------------------*/
