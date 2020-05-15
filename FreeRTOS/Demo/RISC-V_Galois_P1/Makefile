@@ -1,12 +1,23 @@
-RISCV_XLEN ?= 32
 RISCV_LIB  ?= elf
 CCPATH =
-ARCH 		= -march=rv32im
-ABI 		= -mabi=ilp32
 CLANG = yes
 
+ifneq ($(ARCH), rv64)
+RISCV_XLEN = 32
+RISCV_ARCH 		= -march=rv32ima
+RISCV_ABI 		= -mabi=ilp32
+CFLAGS += -DCPU_CLOCK_HZ=50000000
+else
+RISCV_XLEN = 64
+RISCV_ARCH 		= -march=rv64imafd
+RISCV_ABI 		= -mabi=lp64d
+
+CFLAGS += -mcmodel=medany
+CFLAGS += -DCPU_CLOCK_HZ=100000000
+endif
 
 TARGET=$(CCPATH)riscv${RISCV_XLEN}-unknown-${RISCV_LIB}
+CFLAGS += --target=$(TARGET)
 
 ifdef CLANG
 GCC     = $(ISP_PREFIX)/bin/clang
@@ -21,9 +32,14 @@ RANLIB	= $(ISP_PREFIX)/bin/llvm-ranlib
 
 # Use main_blinky as demo source and target file name if not specified
 PROG 	?= main_blinky
-LIBFREERTOS = libfreertos-vcu118.a
+LIBFREERTOS = libfreertos-vcu118$(RISCV_XLEN).a
 
 CRT0	= bsp/boot.S
+
+debugme:
+	echo $(ARCH)
+	echo $(GCC)
+	echo $(TARGET)
 
 # For debugging
 $(info $$PROG is [${PROG}])
@@ -62,10 +78,10 @@ INCLUDES = \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V \
 	-I$(ISP_PREFIX)/clang_sysroot/riscv64-unknown-elf/include
 
-ASFLAGS  += -g $(ARCH) $(ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
+ASFLAGS  += -g $(RISCV_ARCH) $(RISCV_ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
 CFLAGS = $(WARNINGS) $(INCLUDES) -ffunction-sections -fdata-sections -mno-relax
-CFLAGS += -O0 -g3 $(ARCH) $(ABI) --target=riscv32-unknown-elf 
+CFLAGS += -O0 -g3 $(RISCV_ARCH) $(RISCV_ABI) --target=riscv32-unknown-elf 
 CFLAGS += -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
 AR_FLAGS = --target=riscv32-unknown-elf 
 
@@ -147,7 +163,7 @@ INCLUDES = \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V \
 	-I$(ISP_PREFIX)/clang_sysroot/riscv64-unknown-elf/include
 
-ASFLAGS  += -g $(ARCH) $(ABI) --target=riscv32-unknown-elf -Wa,-Ilegacy \
+ASFLAGS  += -g $(RISCV_ARCH) $(RISCV_ABI) --target=riscv32-unknown-elf -Wa,-Ilegacy \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions \
 	-DportasmHANDLE_INTERRUPT=external_interrupt_handler -mno-relax
 
@@ -265,12 +281,12 @@ ARFLAGS=crsv
 #
 # Define all object files.
 #
-RTOS_OBJ = $(FREERTOS_SRC:.c=.o)
-APP_OBJ  = $(APP_SRC:.c=.o)
-PORT_OBJ = $(PORT_SRC:.c=.o)
-DEMO_OBJ = $(DEMO_SRC:.c=.o)
-PORT_ASM_OBJ = $(PORT_ASM:.S=.o)
-CRT0_OBJ = $(CRT0:.S=.o)
+RTOS_OBJ = $(FREERTOS_SRC:.c=.$(RISCV_XLEN).o)
+APP_OBJ  = $(APP_SRC:.c=.$(RISCV_XLEN).o)
+PORT_OBJ = $(PORT_SRC:.c=.$(RISCV_XLEN).o)
+DEMO_OBJ = $(DEMO_SRC:.c=.$(RISCV_XLEN).o)
+PORT_ASM_OBJ = $(PORT_ASM:.S=.$(RISCV_XLEN).o)
+CRT0_OBJ = $(CRT0:.S=.$(RISCV_XLEN).o)
 
 LIB_OBJS = $(CRT0_OBJ) $(PORT_ASM_OBJ) $(PORT_OBJ) $(RTOS_OBJ) $(APP_OBJ)
 ELF_OBJS = $(DEMO_OBJ)
@@ -288,11 +304,11 @@ $(info CFLAGS=$(CFLAGS))
 $(info LDFLAGS=$(LDFLAGS))
 $(info ARFLAGS=$(ARFLAGS))
 
-%.o: %.c
+%.$(RISCV_XLEN).o: %.c
 	@echo "    CC $<"
 	$(GCC) -c $(CFLAGS) -o $@ $<
 
-%.o: %.S
+%.$(RISCV_XLEN).o: %.S
 	@echo "    CC $<"
 	$(GCC) $(ASFLAGS) -c $(CFLAGS) -o $@ $<
 
@@ -313,7 +329,7 @@ $(LIBFREERTOS)  : $(LIB_OBJS) Makefile
 
 clean :
 	@rm -f $(ELF_OBJS) $(LIB_OBJS) $(LIBFREERTOS)
-	@rm -f *.elf *.map *.asm *.o
+	@rm -f *.elf *.map *.asm *.o *.a
 
 docs :
 	@doxygen

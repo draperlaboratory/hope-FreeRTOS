@@ -205,6 +205,7 @@ void __attribute__ ((noinline)) dover_untag(volatile uintptr_t *ptr, size_t byte
   size_t words = btow(bytes);
   size_t count;
   volatile uintptr_t *p;
+  uintptr_t zero;
 
   p = ptr;
   count = 0;

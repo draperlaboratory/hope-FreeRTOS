@@ -13,7 +13,8 @@ VCU118_DIR := $(DEMO_DIR)/RISC-V_Galois_P1
 
 DEMO_LIBS := $(HIFIVE_DIR)/build/rv32/libfreertos-hifive32.a
 DEMO_LIBS += $(HIFIVE_DIR)/build/rv64/libfreertos-hifive64.a
-DEMO_LIBS += $(VCU118_DIR)/libfreertos-vcu118.a
+DEMO_LIBS += $(VCU118_DIR)/libfreertos-vcu11832.a
+DEMO_LIBS += $(VCU118_DIR)/libfreertos-vcu11864.a
 
 INSTALL_DIR := $(ISP_PREFIX)/FreeRTOS
 INSTALL_LIB_DIR := $(INSTALL_DIR)/lib
@@ -24,6 +25,7 @@ all:
 	$(MAKE) -C $(HIFIVE_DIR) lib
 	$(MAKE) -C $(HIFIVE_DIR) lib ARCH=rv64
 	CLANG=1 $(MAKE) -C $(VCU118_DIR) lib
+	CLANG=1 $(MAKE) -C $(VCU118_DIR) lib ARCH=rv64
 
 install: install-libs install-headers install-build
 
