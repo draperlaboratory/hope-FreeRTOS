@@ -37,3 +37,6 @@
 [submodule "FreeRTOS-Plus/ThirdParty/wolfSSL"]
 	path = FreeRTOS-Plus/ThirdParty/wolfSSL
 	url = https://github.com/wolfSSL/wolfssl.git
+[submodule "FreeRTOS/Source"]
+	path = FreeRTOS/Source
+	url = https://github.com/GaloisInc/FreeRTOS-Kernel.git
