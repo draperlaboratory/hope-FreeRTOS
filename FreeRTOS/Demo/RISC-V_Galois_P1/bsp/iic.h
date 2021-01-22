@@ -17,6 +17,14 @@ struct IicDriver
     TaskHandle_t task_handle; /* handle for task that initiated a transaction */
 };
 
+enum iic_error {
+    IIC_TIMEOUT = -1,
+    IIC_SLAVE_NO_ACK = -2,
+    IIC_MASTER_SEND_ERROR = -3,
+    IIC_MASTER_RECV_ERROR = -4,
+    IIC_BUS_IS_BUSY = -5,
+};
+
 int iic_transmit(struct IicDriver *Iic, uint8_t addr, uint8_t *tx_data, uint8_t tx_len);
 int iic_receive(struct IicDriver *Iic, uint8_t addr, uint8_t *rx_data, uint8_t rx_len);
 
