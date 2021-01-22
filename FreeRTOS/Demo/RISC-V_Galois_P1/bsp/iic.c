@@ -98,19 +98,36 @@ __attribute__((unused)) static void iic_init(struct IicDriver *Iic, uint8_t devi
  * @param addr is the address of the slave device
  * @param tx_data is the data buffer
  * @param tx_len is the length of tx_data (and the number of bytes to be sent)
+ *
+ * @return Either number of transmitted bytes (returnval >= 0), or IIC_ERROR
  */
 int iic_transmit(struct IicDriver *Iic, uint8_t addr, uint8_t *tx_data, uint8_t tx_len)
 {
     int returnval;
     configASSERT(Iic->mutex != NULL);
     configASSERT(xSemaphoreTake(Iic->mutex, portMAX_DELAY) == pdTRUE);
+
+    if (XIic_IsIicBusy(&Iic->Device)) {
+        printf("(iic_transmit) Bus is busy!\n");
+        configASSERT(XIic_WaitBusFree(Iic->Device.BaseAddress) == XST_SUCCESS);
+        printf("(iic_transmit) Just waited for XIic_WaitBusFree(). Is bus busy? %u\n",XIic_IsIicBusy(&Iic->Device));
+        /* Release mutex and return */
+        xSemaphoreGive(Iic->mutex);
+        return IIC_BUS_IS_BUSY;   
+    }
+
     configASSERT(XIic_SetAddress(&Iic->Device, XII_ADDR_TO_SEND_TYPE, addr) == XST_SUCCESS);
 
     Iic->task_handle = xTaskGetCurrentTaskHandle();
     Iic->trans_len = tx_len;
 
-    // TODO: handle XST_IIC_BUS_BUSY (it should never happen, we have only one master)
-    configASSERT(XIic_MasterSend(&Iic->Device, tx_data, (int)tx_len) == XST_SUCCESS);
+    returnval = XIic_MasterSend(&Iic->Device, tx_data, (int)tx_len);
+    if (returnval != XST_SUCCESS) {
+        printf("(XIic_MasterSend) Error occured: %i\n", returnval);
+        /* Release mutex and return */
+        xSemaphoreGive(Iic->mutex);
+        return IIC_MASTER_SEND_ERROR;
+    }
 
     /* wait for notification */
     if (xTaskNotifyWait(0, 0, NULL, pdMS_TO_TICKS(IIC_TRANSACTION_DELAY_MS)))
@@ -120,8 +137,9 @@ int iic_transmit(struct IicDriver *Iic, uint8_t addr, uint8_t *tx_data, uint8_t 
         {
             // an error occured
             configASSERT(Iic->Errors == XII_SLAVE_NO_ACK_EVENT); // TODO: remove?
-            printf("Error occured: %i\n", Iic->Errors);
-            returnval = -1;
+            printf("(iic_transmit) Error occured: %i\n", Iic->Errors);
+            Iic->Errors = 0;
+            returnval = IIC_SLAVE_NO_ACK;
         }
         else
         {
@@ -132,7 +150,7 @@ int iic_transmit(struct IicDriver *Iic, uint8_t addr, uint8_t *tx_data, uint8_t 
     else
     {
         /* timeout occured */
-        returnval = -1;
+        returnval = IIC_TIMEOUT;
     }
 
     /* Release mutex and return */
@@ -147,19 +165,36 @@ int iic_transmit(struct IicDriver *Iic, uint8_t addr, uint8_t *tx_data, uint8_t 
  * @param addr is the address of the slave device
  * @param tx_data is the data buffer
  * @param tx_len is the length of rx_data (and the number of bytes to be received)
+ *
+ * @return Either number of received bytes (returnval >= 0), or IIC_ERROR
  */
 int iic_receive(struct IicDriver *Iic, uint8_t addr, uint8_t *rx_data, uint8_t rx_len)
 {
     int returnval;
     configASSERT(Iic->mutex != NULL);
     configASSERT(xSemaphoreTake(Iic->mutex, portMAX_DELAY) == pdTRUE);
+
+    if (XIic_IsIicBusy(&Iic->Device)) {
+        printf("(iic_receive) Bus is busy!\n");
+        configASSERT(XIic_WaitBusFree(Iic->Device.BaseAddress) == XST_SUCCESS);
+        printf("(iic_receive) Just waited for XIic_WaitBusFree(). Is bus busy? %u\n",XIic_IsIicBusy(&Iic->Device));
+        /* Release mutex and return */
+        xSemaphoreGive(Iic->mutex);
+        return IIC_BUS_IS_BUSY;   
+    }
+
     configASSERT(XIic_SetAddress(&Iic->Device, XII_ADDR_TO_SEND_TYPE, addr) == XST_SUCCESS);
 
     Iic->task_handle = xTaskGetCurrentTaskHandle();
     Iic->trans_len = rx_len;
 
-    // TODO: handle XST_IIC_BUS_BUSY (it should never happen, we have only one master)
-    configASSERT(XIic_MasterRecv(&Iic->Device, rx_data, (int)rx_len) == XST_SUCCESS);
+    returnval = XIic_MasterRecv(&Iic->Device, rx_data, (int)rx_len);
+    if (returnval != XST_SUCCESS) {
+        printf("(XIic_MasterRecv) Error occured: %i\n", returnval);
+        /* Release mutex and return */
+        xSemaphoreGive(Iic->mutex);
+        return IIC_MASTER_RECV_ERROR;
+    }
 
     /* wait for notification */
     if (xTaskNotifyWait(0, 0, NULL, pdMS_TO_TICKS(IIC_TRANSACTION_DELAY_MS)))
@@ -169,8 +204,8 @@ int iic_receive(struct IicDriver *Iic, uint8_t addr, uint8_t *rx_data, uint8_t r
         {
             // an error occured
             configASSERT(Iic->Errors == XII_SLAVE_NO_ACK_EVENT); // TODO: remove?
-            printf("Error occured: %i\n", Iic->Errors);
-            returnval = -1;
+            printf("(iic_receive)Error occured: %i\n", Iic->Errors);
+            returnval = IIC_SLAVE_NO_ACK;
         }
         else
         {
@@ -181,7 +216,7 @@ int iic_receive(struct IicDriver *Iic, uint8_t addr, uint8_t *rx_data, uint8_t r
     else
     {
         /* timeout occured */
-        returnval = -1;
+        returnval = IIC_TIMEOUT;
     }
 
     /* Release mutex and return */

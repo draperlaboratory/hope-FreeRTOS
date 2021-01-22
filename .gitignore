@@ -21,3 +21,7 @@ __pycache__/
 # Ignore certificate files.
 *.pem
 *.crt
+# Compiled files
+*.asm
+*.o
+*.elf
