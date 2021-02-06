@@ -202,9 +202,10 @@ int iic_receive(struct IicDriver *Iic, uint8_t addr, uint8_t *rx_data, uint8_t r
         /* Check Error value */
         if (Iic->Errors != 0)
         {
-            // an error occured
-            configASSERT(Iic->Errors == XII_SLAVE_NO_ACK_EVENT); // TODO: remove?
-            printf("(iic_receive)Error occured: %i\n", Iic->Errors);
+            /* an error occured */
+            printf("(iic_receive) Error occured: %i\n", Iic->Errors);
+            /* We need to zero the error variable, this is not done in the driver itself */
+            Iic->Errors = 0;
             returnval = IIC_SLAVE_NO_ACK;
         }
         else

@@ -354,7 +354,7 @@ to 1 but a DNS server cannot be contacted.*/
 
 // #define ipSTACK_TX_EVENT 42 // TODO: ???
 // #define iptraceNETWORK_INTERFACE_TRANSMIT() FreeRTOS_debug_printf( ("iptraceNETWORK_INTERFACE_TRANSMIT\r\n"));
-// #define iptraceETHERNET_RX_EVENT_LOST()     FreeRTOS_debug_printf( ("iptraceETHERNET_RX_EVENT_LOST\r\n"));
+#define iptraceETHERNET_RX_EVENT_LOST()     FreeRTOS_printf( ("iptraceETHERNET_RX_EVENT_LOST\r\n"));
 // #define iptraceNETWORK_INTERFACE_RECEIVE()  FreeRTOS_debug_printf( ("iptraceNETWORK_INTERFACE_RECEIVE\r\n"));
 // #define iptraceNO_BUFFER_FOR_SENDTO() 		FreeRTOS_debug_printf( ("iptraceNO_BUFFER_FOR_SENDTO\r\n"));
 // #define iptraceSENDTO_SOCKET_NOT_BOUND() 	FreeRTOS_debug_printf( ("iptraceSENDTO_SOCKET_NOT_BOUND\r\n"));
@@ -364,7 +364,7 @@ to 1 but a DNS server cannot be contacted.*/
 // #define ipconfigWATCHDOG_TIMER()			FreeRTOS_debug_printf( ("ipconfigWATCHDOG_TIMER\r\n"));
 // #define iptraceNETWORK_EVENT_RECEIVED(_X)	FreeRTOS_debug_printf( ("iptraceNETWORK_EVENT_RECEIVED: %i\r\n",_X));
 // #define iptraceSENDING_UDP_PACKET(_X)		FreeRTOS_debug_printf( ("iptraceSENDING_UDP_PACKET: addrs = %lx\r\n",_X));
-#define iptraceFAILED_TO_OBTAIN_NETWORK_BUFFER() FreeRTOS_debug_printf( ("iptraceFAILED_TO_OBTAIN_NETWORK_BUFFER\r\n"));
+#define iptraceFAILED_TO_OBTAIN_NETWORK_BUFFER() FreeRTOS_printf( ("iptraceFAILED_TO_OBTAIN_NETWORK_BUFFER\r\n"));
 // #define iptraceNETWORK_BUFFER_OBTAINED(_BUF) FreeRTOS_debug_printf( ("iptraceNETWORK_BUFFER_OBTAINED: %p (%p)\r\n", _BUF, _BUF->pucEthernetBuffer) );
 // #define iptraceNETWORK_BUFFER_RELEASED(_BUF) FreeRTOS_debug_printf( ("iptraceNETWORK_BUFFER_RELEASED: %p (%p)\r\n", _BUF, _BUF->pucEthernetBuffer) );
 
