@@ -31,6 +31,7 @@ int iic_receive(struct IicDriver *Iic, uint8_t addr, uint8_t *rx_data, uint8_t r
 #if BSP_USE_IIC0
 extern struct IicDriver Iic0;
 void iic0_init(void);
+void iic0_stop(void);
 int iic0_transmit(uint8_t addr, uint8_t *tx_data, uint8_t tx_len);
 int iic0_receive(uint8_t addr, uint8_t *rx_data, uint8_t rx_len);
 #endif
