@@ -10,6 +10,7 @@
 /* Static functions, macros etc */
 
 static void iic_init(struct IicDriver *Iic, uint8_t device_id, uint8_t plic_source_id);
+static void iic_stop(struct IicDriver *Iic, uint8_t device_id, uint8_t plic_source_id);
 int iic_transmit(struct IicDriver *Iic, uint8_t addr, uint8_t *tx_data, uint8_t tx_len);
 int iic_receive(struct IicDriver *Iic, uint8_t addr, uint8_t *rx_data, uint8_t rx_len);
 
@@ -92,6 +93,36 @@ __attribute__((unused)) static void iic_init(struct IicDriver *Iic, uint8_t devi
 }
 
 /**
+ * Stop IIC peripheral.
+ * TODO: handle mutex better, to avoid re-allocating new mutex every time
+ * the peripheral is started
+ * NOTE: iic_stop might not help with the BUY_IS_BUSY condition (se XIic_Stop documentation)
+ */
+static void iic_stop(struct IicDriver *Iic, uint8_t device_id, uint8_t plic_source_id)
+{
+    switch (device_id)
+    {
+#if BSP_USE_IIC0
+    case 0:
+        Iic->Device = XIic0;
+        break;
+#endif
+#if BSP_USE_IIC1
+    case 1:
+        Iic->Device = XIic1;
+        break;
+#endif
+    default:
+        // Trigger a fault: unsupported device ID
+        configASSERT(0);
+        break;
+    };
+
+    PLIC_unregister_interrupt_handler(&Plic, plic_source_id);
+    XIic_Stop(&Iic->Device);
+}
+
+/**
  * Transmit data over IIC bus. Synchronous API, this function blocks until the transaction ends.
  * 
  * @param Iic is the device driver
@@ -109,8 +140,6 @@ int iic_transmit(struct IicDriver *Iic, uint8_t addr, uint8_t *tx_data, uint8_t 
 
     if (XIic_IsIicBusy(&Iic->Device)) {
         printf("(iic_transmit) Bus is busy!\n");
-        configASSERT(XIic_WaitBusFree(Iic->Device.BaseAddress) == XST_SUCCESS);
-        printf("(iic_transmit) Just waited for XIic_WaitBusFree(). Is bus busy? %u\n",XIic_IsIicBusy(&Iic->Device));
         /* Release mutex and return */
         xSemaphoreGive(Iic->mutex);
         return IIC_BUS_IS_BUSY;   
@@ -176,8 +205,6 @@ int iic_receive(struct IicDriver *Iic, uint8_t addr, uint8_t *rx_data, uint8_t r
 
     if (XIic_IsIicBusy(&Iic->Device)) {
         printf("(iic_receive) Bus is busy!\n");
-        configASSERT(XIic_WaitBusFree(Iic->Device.BaseAddress) == XST_SUCCESS);
-        printf("(iic_receive) Just waited for XIic_WaitBusFree(). Is bus busy? %u\n",XIic_IsIicBusy(&Iic->Device));
         /* Release mutex and return */
         xSemaphoreGive(Iic->mutex);
         return IIC_BUS_IS_BUSY;   
