@@ -355,7 +355,7 @@ to 1 but a DNS server cannot be contacted.*/
 // #define ipSTACK_TX_EVENT 42 // TODO: ???
 // #define iptraceNETWORK_INTERFACE_TRANSMIT() FreeRTOS_debug_printf( ("iptraceNETWORK_INTERFACE_TRANSMIT\r\n"));
 #define iptraceETHERNET_RX_EVENT_LOST()     FreeRTOS_printf( ("iptraceETHERNET_RX_EVENT_LOST\r\n"));
-// #define iptraceNETWORK_INTERFACE_RECEIVE()  FreeRTOS_debug_printf( ("iptraceNETWORK_INTERFACE_RECEIVE\r\n"));
+// #define iptraceNETWORK_INTERFACE_RECEIVE()  FreeRTOS_printf( ("iptraceNETWORK_INTERFACE_RECEIVE\r\n"));
 // #define iptraceNO_BUFFER_FOR_SENDTO() 		FreeRTOS_debug_printf( ("iptraceNO_BUFFER_FOR_SENDTO\r\n"));
 // #define iptraceSENDTO_SOCKET_NOT_BOUND() 	FreeRTOS_debug_printf( ("iptraceSENDTO_SOCKET_NOT_BOUND\r\n"));
 // #define iptraceSENDTO_DATA_TOO_LONG() 		FreeRTOS_debug_printf( ("iptraceSENDTO_DATA_TOO_LONG\r\n"));
