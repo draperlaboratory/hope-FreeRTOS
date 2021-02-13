@@ -5,6 +5,9 @@
 #include "xiic.h"
 #include "semphr.h"
 
+#define IIC0_PRINT_STATS 0
+#define IIC_RESET_ERROR_THRESHOLD 5
+
 /* Device driver for IIC peripheral */
 struct IicDriver
 {
@@ -30,8 +33,12 @@ int iic_receive(struct IicDriver *Iic, uint8_t addr, uint8_t *rx_data, uint8_t r
 
 #if BSP_USE_IIC0
 extern struct IicDriver Iic0;
+void iic0_master_reset(void);
 void iic0_init(void);
 void iic0_stop(void);
+#if IIC0_PRINT_STATS
+void iic0_print_stats(void);
+#endif
 int iic0_transmit(uint8_t addr, uint8_t *tx_data, uint8_t tx_len);
 int iic0_receive(uint8_t addr, uint8_t *rx_data, uint8_t rx_len);
 #endif
