@@ -82,8 +82,17 @@
 
 /************************** Function Prototypes ****************************/
 
-static void StubFunction(XIic *InstancePtr);
+__attribute__((unused)) static void StubFunction(XIic *InstancePtr);
 static void TxErrorHandler(XIic *InstancePtr);
+
+static void AddrAsSlaveFunction(XIic *InstancePtr);
+static void NotAddrAsSlaveFunction(XIic *InstancePtr);
+static void RecvSlaveFunction(XIic *InstancePtr);
+static void SendSlaveFunction(XIic *InstancePtr);
+static void RecvMasterFunction(XIic *InstancePtr);
+static void SendMasterFunction(XIic *InstancePtr);
+static void ArbLostFunction(XIic *InstancePtr);
+static void BusNotBusyFunction(XIic *InstancePtr);
 
 /************************** Variable Definitions *****************************/
 
@@ -91,14 +100,14 @@ static void TxErrorHandler(XIic *InstancePtr);
  * of the driver such that some parts of it are optional. These pointers are
  * setup by functions in the optional parts of the driver.
  */
-void (*XIic_AddrAsSlaveFuncPtr) (XIic *InstancePtr) = StubFunction;
-void (*XIic_NotAddrAsSlaveFuncPtr) (XIic *InstancePtr) = StubFunction;
-void (*XIic_RecvSlaveFuncPtr) (XIic *InstancePtr) = StubFunction;
-void (*XIic_SendSlaveFuncPtr) (XIic *InstancePtr) = StubFunction;
-void (*XIic_RecvMasterFuncPtr) (XIic *InstancePtr) = StubFunction;
-void (*XIic_SendMasterFuncPtr) (XIic *InstancePtr) = StubFunction;
-void (*XIic_ArbLostFuncPtr) (XIic *InstancePtr) = StubFunction;
-void (*XIic_BusNotBusyFuncPtr) (XIic *InstancePtr) = StubFunction;
+void (*XIic_AddrAsSlaveFuncPtr) (XIic *InstancePtr) = AddrAsSlaveFunction;
+void (*XIic_NotAddrAsSlaveFuncPtr) (XIic *InstancePtr) = NotAddrAsSlaveFunction;
+void (*XIic_RecvSlaveFuncPtr) (XIic *InstancePtr) = RecvSlaveFunction;
+void (*XIic_SendSlaveFuncPtr) (XIic *InstancePtr) = SendSlaveFunction;
+void (*XIic_RecvMasterFuncPtr) (XIic *InstancePtr) = RecvMasterFunction;
+void (*XIic_SendMasterFuncPtr) (XIic *InstancePtr) = SendMasterFunction;
+void (*XIic_ArbLostFuncPtr) (XIic *InstancePtr) = ArbLostFunction;
+void (*XIic_BusNotBusyFuncPtr) (XIic *InstancePtr) = BusNotBusyFunction;
 
 /*****************************************************************************/
 /**
@@ -434,9 +443,90 @@ static void TxErrorHandler(XIic *InstancePtr)
 * @param	InstancePtr is a pointer to the XIic instance to be worked on.
 *
 ******************************************************************************/
-static void StubFunction(XIic *InstancePtr)
+__attribute__((unused)) static void StubFunction(XIic *InstancePtr)
 {
 	(void )InstancePtr;
 	Xil_AssertVoidAlways();
 }
+
+static void AddrAsSlaveFunction(XIic *InstancePtr)
+{
+	(void )InstancePtr;
+	Xil_AssertVoidAlways();
+}
+
+static void NotAddrAsSlaveFunction(XIic *InstancePtr)
+{
+	(void )InstancePtr;
+	Xil_AssertVoidAlways();
+}
+
+static void RecvSlaveFunction(XIic *InstancePtr)
+{
+	(void )InstancePtr;
+	Xil_AssertVoidAlways();
+}
+
+static void SendSlaveFunction(XIic *InstancePtr)
+{
+	(void )InstancePtr;
+	Xil_AssertVoidAlways();
+}
+
+static void RecvMasterFunction(XIic *InstancePtr)
+{
+	(void )InstancePtr;
+	Xil_AssertVoidAlways();
+}
+
+static void SendMasterFunction(XIic *InstancePtr)
+{
+	(void )InstancePtr;
+	Xil_AssertVoidAlways();
+}
+
+/**
+ * Interrupt(0) is the Arbitration Lost interrupt. This interrupt is set when arbitration for the IIC
+ * bus is lost. Firmware must respond by first clearing the Control Register (CR) MSMS bit and
+ * then clearing this interrupt by writing a 1 to the Interrupt Status Register (ISR) INT(0) bit to
+ * toggle it. See also the TX_FIFO reset bit in the Control Register (CR).
+ */
+static void ArbLostFunction(XIic *InstancePtr)
+{
+	u32 CntlReg;
+
+	// XIIC_CR_REG_OFFSET
+	// clear XIIC_CR_MSMS_MASK -> go to 0 to be a slave, then back to 1 to be master
+	CntlReg = XIic_ReadReg(InstancePtr->BaseAddress, XIIC_CR_REG_OFFSET);
+	CntlReg &= ~XIIC_CR_MSMS_MASK; // clear this bit
+	XIic_WriteReg(InstancePtr->BaseAddress, XIIC_CR_REG_OFFSET, CntlReg);
+	
+	// XIIC_IISR_OFFSET
+	// XIIC_INTR_ARB_LOST_MASK (toggle on write) -> write 1
+	CntlReg = XIic_ReadReg(InstancePtr->BaseAddress, XIIC_IISR_OFFSET);
+	CntlReg |= XIIC_INTR_ARB_LOST_MASK; // write
+	XIic_WriteReg(InstancePtr->BaseAddress, XIIC_IISR_OFFSET, CntlReg);
+
+	// XIIC_CR_REG_OFFSET
+	// set XIIC_CR_TX_FIFO_RESET_MASK to flush fifo -> write 1
+	CntlReg = XIic_ReadReg(InstancePtr->BaseAddress, XIIC_CR_REG_OFFSET);
+	CntlReg |= XIIC_CR_TX_FIFO_RESET_MASK; // write
+	XIic_WriteReg(InstancePtr->BaseAddress, XIIC_CR_REG_OFFSET, CntlReg);
+
+	// XIIC_IISR_OFFSET
+	// XIIC_INTR_ARB_LOST_MASK (toggle on write) -> write 0 in case the previous steps didn't help
+	CntlReg = XIic_ReadReg(InstancePtr->BaseAddress, XIIC_IISR_OFFSET);
+	CntlReg &= ~XIIC_INTR_ARB_LOST_MASK; // write
+	XIic_WriteReg(InstancePtr->BaseAddress, XIIC_IISR_OFFSET, CntlReg);
+
+
+}
+
+static void BusNotBusyFunction(XIic *InstancePtr)
+{
+	(void )InstancePtr;
+	Xil_AssertVoidAlways();
+}
+
+
 /** @} */

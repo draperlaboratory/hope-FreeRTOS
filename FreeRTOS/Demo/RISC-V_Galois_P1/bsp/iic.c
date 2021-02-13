@@ -10,7 +10,7 @@
 /* Static functions, macros etc */
 
 static void iic_init(struct IicDriver *Iic, uint8_t device_id, uint8_t plic_source_id);
-static void iic_stop(struct IicDriver *Iic, uint8_t device_id, uint8_t plic_source_id);
+static void iic_stop(struct IicDriver *Iic, uint8_t plic_source_id);
 int iic_transmit(struct IicDriver *Iic, uint8_t addr, uint8_t *tx_data, uint8_t tx_len);
 int iic_receive(struct IicDriver *Iic, uint8_t addr, uint8_t *rx_data, uint8_t rx_len);
 
@@ -98,26 +98,8 @@ __attribute__((unused)) static void iic_init(struct IicDriver *Iic, uint8_t devi
  * the peripheral is started
  * NOTE: iic_stop might not help with the BUY_IS_BUSY condition (se XIic_Stop documentation)
  */
-static void iic_stop(struct IicDriver *Iic, uint8_t device_id, uint8_t plic_source_id)
+static void iic_stop(struct IicDriver *Iic, uint8_t plic_source_id)
 {
-    switch (device_id)
-    {
-#if BSP_USE_IIC0
-    case 0:
-        Iic->Device = XIic0;
-        break;
-#endif
-#if BSP_USE_IIC1
-    case 1:
-        Iic->Device = XIic1;
-        break;
-#endif
-    default:
-        // Trigger a fault: unsupported device ID
-        configASSERT(0);
-        break;
-    };
-
     PLIC_unregister_interrupt_handler(&Plic, plic_source_id);
     XIic_Stop(&Iic->Device);
 }
@@ -179,6 +161,8 @@ int iic_transmit(struct IicDriver *Iic, uint8_t addr, uint8_t *tx_data, uint8_t 
     else
     {
         /* timeout occured */
+        printf("(iic_transmit) Resetting device.\n");
+        XIic_Reset(&Iic->Device);
         returnval = IIC_TIMEOUT;
     }
 
@@ -244,6 +228,7 @@ int iic_receive(struct IicDriver *Iic, uint8_t addr, uint8_t *rx_data, uint8_t r
     else
     {
         /* timeout occured */
+        printf("(iic_transmit) Resetting device.\n");
         returnval = IIC_TIMEOUT;
     }
 
@@ -337,6 +322,16 @@ static void StatusHandler(void *CallbackRef, int Status)
 }
 
 #if BSP_USE_IIC0
+/**
+ * Reset the i2c device
+ */
+void iic0_master_reset(void)
+{
+    iic_stop(&Iic0, PLIC_SOURCE_IIC0);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    iic_init(&Iic0, XPAR_IIC_0_DEVICE_ID, PLIC_SOURCE_IIC0);
+}
+
 void iic0_init(void)
 {
     iic_init(&Iic0, XPAR_IIC_0_DEVICE_ID, PLIC_SOURCE_IIC0);
@@ -367,5 +362,28 @@ int iic1_transmit(uint8_t addr, uint8_t *tx_data, uint8_t tx_len)
 int iic1_receive(uint8_t addr, uint8_t *rx_data, uint8_t rx_len)
 {
     return iic_receive(&Iic1, addr, rx_data, rx_len);
+}
+#endif
+
+#if IIC0_PRINT_STATS
+/**
+ * These stats are pretty much useful (they are only u8),
+ * including for completeness
+ */
+void iic0_print_stats(void)
+{
+    static XIicStats iic0stats;
+    XIic_GetStats(&Iic0.Device, &iic0stats);
+    printf("(iic0.TotalErrorCount) %i\r\n", Iic0.TotalErrorCount);
+    printf("(iic0.Errors) %i\r\n", Iic0.Errors);
+    printf("(iic0stats.ArbitrationLost) %u\r\n", iic0stats.ArbitrationLost);   /**< Number of times arbitration was lost */
+    printf("(iic0stats.RepeatedStarts) %u\r\n", iic0stats.RepeatedStarts);   /**< Number of repeated starts */
+    printf("(iic0stats.BusBusy) %u\r\n", iic0stats.BusBusy);   /**< Number of times bus busy status returned */
+    printf("(iic0stats.RecvBytes) %u\r\n", iic0stats.RecvBytes);   /**< Number of bytes received */
+    printf("(iic0stats.RecvInterrupts) %u\r\n", iic0stats.RecvInterrupts);   /**< Number of receive interrupts */
+    printf("(iic0stats.SendBytes) %u\r\n", iic0stats.SendBytes);   /**< Number of transmit bytes received */
+    printf("(iic0stats.SendInterrupts) %u\r\n", iic0stats.SendInterrupts);   /**< Number of transmit interrupts */
+    printf("(iic0stats.TxErrors) %u\r\n", iic0stats.TxErrors);   /**< Number of transmit errors (no ack) */
+    printf("(iic0stats.IicInterrupts) %u\r\n", iic0stats.IicInterrupts);   /**< Number of IIC (device) interrupts */
 }
 #endif
