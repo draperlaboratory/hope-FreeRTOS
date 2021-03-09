@@ -42,7 +42,7 @@
 	url = https://github.com/awslabs/aws-build-accumulator.git
 [submodule "FreeRTOS/Source"]
 	path = FreeRTOS/Source
-	url = https://github.com/GaloisInc/FreeRTOS-Kernel.git
+	url = git@github.com:GaloisInc/FreeRTOS-Kernel.git
 [submodule "FreeRTOS/Demo/RISC-V_Galois_P1"]
 	path = FreeRTOS/Demo/RISC-V_Galois_P1
 	url = git@github.com:DARPA-SSITH-Demonstrators/RISC-V_Galois_demo.git
