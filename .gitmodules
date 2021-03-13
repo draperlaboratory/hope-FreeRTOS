@@ -1,12 +1,9 @@
-[submodule "FreeRTOS/Source"]
-	path = FreeRTOS/Source
-	url = https://github.com/FreeRTOS/FreeRTOS-Kernel.git
 [submodule "FreeRTOS/Test/CMock/CMock"]
 	path = FreeRTOS/Test/CMock/CMock
 	url = https://github.com/ThrowTheSwitch/CMock.git
 [submodule "FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP"]
 	path = FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP
-	url = https://github.com/FreeRTOS/FreeRTOS-Plus-TCP
+	url = git@github.com:GaloisInc/FreeRTOS-Plus-TCP
 [submodule "FreeRTOS-Plus/Source/AWS/device-shadow"]
 	path = FreeRTOS-Plus/Source/AWS/device-shadow
 	url = https://github.com/aws/device-shadow-for-aws-iot-embedded-sdk
@@ -43,3 +40,9 @@
 [submodule "FreeRTOS/Test/aws-build-accumulator"]
 	path = FreeRTOS/Test/litani
 	url = https://github.com/awslabs/aws-build-accumulator.git
+[submodule "FreeRTOS/Source"]
+	path = FreeRTOS/Source
+	url = git@github.com:GaloisInc/FreeRTOS-Kernel.git
+[submodule "FreeRTOS/Demo/RISC-V_Galois_P1"]
+	path = FreeRTOS/Demo/RISC-V_Galois_P1
+	url = git@github.com:DARPA-SSITH-Demonstrators/RISC-V_Galois_demo.git
