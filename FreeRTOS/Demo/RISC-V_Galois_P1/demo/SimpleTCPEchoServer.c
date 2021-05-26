@@ -98,7 +98,7 @@
 #define tcpechoSHUTDOWN_DELAY (pdMS_TO_TICKS(5000))
 
 /* The standard echo port number. */
-#define tcpechoPORT_NUMBER 7
+#define tcpechoPORT_NUMBER 9999
 
 /* If ipconfigUSE_TCP_WIN is 1 then the Tx sockets will use a buffer size set by
 ipconfigTCP_TX_BUFFER_LENGTH, and the Tx window size will be
