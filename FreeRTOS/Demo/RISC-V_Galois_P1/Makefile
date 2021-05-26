@@ -1,6 +1,6 @@
 RISCV_LIB  ?= elf
 CCPATH =
-CLANG = yes
+
 
 ifneq ($(ARCH), rv64)
 RISCV_XLEN = 32
@@ -17,18 +17,23 @@ CFLAGS += -DCPU_CLOCK_HZ=100000000
 endif
 
 TARGET=$(CCPATH)riscv${RISCV_XLEN}-unknown-${RISCV_LIB}
-CFLAGS += --target=$(TARGET)
+#CFLAGS += --target=$(TARGET)
 
 ifdef CLANG
 GCC     = $(ISP_PREFIX)/bin/clang
-else
-GCC     = $(TARGET)-gcc
-endif
-
 OBJCOPY	= $(ISP_PREFIX)/bin/llvm-objcopy
 OBJDUMP	= $(ISP_PREFIX)/bin/llvm-objdump
 AR		= $(ISP_PREFIX)/bin/llvm-ar
 RANLIB	= $(ISP_PREFIX)/bin/llvm-ranlib
+else
+GCC     = riscv64-unknown-elf-gcc
+OBJCOPY	= riscv64-unknown-elf-objcopy
+OBJDUMP	= riscv64-unknown-elf-objdump
+AR		= riscv64-unknown-elf-ar
+RANLIB	= riscv64-unknown-elf-ranlib
+endif
+
+
 
 # Use main_blinky as demo source and target file name if not specified
 PROG 	?= main_blinky
@@ -81,9 +86,9 @@ INCLUDES = \
 ASFLAGS  += -g $(RISCV_ARCH) $(RISCV_ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
 CFLAGS = $(WARNINGS) $(INCLUDES) -ffunction-sections -fdata-sections -mno-relax
-CFLAGS += -O0 -g3 $(RISCV_ARCH) $(RISCV_ABI) --target=riscv32-unknown-elf 
+CFLAGS += -O0 -g3 $(RISCV_ARCH) $(RISCV_ABI) # --target=riscv32-unknown-elf 
 CFLAGS += -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
-AR_FLAGS = --target=riscv32-unknown-elf 
+#AR_FLAGS = --target=riscv32-unknown-elf 
 
 ifdef CLANG
 CFLAGS += -mcmodel=medium
@@ -163,7 +168,7 @@ INCLUDES = \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V \
 	-I$(ISP_PREFIX)/clang_sysroot/riscv64-unknown-elf/include
 
-ASFLAGS  += -g $(RISCV_ARCH) $(RISCV_ABI) --target=riscv32-unknown-elf -Wa,-Ilegacy \
+ASFLAGS  += -g $(RISCV_ARCH) $(RISCV_ABI) -Wa,-Ilegacy \
 	-I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions \
 	-DportasmHANDLE_INTERRUPT=external_interrupt_handler -mno-relax
 
@@ -296,7 +301,7 @@ LDFLAGS  += -Wl,--gc-sections
 LDFLAGS  += -Wl,--wrap=puts
 LDFLAGS  += -Wl,--wrap=printf
 
-LIBS	 =  -lc -lgcc -lfreertos-vcu118 -L.
+LIBS	 =  -lc -lgcc -lfreertos-vcu118${RISCV_XLEN} -L. -march=rv32ima -mabi=ilp32
 
 $(info ASFLAGS=$(ASFLAGS))
 $(info LIBS=$(LIBS))
