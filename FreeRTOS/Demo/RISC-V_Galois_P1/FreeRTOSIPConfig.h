@@ -45,7 +45,7 @@ connected. */
 /* Set to 1 to print out debug messages.  If ipconfigHAS_DEBUG_PRINTF is set to
 1 then FreeRTOS_debug_printf should be defined to the function used to print
 out the debugging messages. */
-#define ipconfigHAS_DEBUG_PRINTF	0
+#define ipconfigHAS_DEBUG_PRINTF	1
 #if( ipconfigHAS_DEBUG_PRINTF == 1 )
 	#define FreeRTOS_debug_printf(X)	printf X
 #endif
@@ -172,14 +172,14 @@ number of entries that can exist in the ARP table at any one time. */
 /* ARP requests that do not result in an ARP response will be re-transmitted a
 maximum of ipconfigMAX_ARP_RETRANSMISSIONS times before the ARP request is
 aborted. */
-#define ipconfigMAX_ARP_RETRANSMISSIONS ( 5 )
+#define ipconfigMAX_ARP_RETRANSMISSIONS ( 10 )
 
 /* ipconfigMAX_ARP_AGE defines the maximum time between an entry in the ARP
 table being created or refreshed and the entry being removed because it is stale.
 New ARP requests are sent for ARP cache entries that are nearing their maximum
 age.  ipconfigMAX_ARP_AGE is specified in tens of seconds, so a value of 150 is
 equal to 1500 seconds (or 25 minutes). */
-#define ipconfigMAX_ARP_AGE			150
+#define ipconfigMAX_ARP_AGE			15
 
 /* Implementing FreeRTOS_inet_addr() necessitates the use of string handling
 routines, which are relatively large.  To save code space the full
@@ -327,7 +327,7 @@ configure the real network connection to use. */
 #define configMAC_ADDR2		0x35
 #define configMAC_ADDR3		0x04
 #define configMAC_ADDR4		0xDB
-#define configMAC_ADDR5		0x77
+#define configMAC_ADDR5		0x9C
 
 /* Default IP address configuration.  Used in ipconfigUSE_DNS is set to 0, or
 ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
@@ -346,10 +346,10 @@ ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
 /* Default DNS server configuration.  OpenDNS addresses are 208.67.222.222 and
 208.67.220.220.  Used in ipconfigUSE_DNS is set to 0, or ipconfigUSE_DNS is set
 to 1 but a DNS server cannot be contacted.*/
-#define configDNS_SERVER_ADDR0 	4
-#define configDNS_SERVER_ADDR1 	2
-#define configDNS_SERVER_ADDR2 	2
-#define configDNS_SERVER_ADDR3 	2
+#define configDNS_SERVER_ADDR0 	10
+#define configDNS_SERVER_ADDR1 	88
+#define configDNS_SERVER_ADDR2 	88
+#define configDNS_SERVER_ADDR3 	1
 
 /* Default netmask configuration.  Used in ipconfigUSE_DNS is set to 0, or
 ipconfigUSE_DNS is set to 1 but a DNS server cannot be contacted. */
