@@ -322,7 +322,7 @@ BaseType_t xApplicationDNSQueryHook(const char *pcName)
  * THAT RETURNS A PSEUDO RANDOM NUMBER SO IS NOT INTENDED FOR USE IN PRODUCTION
  * SYSTEMS.
  */
-uint32_t ulApplicationGetNextSequenceNumber(uint32_t ulSourceAddress,
+/*uint32_t ulApplicationGetNextSequenceNumber(uint32_t ulSourceAddress,
 											uint16_t usSourcePort,
 											uint32_t ulDestinationAddress,
 											uint16_t usDestinationPort)
@@ -334,3 +334,4 @@ uint32_t ulApplicationGetNextSequenceNumber(uint32_t ulSourceAddress,
 
 	return uxRand();
 }
+*/
