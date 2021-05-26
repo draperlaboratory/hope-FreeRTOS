@@ -134,6 +134,60 @@ int PhyLinkStatus(XAxiEthernet *AxiEthernetInstancePtr) {
 int AxiEtherentConfigureTIPhy(XAxiEthernet *AxiEthernetInstancePtr, u32 PhyAddr)
 {
 	u16 PhyReg14;
+	u16 PhyRegCtrl;
+	u16 PhyRegStrap1, PhyRegStrap2;
+	u16 PhyRegSGMIICTL1;
+	u16 PhyRegBMCR, PhyRegBMSR;
+	u16 PhyRegANAR;
+	u16 PhyRegIDR1, PhyRegIDR2;
+	u16 PhyReg1000BaseT;
+	u16 PhyRegSTS1;
+	u16 PhyRegPHYSTS;
+	u16 PhyRegLEDCR1;
+	u16 PhyRegBISCR1, PhyRegBISCR2;
+	u16 PhyRegSTS2;
+
+	/* PHY Reset */
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x1f, &PhyRegCtrl);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, 0x1f, PhyRegCtrl | (1 << 15));
+	sleep(2);
+
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			      0x6e);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			     &PhyRegStrap1);
+	
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			      0x6f);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			     &PhyRegStrap2);
+	
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x0,
+			     &PhyRegBMCR);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x1,
+			     &PhyRegBMSR);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x2,
+			     &PhyRegIDR1);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x3,
+			     &PhyRegIDR2);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x4,
+			     &PhyRegANAR);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x9,
+			     &PhyReg1000BaseT);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0xa,
+			     &PhyRegSTS1);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x11,
+			     &PhyRegPHYSTS);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x18,
+			     &PhyRegLEDCR1);
 
 	/* Enable SGMII Clock */
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
@@ -145,16 +199,128 @@ int AxiEtherentConfigureTIPhy(XAxiEthernet *AxiEthernetInstancePtr, u32 PhyAddr)
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
 			      TI_PHY_SGMIICLK_EN);
 
+	/* Disable RGMII */
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			      0x32);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			      0x0);
+
 	/* Enable SGMII */
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			      0x31);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			      0x70);
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_PHYCTRL,
 	                      TI_PHY_CR_SGMII_EN);
-	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CFGR2,
-			     &PhyReg14);
+	/*
+	 * - Set interrupt polarity to low
+	 * - Set 1000BASE-T attempts to 4
+	 * - Enable speed optimization
+	 * - Enable speed optimization enhanced mode
+	 * - Enable SGMII auto-negotiation
+	 */
 	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CFGR2,
-			      PhyReg14 & (~TI_PHY_CFGR2_SGMII_AUTONEG_EN));
+			      0x2b87);
 	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CFGR2,
 			     &PhyReg14);
+	
+	/* Enable loopback and start BIST */
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, 0x16, 0xf004);
 
+	// PHY SW Reset
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x1f, &PhyRegCtrl);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, 0x1f, PhyRegCtrl | (1 << 14));
+	sleep(10);
+
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			      0x71);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			     &PhyRegBISCR1);
+
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			      0x72);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			     &PhyRegBISCR2);
+
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x17, &PhyRegSTS2);
+
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			      0x6e);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			     &PhyRegStrap1);
+	
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			      0x6f);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			     &PhyRegStrap2);
+
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			      0xd3);
+	XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+			     &PhyRegSGMIICTL1);
+	
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x0,
+			     &PhyRegBMCR);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x1,
+			     &PhyRegBMSR);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x2,
+			     &PhyRegIDR1);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x3,
+			     &PhyRegIDR2);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x4,
+			     &PhyRegANAR);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x9,
+			     &PhyReg1000BaseT);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0xa,
+			     &PhyRegSTS1);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x11,
+			     &PhyRegPHYSTS);
+	XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, 0x18,
+			     &PhyRegLEDCR1);
+
+	/* Loop for checking results of reverse loopback mode */
+/*
+	for (;;) {
+		u16 PhyRegRXFSTS;
+		XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+			      TI_PHY_CR_DEVAD_EN);
+		XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+					0x135);
+		XAxiEthernet_PhyWrite(AxiEthernetInstancePtr, PhyAddr, TI_PHY_CR,
+					TI_PHY_CR_DEVAD_EN | TI_PHY_CR_DEVAD_DATAEN);
+		XAxiEthernet_PhyRead(AxiEthernetInstancePtr, PhyAddr, TI_PHY_ADDDR,
+					&PhyRegRXFSTS);
+		;
+	}
+*/
 	return XST_SUCCESS;
 }
 
