@@ -45,4 +45,4 @@
 	url = https://github.com/GaloisInc/BESSPIN-FreeRTOS-Kernel.git
 [submodule "FreeRTOS/Demo/RISC-V_Galois_P1"]
 	path = FreeRTOS/Demo/RISC-V_Galois_P1
-	url = https://github.com/GaloisInc/BESSPIN-FreeRTOS-RISC-V_Galois_demo.git
+	url = https://github.com/draperlaboratory/hope-FreeRTOS-RISC-V_Galois_demo.git
