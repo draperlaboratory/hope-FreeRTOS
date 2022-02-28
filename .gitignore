@@ -7,3 +7,4 @@ FreeRTOS/Demo/RISC-V-ISP/build
 *.a
 *~
 .DS_Store
+/make_*.log
