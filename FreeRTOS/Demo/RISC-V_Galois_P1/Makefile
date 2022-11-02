@@ -80,7 +80,7 @@ INCLUDES = \
 
 ASFLAGS  += -g $(RISCV_ARCH) $(RISCV_ABI)  -Wa,-Ilegacy -I$(FREERTOS_SOURCE_DIR)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions -DportasmHANDLE_INTERRUPT=external_interrupt_handler
 
-CFLAGS = $(WARNINGS) $(INCLUDES) -ffunction-sections -fdata-sections -mno-relax
+CFLAGS = $(WARNINGS) $(INCLUDES) -ffunction-sections -fdata-sections -mno-relax -Wno-error=int-conversion -fno-jump-tables
 CFLAGS += -O0 -g3 $(RISCV_ARCH) $(RISCV_ABI) --target=riscv32-unknown-elf 
 CFLAGS += -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
 AR_FLAGS = --target=riscv32-unknown-elf 
