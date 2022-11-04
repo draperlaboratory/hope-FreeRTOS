@@ -23,7 +23,7 @@ ARCH_FLAGS = -march=rv64imafd -mabi=lp64d -mcmodel=medany --target=riscv64-unkno
 endif
 
 # Basic ISP_CFLAGS:
-ISP_CFLAGS  = -Wall -Wextra -O0 -g3 -std=gnu11 -mno-relax
+ISP_CFLAGS  = -Wall -Wextra -O0 -g3 -std=gnu11 -mno-relax -Wno-error=int-conversion -fno-jump-tables
 ISP_CFLAGS += -ffunction-sections -fdata-sections -fno-builtin-printf
 ISP_CFLAGS += -DDONT_USE_PLIC -DDONT_USE_M_TIME -Dmalloc\(x\)=pvPortMalloc\(x\) -Dfree\(x\)=vPortFree\(x\)
 ISP_CFLAGS += -include sys/cdefs.h
