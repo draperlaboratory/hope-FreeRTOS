@@ -82,7 +82,7 @@ typedef struct {
 
 } mc_t;
 
-mc_t global_exception_mc;
+extern mc_t global_exception_mc;
 
 /*-----------------------------------------------------------
  * Port specific definitions.

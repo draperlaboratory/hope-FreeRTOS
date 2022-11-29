@@ -77,6 +77,8 @@ void vPortSetupTimerInterrupt( void ) __attribute__(( weak ));
 
 /*-----------------------------------------------------------*/
 
+mc_t global_exception_mc;
+
 /* Used to program the machine timer compare register. */
 uint64_t ullNextTime = 0ULL;
 const uint64_t *pullNextTime = &ullNextTime;
