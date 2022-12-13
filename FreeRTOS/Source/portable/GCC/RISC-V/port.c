@@ -295,6 +295,14 @@ void is_exception_print( uint32_t cause, uint32_t mepc, uint32_t status ) {
     printf("    a7 (x17): 0x%x\n", global_exception_mc.x17);	 
 #endif
 
+
+    // Convert unhandled exception to failure?
+    t_printf("Non-policy failure.");
+    #define SIFIVE_TEST_ADDR 0x100000
+    #define SIFIVE_TEST_FAIL 0x3333
+    volatile uint32_t *test_device = (uint32_t *)SIFIVE_TEST_ADDR;
+    *test_device = SIFIVE_TEST_FAIL;
+
     return;
 }
 

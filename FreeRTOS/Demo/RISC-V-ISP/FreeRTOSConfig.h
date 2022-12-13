@@ -104,9 +104,9 @@
 #define configMAX_PRIORITIES			( 7 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 70 )
 #if __riscv_xlen == 64
-	#define configTOTAL_HEAP_SIZE			( ( size_t ) 0x20000 )
+	#define configTOTAL_HEAP_SIZE			( ( size_t ) 0x4000000 )
 #elif __riscv_xlen == 32
-	#define configTOTAL_HEAP_SIZE			( ( size_t ) 0x10000 )
+	#define configTOTAL_HEAP_SIZE			( ( size_t ) 0x4000000 )
 #else
 	#error Assembler did not define __riscv_xlen
 #endif
