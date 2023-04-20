@@ -119,10 +119,12 @@ at the top of this file. */
 .extern global_exception_mc
 
 /*-----------------------------------------------------------*/
+.data
 test_dev_addr: .word SIFIVE_TEST_ADDR
 finish_val: .word FINISHER_FAIL
 /*-----------------------------------------------------------*/
 
+.text
 /* save cpu context to structure */	
 .macro STRUCT_SAVE_CONTEXT
 
